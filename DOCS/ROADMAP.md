@@ -39,12 +39,12 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 - [x] Initialiser Git.
 - [x] Configurer pnpm Workspaces.
-- [ ] Créer le monorepo.
-- [ ] Configurer TypeScript et les outils de qualité.
-- [ ] Configurer ESLint et Prettier.
+- [x] Créer le monorepo.
+- [x] Configurer TypeScript et les outils de qualité.
+- [ ] Configurer ESLint et Prettier (ESLint configuré ; Prettier reste à ajouter).
 - [ ] Ajouter `.gitignore` et `.env.example`.
-- [ ] Définir les conventions de développement.
-- [ ] Préparer les scripts communs de développement et de test.
+- [x] Définir les conventions de développement des bibliothèques et du SDK.
+- [ ] Préparer les scripts communs de développement et de test (build/lint/test disponibles ; dev attend les applications).
 
 ## 0.2 — Backend Core
 
@@ -332,7 +332,7 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phase 0.1 : initialisation du monorepo Orkobi avec pnpm.**
+**Fondations lib/ et sdk/ initialisées ; poursuivre la phase 0 avec les applications.**
 
 Premier objectif concret : obtenir le Core NestJS, le frontend React et PostgreSQL dans un environnement de développement reproductible.
 

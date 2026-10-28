@@ -1,6 +1,11 @@
-# DOSSIER
+# .gitignore
 node_modules/
-
-# FICHIERS
+dist/
+coverage/
+*.tsbuildinfo
 package-lock.json
+yarn.lock
 .env
+.env.*
+!.env.example
+*.log

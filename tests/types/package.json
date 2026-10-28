@@ -1,0 +1,17 @@
+{
+  "name": "@orkobi/contract-tests",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0-EXP",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@orkobi/contracts": "workspace:*",
+    "@orkobi/database": "workspace:*",
+    "@orkobi/events": "workspace:*",
+    "@orkobi/identity": "workspace:*",
+    "@orkobi/sdk-core": "workspace:*",
+    "@orkobi/sdk-types": "workspace:*"
+  }
+}
