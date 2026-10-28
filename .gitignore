@@ -1,0 +1,6 @@
+# DOSSIER
+node_modules/
+
+# FICHIERS
+package-lock.json
+.env
