@@ -38,7 +38,7 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 ## 0.1 — Initialisation
 
 - [x] Initialiser Git.
-- [ ] Configurer pnpm Workspaces.
+- [x] Configurer pnpm Workspaces.
 - [ ] Créer le monorepo.
 - [ ] Configurer TypeScript et les outils de qualité.
 - [ ] Configurer ESLint et Prettier.

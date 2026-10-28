@@ -1,0 +1,11 @@
+{
+  "main": "./dist/index.js",
+  "private": true,
+  "name": "@orkobi/contracts",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}

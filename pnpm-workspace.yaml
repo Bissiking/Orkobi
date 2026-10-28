@@ -1,5 +1,6 @@
 # pnpm-workspace.yaml
 packages:
   - "apps/*"
-  - "packages/*"
+  - "lib/*"
+  - "sdk/*"
   - "modules/*"
