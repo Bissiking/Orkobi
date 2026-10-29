@@ -17,3 +17,4 @@ yarn.lock
 .env.*
 !.env.example
 *.log
+skills-lock.json
