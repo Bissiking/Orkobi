@@ -93,22 +93,24 @@ cette initialisation.
 
 ## 5. Sources de version examinées
 
-Le monorepo utilise initialement une **version fixe commune** pour dix manifests privés :
+Le monorepo utilise initialement une **version fixe commune** pour douze manifests privés :
 
 - `package.json` (source produit) ;
-- `apps/core/package.json` ;
+- `apps/{core,bff,web}/package.json` ;
 - `lib/{contracts,database,events,identity,security}/package.json` ;
 - `sdk/{core,types}/package.json` ;
 - `tests/types/package.json`.
 
 Tous déclarent `0.1.0-EXP`. Le SDK n'est pas encore publié indépendamment.
-Les packages des futurs BFF/frontend rejoindront cette règle lorsqu'ils existeront.
+Les applications BFF et frontend rejoignent cette règle depuis le lot 0.3.
 Les futurs modules/plugins pourront avoir leurs versions propres et devront déclarer
 la compatibilité Core/SDK ; leur numéro ne sera pas changé automatiquement avec le Core.
 
 Représentations actuellement maintenues explicitement :
 
 - `apps/core/src/application.ts` : version de la documentation OpenAPI ;
+- `apps/bff/src/config.ts` : métadonnées produit lues dans le manifeste racine ;
+- `apps/web/vite.config.ts` : version du frontend injectée depuis la même racine au build ;
 - `tests/core.test.mjs` : assertion sur cette version ;
 - `README.md`, titres des guides courants et cible de `DOCS/ROADMAP.md` ;
 - `CHANGELOG.md` : section de livraison et notes associées.
@@ -116,8 +118,8 @@ Représentations actuellement maintenues explicitement :
 Le lockfile pnpm enregistre les dépendances ; sa `lockfileVersion` n'est pas
 la version du produit. Les entrées historiques du changelog et du rapport de
 bootstrap gardent leur numéro d'origine. Les numéros d'exemples sont illustratifs.
-Il n'existe pas encore de générateur commun de métadonnées de version ni de CI
-de publication ; ne pas les présenter comme disponibles.
+Le BFF et le frontend lisent désormais la version racine ; la synchronisation
+des manifests et d'OpenAPI reste explicite. Aucune CI de publication n'est disponible.
 
 ## 6. Procédure de changement de version
 
@@ -127,13 +129,13 @@ ultérieur doit être demandé et préparé dans une PR dédiée :
 1. Choisir explicitement la version cible et le canal. Format SemVer :
    `MAJOR.MINOR.PATCH[-dev.N|-beta.N|-rc.N][+build]`. `EXP` reste conservé pour
    l'état courant ; avant 1.0.0, documenter toute rupture de contrat.
-2. Fixer la version racine et synchroniser les neuf autres manifests privés
+2. Fixer la version racine et synchroniser les onze autres manifests privés
    dans le même commit. Ne pas utiliser une commande de publication automatique.
 3. Mettre à jour la version OpenAPI, son assertion et les documents courants.
    Préserver les versions historiques et les versions indépendantes des plugins.
 4. Régénérer le lockfile avec pnpm si ses importers changent ; examiner le diff.
 5. Exécuter `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm typecheck` et
-   vérifier l'égalité des dix champs `version` avec la source racine.
+   vérifier l'égalité des douze champs `version` avec la source racine.
 6. Faire examiner et intégrer la PR. Ne créer aucun tag avant validation de publication.
 
 Une automatisation future pourra générer les métadonnées depuis la racine et

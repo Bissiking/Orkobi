@@ -6,9 +6,9 @@
 
 Fondations d'un ERP open source, modulaire et multi-organisation, indépendant de
 LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK et un premier
-Core NestJS démarrable avec ses interfaces de services sont disponibles.
-Les étapes techniques 0.1 et 0.2 de la phase 0 sont terminées. Le BFF, React, PostgreSQL et
-l'authentification restent à construire.
+Core NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
+0.1 à 0.3 de la phase 0 sont terminées. PostgreSQL, l'installation,
+l'authentification et les fonctionnalités métier restent à construire.
 
 ## Démarrage
 
@@ -22,19 +22,26 @@ cp .env.example .env
 pnpm dev
 ```
 
-| Commande            | Action réelle                                                                                 |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm dev`          | Compile puis lance le Core ; recompile et redémarre après changement des sources ou de `.env` |
-| `pnpm start:core`   | Lance le Core déjà compilé et charge le `.env` racine                                         |
-| `pnpm build`        | Compile les sept bibliothèques/SDK et le Core dans l'ordre de leurs dépendances               |
-| `pnpm format`       | Formate les fichiers avec Prettier                                                            |
-| `pnpm format:check` | Vérifie le formatage sans modifier les fichiers                                               |
-| `pnpm lint`         | Exécute ESLint, sans avertissement accepté                                                    |
-| `pnpm typecheck`    | Compile puis vérifie les packages et les contrats publics sans émission                       |
-| `pnpm test`         | Compile, vérifie les contrats TypeScript et lance les tests Node.js                           |
-| `pnpm check`        | Vérifie le formatage, le lint et les tests, compilation comprise                              |
+| Commande            | Action réelle                                                                     |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `pnpm dev`          | Lance Core, BFF et React/Vite avec recompilation backend et rechargement frontend |
+| `pnpm dev:core`     | Lance uniquement le Core avec surveillance                                        |
+| `pnpm dev:bff`      | Lance uniquement le BFF avec surveillance                                         |
+| `pnpm dev:web`      | Lance uniquement Vite ; Core/BFF doivent être lancés séparément                   |
+| `pnpm start:bff`    | Lance le BFF compilé et sert le frontend compilé                                  |
+| `pnpm start:core`   | Lance le Core déjà compilé et charge le `.env` racine                             |
+| `pnpm build`        | Compile les sept bibliothèques/SDK et les trois applications                      |
+| `pnpm format`       | Formate les fichiers avec Prettier                                                |
+| `pnpm format:check` | Vérifie le formatage sans modifier les fichiers                                   |
+| `pnpm lint`         | Exécute ESLint, sans avertissement accepté                                        |
+| `pnpm typecheck`    | Compile puis vérifie les packages et les contrats publics sans émission           |
+| `pnpm test`         | Compile, vérifie les contrats TypeScript et lance les tests Node.js               |
+| `pnpm check`        | Vérifie le formatage, le lint et les tests, compilation comprise                  |
 
 Les sorties `dist/` sont générées ; il faut compiler avant de consommer les packages.
+L'interface s'ouvre sur `http://127.0.0.1:5173` en développement, puis sur le port
+du BFF (`3000`) avec `pnpm build` et `pnpm start:bff`.
+Voir [le guide frontend/BFF](DOCS/FRONTEND_BFF.md) pour les routes et la configuration.
 Le Core répond par défaut sur `http://127.0.0.1:3001/health`. Ce contrôle de
 vitalité ne vérifie aucune base SQL. La documentation interne est désactivée par
 défaut ; avec `CORE_OPENAPI_ENABLED=true`, Swagger est disponible sur
@@ -45,7 +52,8 @@ Voir [le guide du Core](DOCS/CORE.md) pour la configuration et les limites.
 
 ```text
 apps/core/             Core NestJS, services internes, vitalité, erreurs et OpenAPI
-apps/{bff,web}/         Emplacements réservés au BFF et à React
+apps/bff/              BFF NestJS, contrat HTTP et service des fichiers web compilés
+apps/web/              React/Vite, routage, thèmes et traductions FR/EN
 lib/contracts/         Identifiants, contexte, erreurs et résultats
 lib/database/          Contrats SQL et transactions internes
 lib/security/          Rôles, permissions et refus par défaut

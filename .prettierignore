@@ -2,6 +2,9 @@ node_modules/
 .agents/
 .playwright-cli/
 output/playwright/
+/.impeccable/*
+!/.impeccable/config.json
+!/.impeccable/design.json
 dist/
 coverage/
 pnpm-lock.yaml

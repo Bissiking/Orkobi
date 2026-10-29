@@ -1,4 +1,6 @@
 // lib/contracts/src/index.ts
+export { isBffBootstrap, isCoreHealth } from './http.js';
+export type { BffBootstrap, CoreAvailability, CoreHealth } from './http.js';
 
 declare const identifierBrand: unique symbol;
 

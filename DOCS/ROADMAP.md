@@ -44,7 +44,7 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 - [x] Configurer ESLint et Prettier.
 - [x] Ajouter `.gitignore` et `.env.example`.
 - [x] Définir les conventions de développement des bibliothèques et du SDK.
-- [x] Préparer les scripts communs de développement et de test (Core démarrable via `pnpm dev`).
+- [x] Préparer les scripts communs de développement et de test (pile démarrable via `pnpm dev`, Core seul via `pnpm dev:core`).
 
 ## 0.2 — Backend Core
 
@@ -58,14 +58,14 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 0.3 — Frontend et BFF
 
-- [ ] Initialiser React avec Vite.
-- [ ] Configurer le routage frontend.
-- [ ] Créer le BFF NestJS.
-- [ ] Définir le contrat BFF ↔ Core.
-- [ ] Configurer les échanges et la gestion des erreurs.
-- [ ] Créer le layout principal Orkobi.
-- [ ] Préparer les thèmes clair et sombre.
-- [ ] Configurer l'internationalisation FR/EN.
+- [x] Initialiser React avec Vite.
+- [x] Configurer le routage frontend.
+- [x] Créer le BFF NestJS.
+- [x] Définir le contrat BFF ↔ Core.
+- [x] Configurer les échanges et la gestion des erreurs.
+- [x] Créer le layout principal Orkobi.
+- [x] Préparer les thèmes clair et sombre.
+- [x] Configurer l'internationalisation FR/EN.
 
 ## 0.4 — Infrastructure
 
@@ -332,13 +332,15 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Étapes techniques 0.1 et 0.2 terminées et revues ; poursuivre BFF, frontend et infrastructure.**
+**Étapes techniques 0.1, 0.2 et 0.3 terminées ; poursuivre l’infrastructure 0.4.**
 
-Prochain objectif concret : initialiser le BFF et le frontend React, puis PostgreSQL
-et les migrations. La 0.1.0-EXP complète reste ouverte : installation, identité,
-administration et isolation des organisations ne sont pas encore implémentées.
+Prochain objectif concret : PostgreSQL, migrations et environnement Docker Compose.
+La version produit 0.1.0-EXP complète reste ouverte : installation, identité,
+administration et isolation réelle des organisations ne sont pas encore implémentées.
 
-La preuve de ce lot Core et ses limites figurent dans [CORE.md](CORE.md).
-La revue des étapes 0.1/0.2 et ses validations figurent dans [REVIEW_PHASE_0.md](REVIEW_PHASE_0.md).
+Les preuves et limites du Core figurent dans [CORE.md](CORE.md) et la
+[revue 0.1/0.2](REVIEW_PHASE_0.md). Le [guide frontend/BFF](FRONTEND_BFF.md)
+décrit la livraison 0.3, ses tests HTTP et navigateur, et les services métier
+qui restent indisponibles.
 
 **Orkobi s'adapte à vous.**

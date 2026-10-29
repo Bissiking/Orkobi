@@ -12,10 +12,10 @@ Depuis la racine, avec Node.js >= 22.22.2 et pnpm 12.16.1 :
 ```sh
 pnpm install --frozen-lockfile
 cp .env.example .env
-pnpm dev
+pnpm dev:core
 ```
 
-Conserver son `.env` s'il existe déjà. `pnpm dev` compile les dépendances workspace
+Conserver son `.env` s'il existe déjà. `pnpm dev:core` compile les dépendances workspace
 et le Core, puis lance le serveur. Une modification des sources TypeScript dans
 `apps/core/src`, `lib/*/src`, `sdk/*/src` ou de `.env` déclenche une recompilation
 et un redémarrage. Les sorties `dist/` et `node_modules/` ne déclenchent rien.
@@ -163,5 +163,5 @@ contraintes des consommateurs TypeScript.
 Le [changelog](../CHANGELOG.md) et la [revue 0.1/0.2](REVIEW_PHASE_0.md)
 consignent les commandes et contrôles de ce lot.
 Aucune connexion PostgreSQL, persistance, identité réelle, façade métier,
-installation initiale, isolation multi-organisation, BFF ou interface React n'est
-livré. Aucune publication ou validation de production n'est revendiquée.
+installation initiale ou isolation multi-organisation n'est livré par le Core.
+Le BFF et React sont désormais disponibles dans le [lot 0.3](FRONTEND_BFF.md). Aucune publication ou validation de production n'est revendiquée.

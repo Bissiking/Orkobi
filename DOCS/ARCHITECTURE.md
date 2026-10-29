@@ -28,6 +28,23 @@ revérifier les droits à chaque opération. L'adaptateur n'authentifie personne
 Les **modules** porteront les fonctionnalités métier. Aucun chargeur dynamique,
 registre de capabilities ou Store n'est construit par ce bootstrap.
 
+## Frontend et BFF
+
+`apps/web` fournit le shell React/Vite : routes, préférences locales, thèmes
+et traductions. Le navigateur contacte uniquement le BFF via `/api` sur sa
+propre origine. En développement, Vite relaie ces requêtes au BFF local.
+
+`apps/bff` est une application NestJS distincte. Elle interroge exclusivement
+la vitalité du Core, valide son contrat HTTP et expose un bootstrap versionné
+avec une indisponibilité explicite des services métier. Elle sert aussi le
+frontend compilé et les routes SPA lors de l'exécution sans Vite.
+Aucun cookie ni en-tête d'autorisation utilisateur n'est relayé au Core.
+
+Les types et validateurs HTTP sont neutres dans `lib/contracts/src/http.ts` ;
+aucune dépendance NestJS n'est introduite dans les bibliothèques ou le frontend.
+La version web au build et les métadonnées BFF proviennent de la racine.
+Le [guide frontend/BFF](FRONTEND_BFF.md) décrit les échanges et leurs limites.
+
 ## Dépendances
 
 ```text

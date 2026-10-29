@@ -1,7 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
+import type { CoreHealth } from '@orkobi/contracts';
 import { ApiOkResponse, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 
-export class HealthResponse {
+export class HealthResponse implements CoreHealth {
   @ApiProperty({ enum: ['ok'] })
   readonly status = 'ok' as const;
 

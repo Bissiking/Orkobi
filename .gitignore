@@ -3,6 +3,9 @@
 .agents/*
 .playwright-cli/
 output/playwright/
+/.impeccable/*
+!/.impeccable/config.json
+!/.impeccable/design.json
 node_modules/
 dist/
 coverage/

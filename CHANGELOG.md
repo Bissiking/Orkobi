@@ -8,6 +8,67 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.1.0-EXP — 2026-10-29
 
+### Étape technique 0.3 — Frontend et BFF
+
+- `apps/web/` : application React 19.3.1/Vite 8.3.5/TypeScript, React Router 8.5.1,
+  police Manrope auto-hébergée et icônes SVG Lucide. Accueil centré sur les
+  organisations et modules, selon le choix utilisateur ; tableau de bord classique
+  avec Odoo et Business Central comme repères de clarté, sans copie de marque.
+- Cinq routes : accueil, organisations, modules, préférences, état des services ;
+  404 localisée, navigation mobile par dialog natif, focus visible et réduction
+  des mouvements. Recherche et filtres de modules dans l'URL, retour/rechargement
+  conservés ; catalogue de présentation explicitement non installable.
+- Thèmes clair/sombre/système et traductions FR/EN typées. Préférences locales
+  persistantes, suivi du thème système, titre et langue du document mis à jour,
+  fonctionnement dégradé si le stockage est indisponible. Script de thème initial
+  externe, compatible avec la CSP sans script inline.
+- `apps/bff/` : BFF NestJS 12.3.2, configuration validée, `/api/health`, bootstrap
+  versionné et fichiers React compilés avec fallback des routes de page.
+  JSON d'erreur corrélé, logs structurés expurgés, en-têtes navigateur, aucun CORS
+  permissif ou transfert des cookies/jetons du navigateur.
+- `lib/contracts/src/http.ts` et contrôleur de vitalité Core : contrats HTTP
+  partagés et validateurs runtime. Sonde Core bornée (délai et 4 Ko), redirections
+  refusées et états distincts timeout/réseau/réponse invalide. Le bootstrap reste
+  utile en mode dégradé et n'annonce jamais les services métier comme disponibles.
+- `scripts/dev.mjs`, `scripts/dev-core.mjs`, scripts racine et `.env.example` :
+  lancement commun et commandes séparées, compilation backend sérialisée,
+  surveillance et arrêt des processus enfants. `pnpm dev:core` conserve le
+  lancement du Core seul ; `pnpm dev` lance désormais toute la pile locale.
+- Le contrôle Vite a révélé une incompatibilité Fast Refresh due aux exports
+  mixtes Provider/hook. Contextes/hooks séparés des composants et ErrorBoundary
+  isolée de l'entrée ; règle `react-refresh/only-export-components` ajoutée.
+  Le scénario de recompilation des contrats a ensuite passé sans erreur React,
+  en conservant route, langue, thème et récupération des services.
+- `tests/bff.test.mjs` : 8 tests principaux et 8 sous-tests couvrant vrais échanges
+  HTTP, configuration, pannes, timeouts, taille, redirection, absence d'en-têtes
+  sensibles, ressources et contrats invalides. `tests/browser/` : parcours
+  Playwright de production, Vite et rechargement à chaud reproductibles via la CLI.
+- `PRODUCT.md`, `DESIGN.md`, `.impeccable/{config,design}.json` et brief du shell :
+  contexte confirmé et système visuel documenté avec le skill Impeccable.
+  Revue visuelle indépendante des dix captures : disposition `ship` ; aucun
+  correctif matériel requis. Captures et planches temporaires ignorées par Git.
+- `DOCS/FRONTEND_BFF.md`, guides existants, README et roadmap synchronisés.
+  Douze manifests privés restent en `0.1.0-EXP` ; version BFF/web dérivée de la
+  racine, règles de synchronisation actualisées. Retrait des emplacements réservés
+  `.gitkeep` du BFF et du frontend.
+- La résolution initiale de Lucide 1.64.0 ajoutait une exemption d'âge de publication.
+  Elle a été remplacée par 1.63.0 et le lockfile régénéré puis vérifié sans exemption.
+  Les scripts de dépendances restent soumis à la politique existante.
+
+Validation locale : `pnpm check` (formatage, lint, dix compilations, contrats
+TypeScript et 43 tests, sous-tests compris), `pnpm typecheck`, installation avec
+lockfile figé et contrôle de peers réussis. Audit d'exécution sans avis connu
+signalé. Chrome headless : cinq routes, URL, filtres/recherche, FR/EN, thèmes,
+persistance, mode système, 404, reprise d'erreurs et tiroir mobile au clavier ;
+captures 1440 × 1000 et 390 × 844, sans débordement. Pannes UI simulées par
+interception, pannes BFF/Core éprouvées par serveurs HTTP jetables. Contrôle
+Vite/HMR distinct du build de production, arrêt et libération des ports vérifiés.
+
+Limites : aucun compte utilisateur, création réelle d'organisation, installation
+ou activation de module, PostgreSQL, migration, isolation SQL ou sécurité de
+production n'est fourni par ce lot. Aucune publication, opération de production,
+commit ou push effectué ; prochaine étape technique : infrastructure 0.4.
+
 ### Initialisation de la stratégie Git
 
 - Diagnostic après fetch : `main` et `origin/main` au même commit `bc1ada4`,

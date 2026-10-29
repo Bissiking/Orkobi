@@ -16,7 +16,7 @@ Cette fiche ne constitue pas une autorisation de push, de publication ou de dép
 ## Validation
 
 - [ ] Version du manifeste vérifiée
-- [ ] Dix manifests privés synchronisés avec la racine, version OpenAPI et assertion cohérentes
+- [ ] Douze manifests privés synchronisés avec la racine, version OpenAPI et assertion cohérentes
 - [ ] PR vers la bonne branche examinée et fusion approuvée
 - [ ] CI / tests / builds verts
 - [ ] Tests de sécurité et d'isolation entre organisations validés
