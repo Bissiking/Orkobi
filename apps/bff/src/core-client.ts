@@ -6,10 +6,11 @@ import type { BffConfig } from './config.js';
 export async function probeCore(
   config: BffConfig,
   correlationId: string,
+  path: '/health' | '/health/ready' = '/health',
 ): Promise<CoreAvailability> {
   const signal = AbortSignal.timeout(config.coreTimeoutMs);
   try {
-    const response = await fetch(new URL('/health', config.coreUrl), {
+    const response = await fetch(new URL(path, config.coreUrl), {
       signal,
       redirect: 'manual',
       headers: { accept: 'application/json', 'x-request-id': correlationId },

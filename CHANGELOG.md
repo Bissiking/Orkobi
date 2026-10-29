@@ -8,6 +8,59 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.1.0-EXP — 2026-10-29
 
+### Étape technique 0.4 — Infrastructure
+
+- `compose.yaml`, `compose.dev.yaml`, `Dockerfile`, `.dockerignore` et
+  `infra/postgres/init.sh` : pile locale PostgreSQL 18 → migration ponctuelle →
+  Core → BFF/React compilé. Seul le BFF est exposé sur loopback ; exposition SQL
+  locale facultative pour Vite. Applications exécutées sous `node`, signaux via
+  init, volume nommé sur `/var/lib/postgresql` et santé de chaque service durable.
+- Comptes SQL séparés : administrateur pour l'initialisation, migrateur sans
+  privilèges superutilisateur et compte Core limité à la lecture du registre.
+  Les secrets sont requis, distincts et absents des sources/images.
+- `lib/database/src/{config,migrations,postgres}.ts` : pilote `pg` 8.23.1,
+  configuration validée, pool borné et fermé à l'arrêt, première migration du
+  schéma technique. Registre avec SHA-256, ordre contrôlé, verrou transactionnel,
+  rejeu sans changement, rollback atomique et refus d'historique incompatible.
+  `pnpm-lock.yaml` mis à jour sans exemption de politique pnpm.
+- `apps/core/src/database.service.ts`, configuration, module et contrôleur :
+  injection du pool et `/health/ready`, HTTP 503 si SQL désactivé, inaccessible
+  ou migrations incompatibles. `apps/bff/src/{application,core-client}.ts` :
+  `/api/ready` vérifie cette chaîne avec le client HTTP borné existant. Les sondes
+  de vitalité et le bootstrap frontend conservent leur contrat.
+- `scripts/{database,setup-env,healthcheck,test-infrastructure}.mjs` et scripts
+  racine : initialisation de `.env` sans écrasement avec secrets aléatoires,
+  migrations/état SQL, démarrage/arrêt Compose et recette isolée reproductible.
+  Les conteneurs et secrets temporaires sont retirés après recette, les volumes
+  de test sont conservés. Les résultats locaux sont ignorés par Git.
+- `tests/database.test.mjs` : configuration, erreurs expurgées et HTTP réel
+  distinguant vitalité/disponibilité. `tests/database.integration.mjs` : tests
+  PostgreSQL réels de concurrence, rejeu, rollback DDL/registre, dérive/futur de
+  l'historique et refus des écritures/DDL sous le compte Core. Le contrôle des
+  packages accepte le pilote externe tout en vérifiant les liens workspace.
+- `.prettierrc.json` accepte les fins de ligne de la plateforme ; `.gitattributes`
+  impose LF aux scripts shell pour Docker sous Windows. Aucun changement de
+  contenu des fichiers sans rapport n'est nécessaire pour ce réglage.
+- `DOCS/INFRASTRUCTURE.md`, README, architecture, guides Core/BFF et roadmap :
+  installation, fonctionnement local, comptes, migrations, reprise, sauvegarde
+  et limites. Version commune des douze manifests conservée en `0.1.0-EXP`.
+
+Validation locale sous Windows, Node.js 22.22.2 et Docker Desktop Linux :
+`pnpm check` (formatage, lint, compilation, contrats et 46 tests),
+`pnpm typecheck`, `pnpm install --frozen-lockfile` et `pnpm peers check` réussis.
+`pnpm infra:test` : cinq tests SQL, échanges HTTP, route React directe, panne et
+reprise PostgreSQL, redémarrage Core/BFF, recréation complète des conteneurs et
+conservation d'une donnée témoin vérifiés. Le premier passage a identifié un port
+hôte aléatoire réattribué au redémarrage ; la recette relit désormais ce port et
+le passage complet suivant a réussi. Preuve locale :
+`output/infrastructure/efb9ab1b21be/result.json` (ignorée par Git).
+
+Limites : environnement local HTTP/SQL sans TLS, image contenant encore les
+outils de build, sans restauration de sauvegarde éprouvée ni déploiement de
+production. Aucun utilisateur, installation applicative, transaction métier,
+adaptateur SQL contextualisé ou isolation réelle des organisations/plugins
+n'est ajouté. Aucun commit, push ou publication ; prochaine étape : 1.1.
+
 ### Étape technique 0.3 — Frontend et BFF
 
 - `apps/web/` : application React 19.3.1/Vite 8.3.5/TypeScript, React Router 8.5.1,

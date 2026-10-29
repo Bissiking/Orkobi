@@ -1,8 +1,12 @@
+import { DatabaseConfigurationError, loadDatabaseConfig } from '@orkobi/database';
+import type { PostgreSqlConfig } from '@orkobi/database';
+
 export interface CoreConfig {
   readonly environment: 'development' | 'test' | 'production';
   readonly host: string;
   readonly port: number;
   readonly openApiEnabled: boolean;
+  readonly database?: PostgreSqlConfig;
 }
 
 export class ConfigurationError extends Error {}
@@ -25,10 +29,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
   if (openApi !== 'true' && openApi !== 'false') {
     throw new ConfigurationError('CORE_OPENAPI_ENABLED doit être true ou false.');
   }
+  let database: PostgreSqlConfig | undefined;
+  try {
+    database = loadDatabaseConfig(env);
+  } catch (error) {
+    if (error instanceof DatabaseConfigurationError) throw new ConfigurationError(error.message);
+    throw error;
+  }
   return Object.freeze({
     environment: environment as CoreConfig['environment'],
     host,
     port: Number(port),
     openApiEnabled: openApi === 'true',
+    ...(database ? { database } : {}),
   });
 }

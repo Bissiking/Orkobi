@@ -83,7 +83,11 @@ contraintes en base ; aucun générateur ou stockage n'est simulé.
 L'accès SQL brut appartient exclusivement à `lib/database`. Une transaction reçoit
 obligatoirement un contexte et fournit des requêtes paramétrées. L'adaptateur devra
 appliquer réellement l'isolation par organisation, les commits et les rollbacks.
-L'interface `PostgreSqlAdapter` prépare ce point d'extension sans ouvrir de connexion.
+L'interface `PostgreSqlAdapter` prépare ce point d'extension sans implémenter
+l'accès métier. Depuis la [0.4](INFRASTRUCTURE.md), `PostgreSqlDatabase` ouvre
+un pool interne pour les migrations et la readiness. Les comptes migration et
+Core sont distincts ; aucune transaction métier ni isolation d'organisation
+n'est encore implémentée et aucun SQL n'est exposé au SDK.
 Le type générique des lignes ne remplace pas une validation des résultats SQL.
 
 Les événements portent un identifiant, une version, une organisation, un module

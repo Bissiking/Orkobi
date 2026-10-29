@@ -12,6 +12,7 @@ export default tseslint.config(
       '.agents/**',
       '.playwright-cli/**',
       'output/playwright/**',
+      'output/infrastructure/**',
       '.impeccable/**',
     ],
   },

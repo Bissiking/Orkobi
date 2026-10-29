@@ -10,12 +10,15 @@ import { CoreExceptionFilter } from './errors.js';
 import { JsonLogger } from './logger.js';
 
 export async function createApplication(config: CoreConfig, logger = new JsonLogger()) {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger,
-    abortOnError: false,
-    // Le parseur est enregistré après le middleware de corrélation.
-    bodyParser: false,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.register(config.database),
+    {
+      logger,
+      abortOnError: false,
+      // Le parseur est enregistré après le middleware de corrélation.
+      bodyParser: false,
+    },
+  );
   app.disable('x-powered-by');
   app.useSecurityHeaders({
     // Le transport de ce socle est HTTP local ; la politique TLS relève du déploiement futur.
@@ -46,7 +49,7 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
       new DocumentBuilder()
         .setTitle('Orkobi Core — API interne')
         .setDescription(
-          'Fondations techniques ; aucune authentification ou connexion SQL disponible.',
+          'Fondations techniques ; vitalité HTTP et disponibilité PostgreSQL, sans authentification métier.',
         )
         .setVersion('0.1.0-EXP')
         .build(),

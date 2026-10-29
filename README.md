@@ -7,7 +7,8 @@
 Fondations d'un ERP open source, modulaire et multi-organisation, indépendant de
 LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK et un premier
 Core NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
-0.1 à 0.3 de la phase 0 sont terminées. PostgreSQL, l'installation,
+0.1 à 0.4 de la phase 0 sont terminées. PostgreSQL, les migrations et une pile
+Docker Compose locale sont disponibles. L'installation applicative,
 l'authentification et les fonctionnalités métier restent à construire.
 
 ## Démarrage
@@ -48,6 +49,19 @@ défaut ; avec `CORE_OPENAPI_ENABLED=true`, Swagger est disponible sur
 `/internal/docs` et le document JSON sur `/internal/openapi.json`.
 Voir [le guide du Core](DOCS/CORE.md) pour la configuration et les limites.
 
+Pour lancer toute la pile avec PostgreSQL et persistance :
+
+```sh
+pnpm infra:init
+pnpm infra:up
+```
+
+Ouvrir `http://127.0.0.1:3000`. `infra:init` conserve tout `.env` existant :
+dans ce cas, compléter les variables SQL manquantes. `pnpm infra:down` arrête
+la pile en conservant les données. `pnpm infra:test` vérifie migrations,
+redémarrage et persistance dans un projet Docker isolé.
+Voir [l'installation et l'exploitation locales](DOCS/INFRASTRUCTURE.md).
+
 ## Organisation
 
 ```text
@@ -55,7 +69,7 @@ apps/core/             Core NestJS, services internes, vitalité, erreurs et Ope
 apps/bff/              BFF NestJS, contrat HTTP et service des fichiers web compilés
 apps/web/              React/Vite, routage, thèmes et traductions FR/EN
 lib/contracts/         Identifiants, contexte, erreurs et résultats
-lib/database/          Contrats SQL et transactions internes
+lib/database/          Contrats SQL, pool PostgreSQL et migrations internes
 lib/security/          Rôles, permissions et refus par défaut
 lib/identity/          Utilisateurs, organisations, appartenances, références OIDC
 lib/events/            Contrats de publication et d'abonnement
@@ -64,6 +78,7 @@ sdk/core/              Façade des futurs services du Core
 modules/               Emplacement réservé aux fonctionnalités métier
 tests/                 Tests exécutables et tests de contrats TypeScript
 scripts/               Supervision locale de la compilation et du Core
+infra/postgres/        Initialisation des comptes SQL locaux
 DOCS/                  Roadmap, architecture, conventions SDK et rapport initial
 CHANGELOG.md           Historique des modifications et validations
 ```

@@ -1,6 +1,10 @@
 // lib/database/src/index.ts
 import type { OrganizationContext, OrganizationId } from '@orkobi/contracts';
 
+export { DatabaseConfigurationError, loadDatabaseConfig } from './config.js';
+export type { PostgreSqlConfig } from './config.js';
+export { PostgreSqlDatabase } from './postgres.js';
+
 export type SqlParameter = string | number | boolean | bigint | Date | Uint8Array | null;
 
 /** SQL interne uniquement ; les valeurs doivent être liées via parameters. */

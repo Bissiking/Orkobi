@@ -42,8 +42,9 @@ pnpm start:bff
 
 Le BFF sert alors `apps/web/dist` et les routes frontend sur son port, y compris
 un accès direct ou un rechargement sur `/settings` ou `/modules`. Le packaging
-actuel suppose le monorepo présent avec son manifeste racine et le build web ;
-aucune image Docker ni procédure de déploiement de production n'est fournie.
+actuel suppose le monorepo présent avec son manifeste racine et le build web.
+Le [lot infrastructure 0.4](INFRASTRUCTURE.md) ajoute une image et une procédure
+Compose locales ; aucun déploiement de production n'est annoncé.
 
 ## Configuration
 
@@ -113,6 +114,11 @@ URL, en-tête ou exception brute. Les routes `/api/*` inconnues restent des 404
 JSON. Les ressources statiques absentes restent des erreurs, pas une réponse
 HTML de substitution. Le fallback HTML concerne uniquement les routes de page.
 Les deux sondes HTTP ne vérifient aucune base SQL ni préparation métier.
+
+Depuis la 0.4, `/api/ready` vérifie distinctement `/health/ready` du Core, qui
+contrôle PostgreSQL et les migrations. Cette sonde renvoie 200 avec
+`{ status: 'ok', service: 'orkobi-bff' }` si la chaîne est disponible, sinon 503.
+`/api/health` et le bootstrap conservent leur comportement de vitalité décrit ici.
 
 ## Routes et interactions
 

@@ -33,6 +33,17 @@ class ApiController {
     return { status: 'ok', service: 'orkobi-bff' } as const;
   }
 
+  @Get('ready')
+  async ready(@Res({ passthrough: true }) response: Response) {
+    const core = await probeCore(
+      this.config,
+      String(response.locals.correlationId),
+      '/health/ready',
+    );
+    if (core.status !== 'ok') throw new ServiceUnavailableException();
+    return { status: 'ok', service: 'orkobi-bff' } as const;
+  }
+
   @Get('bootstrap')
   async bootstrap(@Res({ passthrough: true }) response: Response): Promise<BffBootstrap> {
     const core = await probeCore(this.config, String(response.locals.correlationId));

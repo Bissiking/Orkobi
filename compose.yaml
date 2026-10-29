@@ -1,0 +1,100 @@
+name: orkobi
+
+x-app: &app
+  image: orkobi-local:0.1.0-exp
+  build: .
+  init: true
+
+services:
+  postgres:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_DB: ${DB_NAME:-orkobi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configurer POSTGRES_PASSWORD dans .env}
+      ORKOBI_MIGRATION_PASSWORD: ${MIGRATION_DB_PASSWORD:?Configurer MIGRATION_DB_PASSWORD dans .env}
+      ORKOBI_APP_PASSWORD: ${DB_PASSWORD:?Configurer DB_PASSWORD dans .env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/10-orkobi.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: [node, scripts/database.mjs, migrate]
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-orkobi}
+      MIGRATION_DB_USER: orkobi_migrator
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Configurer MIGRATION_DB_PASSWORD dans .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  core:
+    <<: *app
+    environment:
+      CORE_HOST: 0.0.0.0
+      CORE_PORT: 3001
+      CORE_OPENAPI_ENABLED: 'false'
+      DB_ENABLED: 'true'
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-orkobi}
+      DB_USER: orkobi_app
+      DB_PASSWORD: ${DB_PASSWORD:?Configurer DB_PASSWORD dans .env}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, 'http://127.0.0.1:3001/health/ready', orkobi-core]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  bff:
+    <<: *app
+    command: [node, apps/bff/dist/main.js]
+    environment:
+      BFF_HOST: 0.0.0.0
+      BFF_PORT: 3000
+      CORE_URL: http://core:3001
+      CORE_TIMEOUT_MS: 4000
+    ports:
+      - '127.0.0.1:${BFF_PUBLISHED_PORT:-3000}:3000'
+    depends_on:
+      core:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, 'http://127.0.0.1:3000/api/ready', orkobi-bff]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  test-db:
+    <<: *app
+    profiles: [test]
+    command: [node, --test, tests/database.integration.mjs]
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-orkobi}
+      MIGRATION_DB_USER: orkobi_migrator
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Configurer MIGRATION_DB_PASSWORD dans .env}
+      DB_USER: orkobi_app
+      DB_PASSWORD: ${DB_PASSWORD:?Configurer DB_PASSWORD dans .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

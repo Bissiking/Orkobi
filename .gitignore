@@ -3,6 +3,7 @@
 .agents/*
 .playwright-cli/
 output/playwright/
+output/infrastructure/
 /.impeccable/*
 !/.impeccable/config.json
 !/.impeccable/design.json

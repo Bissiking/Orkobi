@@ -69,13 +69,13 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 0.4 — Infrastructure
 
-- [ ] Configurer PostgreSQL.
-- [ ] Créer le système de migrations.
-- [ ] Configurer Docker Compose.
-- [ ] Configurer les volumes persistants.
-- [ ] Ajouter les contrôles de santé des services.
-- [ ] Vérifier le redémarrage complet de l'environnement.
-- [ ] Documenter la procédure d'installation.
+- [x] Configurer PostgreSQL.
+- [x] Créer le système de migrations.
+- [x] Configurer Docker Compose.
+- [x] Configurer les volumes persistants.
+- [x] Ajouter les contrôles de santé des services.
+- [x] Vérifier le redémarrage complet de l'environnement.
+- [x] Documenter la procédure d'installation.
 
 ---
 
@@ -332,9 +332,10 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Étapes techniques 0.1, 0.2 et 0.3 terminées ; poursuivre l’infrastructure 0.4.**
+**Étapes techniques 0.1 à 0.4 terminées ; poursuivre l'installation initiale 1.1.**
 
-Prochain objectif concret : PostgreSQL, migrations et environnement Docker Compose.
+Prochain objectif concret : détection d'instance initialisée, assistant
+d'installation et premier administrateur plateforme.
 La version produit 0.1.0-EXP complète reste ouverte : installation, identité,
 administration et isolation réelle des organisations ne sont pas encore implémentées.
 
@@ -342,5 +343,8 @@ Les preuves et limites du Core figurent dans [CORE.md](CORE.md) et la
 [revue 0.1/0.2](REVIEW_PHASE_0.md). Le [guide frontend/BFF](FRONTEND_BFF.md)
 décrit la livraison 0.3, ses tests HTTP et navigateur, et les services métier
 qui restent indisponibles.
+
+Le [guide infrastructure](INFRASTRUCTURE.md) décrit PostgreSQL, les migrations,
+Compose et la recette réelle de redémarrage avec conservation des données.
 
 **Orkobi s'adapte à vous.**

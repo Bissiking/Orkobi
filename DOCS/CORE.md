@@ -72,6 +72,11 @@ la politique HTTPS du futur déploiement reste à définir.
 C'est une sonde de vitalité du processus HTTP. Aucune base SQL, migration,
 authentification ou préparation métier n'est vérifiée.
 
+Depuis le [lot infrastructure 0.4](INFRASTRUCTURE.md), une sonde distincte
+`GET /health/ready` vérifie la connexion PostgreSQL et le registre des migrations.
+Elle renvoie le même corps que `/health` avec HTTP 200 si le schéma est à jour,
+sinon une erreur publique 503 `unavailable`. SQL désactivé signifie également 503. Les variables `DB_*` et les comptes sont détaillés dans le guide infrastructure.
+
 Chaque requête reçoit un UUID créé par le serveur dans `x-request-id` et
 `Cache-Control: no-store`. Un identifiant envoyé par le client n'est pas repris.
 Le middleware précède le parseur JSON, limité à 100 Ko : les erreurs de parsing
@@ -162,6 +167,7 @@ contraintes des consommateurs TypeScript.
 
 Le [changelog](../CHANGELOG.md) et la [revue 0.1/0.2](REVIEW_PHASE_0.md)
 consignent les commandes et contrôles de ce lot.
-Aucune connexion PostgreSQL, persistance, identité réelle, façade métier,
-installation initiale ou isolation multi-organisation n'est livré par le Core.
+La connexion PostgreSQL et les migrations techniques sont désormais fournies
+par la [0.4](INFRASTRUCTURE.md). Aucune identité réelle, façade métier,
+installation initiale ou isolation multi-organisation n'est livrée par le Core.
 Le BFF et React sont désormais disponibles dans le [lot 0.3](FRONTEND_BFF.md). Aucune publication ou validation de production n'est revendiquée.
