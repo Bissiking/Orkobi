@@ -6,8 +6,13 @@ import { test } from 'node:test';
 import { pathToFileURL, URL } from 'node:url';
 
 const directories = [
-  'lib/contracts', 'lib/database', 'lib/security', 'lib/identity',
-  'lib/events', 'sdk/core', 'sdk/types',
+  'lib/contracts',
+  'lib/database',
+  'lib/security',
+  'lib/identity',
+  'lib/events',
+  'sdk/core',
+  'sdk/types',
 ];
 
 for (const directory of directories) {
@@ -32,7 +37,9 @@ for (const directory of directories) {
 }
 
 const requireContracts = createRequire(new URL('../lib/contracts/package.json', import.meta.url));
-const { createId } = await import(pathToFileURL(requireContracts.resolve('@orkobi/contracts')).href);
+const { createId } = await import(
+  pathToFileURL(requireContracts.resolve('@orkobi/contracts')).href
+);
 
 test('identifiants : préserve les valeurs et rejette les valeurs vides ou mal délimitées', () => {
   assert.equal(createId('org-unique-a'), 'org-unique-a');

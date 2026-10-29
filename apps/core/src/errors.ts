@@ -1,0 +1,38 @@
+import { Catch, HttpException } from '@nestjs/common';
+import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+import type { CoreError, ErrorCode } from '@orkobi/contracts';
+import type { Response } from 'express';
+import type { JsonLogger } from './logger.js';
+
+const errors: Readonly<Record<number, readonly [ErrorCode, string]>> = {
+  400: ['invalid_argument', 'Requête invalide.'],
+  401: ['unauthenticated', 'Authentification requise.'],
+  403: ['forbidden', 'Accès refusé.'],
+  404: ['not_found', 'Ressource introuvable.'],
+  405: ['invalid_argument', 'Méthode non autorisée.'],
+  409: ['conflict', 'Conflit avec l’état actuel de la ressource.'],
+  413: ['invalid_argument', 'Requête trop volumineuse.'],
+  415: ['invalid_argument', 'Format de requête non pris en charge.'],
+  422: ['invalid_argument', 'Requête invalide.'],
+  429: ['rate_limited', 'Trop de requêtes.'],
+  503: ['unavailable', 'Service temporairement indisponible.'],
+};
+
+@Catch()
+export class CoreExceptionFilter implements ExceptionFilter {
+  constructor(private readonly logger: JsonLogger) {}
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const response = host.switchToHttp().getResponse<Response>();
+    const status = exception instanceof HttpException ? exception.getStatus() : 500;
+    const [code, message] = errors[status] ?? ['internal_error', 'Erreur interne du serveur.'];
+    const correlationId = String(response.locals.correlationId);
+    const error: CoreError = { code, message, correlationId };
+    this.logger.event(status >= 500 ? 'error' : 'warn', 'http_error', {
+      status,
+      code,
+      correlationId,
+    });
+    response.status(status).json({ error });
+  }
+}

@@ -4,15 +4,20 @@
   "private": true,
   "description": "Orkobi - L'ERP qui s'adapte à vous.",
   "scripts": {
+    "dev": "node scripts/dev-core.mjs",
+    "start:core": "pnpm --filter @orkobi/core start",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm build && pnpm -r typecheck",
     "lint": "eslint . --max-warnings 0",
     "test:types": "pnpm --filter @orkobi/contract-tests typecheck",
     "test": "pnpm build && pnpm test:types && node --test tests/*.test.mjs",
-    "check": "pnpm lint && pnpm test"
+    "check": "pnpm format:check && pnpm lint && pnpm test"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "devDependencies": {
+    "prettier": "3.9.10",
     "@eslint/js": "10.0.1",
     "eslint": "10.13.0",
     "typescript": "6.0.3",

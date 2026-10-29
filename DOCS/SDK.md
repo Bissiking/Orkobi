@@ -1,4 +1,5 @@
 <!-- DOCS/SDK.md -->
+
 # Conventions SDK — 0.1.0-EXP
 
 Le SDK est expérimental, privé et susceptible d'évoluer. Il est indépendant de
@@ -36,10 +37,10 @@ la traduction des erreurs d'infrastructure incombera à l'implémentation du Cor
 
 ## Capabilities et permissions
 
-| Notion | Convention | Sens |
-| --- | --- | --- |
-| Capability | `namespace.nom`, par exemple `core.identity` | Service technique disponible |
-| Exigence | `{ key, required }` | Besoin obligatoire ou facultatif d'un module |
+| Notion     | Convention                                      | Sens                                                  |
+| ---------- | ----------------------------------------------- | ----------------------------------------------------- |
+| Capability | `namespace.nom`, par exemple `core.identity`    | Service technique disponible                          |
+| Exigence   | `{ key, required }`                             | Besoin obligatoire ou facultatif d'un module          |
 | Permission | `ressource:action`, par exemple `contacts:read` | Droit soumis à une autorisation dans une organisation |
 
 Ces noms sont des conventions initiales. Les types vérifient la présence du
@@ -52,6 +53,25 @@ future du module, une exigence facultative pourra réduire ses fonctionnalités.
 droits lors de chaque opération pour gérer changements de rôle et révocations.
 La façade actuelle propose des lectures d'identité, de permissions et de
 capabilities ; elle n'expose aucun service SQL ou système et aucun chargeur de module.
+
+## Raccord applicatif du Core
+
+`apps/core/src/services/contracts.ts` définit les interfaces internes contextualisées
+`CoreIdentityService`, `CoreOrganizationService`, `CorePermissionService` et
+`CoreCapabilityService`, avec des jetons d'injection NestJS séparés du SDK public.
+`CoreServicesModule` les enregistre avec des fournisseurs qui renvoient
+`Result` en erreur `unavailable`, sans inventer d'identité ni de permission.
+
+`CoreSdkFactory.forAuthorizedContext(context)` adapte ces interfaces vers `CoreSdk`.
+La façade et sa copie explicite du contexte sont gelées. Chaque appel transmet
+le même utilisateur, la même organisation et la corrélation éventuelle au service
+concerné, sans mettre en cache les décisions de permission. La factory est interne :
+elle ne vérifie ni session ni appartenance. Le futur point d'entrée du Core devra
+établir et autoriser le contexte, et les implémentations métier devront contrôler
+son état et ses droits courants. Aucun endpoint de création de façade n'est exposé.
+
+Ces contrats préparent les services métier ; ils ne fournissent pas encore de
+registre de capabilities ou d'accès aux données. Voir [CORE.md](CORE.md).
 
 ## Organisation et compatibilité
 

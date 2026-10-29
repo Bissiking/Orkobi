@@ -1,4 +1,8 @@
 # .gitignore
+.DS_Store
+.agents/*
+.playwright-cli/
+output/playwright/
 node_modules/
 dist/
 coverage/

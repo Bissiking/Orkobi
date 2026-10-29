@@ -41,20 +41,20 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 - [x] Configurer pnpm Workspaces.
 - [x] Créer le monorepo.
 - [x] Configurer TypeScript et les outils de qualité.
-- [ ] Configurer ESLint et Prettier (ESLint configuré ; Prettier reste à ajouter).
-- [ ] Ajouter `.gitignore` et `.env.example`.
+- [x] Configurer ESLint et Prettier.
+- [x] Ajouter `.gitignore` et `.env.example`.
 - [x] Définir les conventions de développement des bibliothèques et du SDK.
-- [ ] Préparer les scripts communs de développement et de test (build/lint/test disponibles ; dev attend les applications).
+- [x] Préparer les scripts communs de développement et de test (Core démarrable via `pnpm dev`).
 
 ## 0.2 — Backend Core
 
-- [ ] Initialiser NestJS.
-- [ ] Mettre en place la configuration des environnements.
-- [ ] Créer un gestionnaire d'erreurs commun.
-- [ ] Implémenter la journalisation structurée.
-- [ ] Créer `/health`.
-- [ ] Initialiser la documentation OpenAPI interne.
-- [ ] Préparer les interfaces des services du Core.
+- [x] Initialiser NestJS.
+- [x] Mettre en place la configuration des environnements.
+- [x] Créer un gestionnaire d'erreurs commun.
+- [x] Implémenter la journalisation structurée.
+- [x] Créer `/health` (vitalité du processus uniquement).
+- [x] Initialiser la documentation OpenAPI interne (activation explicite).
+- [x] Préparer les interfaces des services du Core (contrats applicatifs, injection NestJS et adaptation vers le SDK ; services métier explicitement indisponibles).
 
 ## 0.3 — Frontend et BFF
 
@@ -332,8 +332,13 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Fondations lib/ et sdk/ initialisées ; poursuivre la phase 0 avec les applications.**
+**Étapes techniques 0.1 et 0.2 terminées et revues ; poursuivre BFF, frontend et infrastructure.**
 
-Premier objectif concret : obtenir le Core NestJS, le frontend React et PostgreSQL dans un environnement de développement reproductible.
+Prochain objectif concret : initialiser le BFF et le frontend React, puis PostgreSQL
+et les migrations. La 0.1.0-EXP complète reste ouverte : installation, identité,
+administration et isolation des organisations ne sont pas encore implémentées.
+
+La preuve de ce lot Core et ses limites figurent dans [CORE.md](CORE.md).
+La revue des étapes 0.1/0.2 et ses validations figurent dans [REVIEW_PHASE_0.md](REVIEW_PHASE_0.md).
 
 **Orkobi s'adapte à vous.**

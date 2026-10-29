@@ -1,10 +1,23 @@
 // sdk/types/src/index.ts
-import type { CapabilityKey, ModuleId, OrganizationId, PermissionKey, UserId } from '@orkobi/contracts';
+import type {
+  CapabilityKey,
+  ModuleId,
+  OrganizationId,
+  PermissionKey,
+  UserId,
+} from '@orkobi/contracts';
 
 // Liste publique explicite ; aucun export global des bibliothèques internes.
 export type {
-  CapabilityKey, CoreError, ErrorCode, ModuleId, OrganizationContext,
-  OrganizationId, PermissionKey, Result, UserId,
+  CapabilityKey,
+  CoreError,
+  ErrorCode,
+  ModuleId,
+  OrganizationContext,
+  OrganizationId,
+  PermissionKey,
+  Result,
+  UserId,
 } from '@orkobi/contracts';
 
 export interface UserSummary {

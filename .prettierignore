@@ -1,0 +1,9 @@
+node_modules/
+.agents/
+.playwright-cli/
+output/playwright/
+dist/
+coverage/
+pnpm-lock.yaml
+DOCS/BOOTSTRAP.md
+DOCS/Cahier_des_charges.md

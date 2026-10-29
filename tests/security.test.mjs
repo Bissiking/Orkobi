@@ -5,22 +5,32 @@ import { test } from 'node:test';
 import { pathToFileURL, URL } from 'node:url';
 
 const require = createRequire(new URL('../lib/security/package.json', import.meta.url));
-const { evaluateAuthorization } = await import(pathToFileURL(require.resolve('@orkobi/security')).href);
+const { evaluateAuthorization } = await import(
+  pathToFileURL(require.resolve('@orkobi/security')).href
+);
 const context = { organizationId: 'org-a', userId: 'user-a' };
 const request = { context, permission: 'contacts:read' };
 const membership = {
-  id: 'member-a', ...context, status: 'active', roleIds: ['reader'],
+  id: 'member-a',
+  ...context,
+  status: 'active',
+  roleIds: ['reader'],
 };
 const role = {
-  id: 'reader', organizationId: 'org-a', name: 'Lecteur', permissions: ['contacts:read'],
+  id: 'reader',
+  organizationId: 'org-a',
+  name: 'Lecteur',
+  permissions: ['contacts:read'],
 };
 
 test('refus par défaut sans appartenance ou sans rôle', () => {
   assert.deepEqual(evaluateAuthorization(request, [], [role]), {
-    allowed: false, reason: 'no_active_membership',
+    allowed: false,
+    reason: 'no_active_membership',
   });
   assert.deepEqual(evaluateAuthorization(request, [membership], []), {
-    allowed: false, reason: 'permission_denied',
+    allowed: false,
+    reason: 'permission_denied',
   });
 });
 
@@ -30,16 +40,22 @@ test('accord pour une permission explicite dans la bonne organisation', () => {
 
 test('refus des appartenances suspendues, des autres utilisateurs et organisations', () => {
   for (const change of [
-    { status: 'suspended' }, { userId: 'user-b' }, { organizationId: 'org-b' },
+    { status: 'suspended' },
+    { userId: 'user-b' },
+    { organizationId: 'org-b' },
   ]) {
-    assert.equal(evaluateAuthorization(request, [{ ...membership, ...change }], [role]).allowed, false);
+    assert.equal(
+      evaluateAuthorization(request, [{ ...membership, ...change }], [role]).allowed,
+      false,
+    );
   }
 });
 
 test('un rôle de même identifiant dans une autre organisation ne donne aucun droit', () => {
-  assert.equal(evaluateAuthorization(request, [membership], [
-    { ...role, organizationId: 'org-b' },
-  ]).allowed, false);
+  assert.equal(
+    evaluateAuthorization(request, [membership], [{ ...role, organizationId: 'org-b' }]).allowed,
+    false,
+  );
 });
 
 test('aucun droit implicite, wildcard ou rôle non attribué', () => {

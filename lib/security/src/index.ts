@@ -28,20 +28,22 @@ export function evaluateAuthorization(
   memberships: readonly Membership[],
   roles: readonly Role[],
 ): AuthorizationDecision {
-  const activeMemberships = memberships.filter((membership) =>
-    membership.userId === request.context.userId &&
-    membership.organizationId === request.context.organizationId &&
-    membership.status === 'active',
+  const activeMemberships = memberships.filter(
+    (membership) =>
+      membership.userId === request.context.userId &&
+      membership.organizationId === request.context.organizationId &&
+      membership.status === 'active',
   );
 
   if (activeMemberships.length === 0) {
     return { allowed: false, reason: 'no_active_membership' };
   }
 
-  const allowed = roles.some((role) =>
-    role.organizationId === request.context.organizationId &&
-    activeMemberships.some((membership) => membership.roleIds.includes(role.id)) &&
-    role.permissions.includes(request.permission),
+  const allowed = roles.some(
+    (role) =>
+      role.organizationId === request.context.organizationId &&
+      activeMemberships.some((membership) => membership.roleIds.includes(role.id)) &&
+      role.permissions.includes(request.permission),
   );
 
   return allowed ? { allowed: true } : { allowed: false, reason: 'permission_denied' };

@@ -29,7 +29,15 @@ export interface OrganizationContext {
   readonly correlationId?: string;
 }
 
-export type ErrorCode = 'invalid_argument' | 'forbidden' | 'not_found' | 'conflict' | 'unavailable';
+export type ErrorCode =
+  | 'invalid_argument'
+  | 'unauthenticated'
+  | 'forbidden'
+  | 'not_found'
+  | 'conflict'
+  | 'rate_limited'
+  | 'unavailable'
+  | 'internal_error';
 
 export interface CoreError {
   readonly code: ErrorCode;
@@ -38,5 +46,4 @@ export interface CoreError {
 }
 
 export type Result<Value> =
-  | { readonly ok: true; readonly value: Value }
-  | { readonly ok: false; readonly error: CoreError };
+  { readonly ok: true; readonly value: Value } | { readonly ok: false; readonly error: CoreError };

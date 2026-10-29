@@ -24,8 +24,10 @@ export type { PublicDatabase, Id };
 export { publicCreateId };
 
 export const membership: Membership = {
-  id: createId<'membership'>('membership-a'), ...context,
-  status: 'active', roleIds: [createId<'role'>('reader')],
+  id: createId<'membership'>('membership-a'),
+  ...context,
+  status: 'active',
+  roleIds: [createId<'role'>('reader')],
 };
 
 export const requirements: ModuleRequirements = {
@@ -46,15 +48,22 @@ export function errorMessage(result: Result<UserId>): string {
 
 export async function useDatabase(adapter: DatabaseAdapter): Promise<number> {
   return adapter.transaction(context, async (transaction) => {
-    const result = await transaction.execute<{ count: number }>({ text: 'SELECT 1 AS count', parameters: [] });
+    const result = await transaction.execute<{ count: number }>({
+      text: 'SELECT 1 AS count',
+      parameters: [],
+    });
     return result.rowCount;
   });
 }
 
 export async function publish(publisher: EventPublisher): Promise<void> {
   await publisher.publish(context, {
-    id: createId<'event'>('event-a'), name: 'contacts.created', version: 1,
-    organizationId, source: requirements.moduleId,
-    occurredAt: '2026-10-28T00:00:00.000Z', payload: { contactId: 'contact-a' },
+    id: createId<'event'>('event-a'),
+    name: 'contacts.created',
+    version: 1,
+    organizationId,
+    source: requirements.moduleId,
+    occurredAt: '2026-10-28T00:00:00.000Z',
+    payload: { contactId: 'contact-a' },
   });
 }

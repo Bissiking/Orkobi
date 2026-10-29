@@ -1,7 +1,11 @@
 // sdk/core/src/index.ts
 import type {
-  CapabilityKey, OrganizationContext, OrganizationSummary,
-  PermissionKey, Result, UserSummary,
+  CapabilityKey,
+  OrganizationContext,
+  OrganizationSummary,
+  PermissionKey,
+  Result,
+  UserSummary,
 } from '@orkobi/sdk-types';
 
 export interface IdentityService {

@@ -1,9 +1,144 @@
 <!-- CHANGELOG.md -->
+
 # Changelog
 
 Chaque intervention doit ajouter une entrée datée avec les fichiers concernés,
 les raisons des changements, les validations exécutées et les limites restantes.
 Les modifications en cours restent dans « Non publié » jusqu'à une version décidée.
+
+## Non publié — 0.1.0-EXP — 2026-10-29
+
+### Initialisation de la stratégie Git
+
+- Diagnostic après fetch : `main` et `origin/main` au même commit `bc1ada4`,
+  seule branche distante existante ; lot 0.1/0.2 encore non commité au départ.
+- Dix manifests privés vérifiés en `0.1.0-EXP`, numéro conservé. Les versions
+  OpenAPI et des guides sont recensées ; aucun mécanisme de publication ajouté.
+- `DOCS/{VERSIONING,GIT_BOOTSTRAP,RELEASE_CHECKLIST}.md` : plan local, bases de
+  `develop`, `matheo`, `devops`, PR, proposition de protection de `main`,
+  synchronisation par merge sans réécriture, releases et hotfixes, contrôles de
+  cohérence de versions et autorisations de publication. Aucun workflow CI
+  imaginaire n'est annoncé comme actif.
+- `DOCS/ORKOBI_VERSIONING.md`, `README.md` : renvois vers les règles opérationnelles
+  issues du diagnostic ; la proposition générale de distribution reste distincte.
+- `.gitignore` : fichiers macOS `.DS_Store` exclus sans les supprimer.
+- Validation locale avant commit : `pnpm check` (formatage, lint, compilation,
+  contrats TypeScript et 27 tests), `pnpm typecheck`, dix versions contrôlées
+  et `git diff --check` réussis.
+- Le commit local regroupe les fondations et leur suivi documentaire. Les
+  commandes locales de pull/création des branches sont décrites dans le plan ;
+  leurs SHA effectifs sont vérifiables dans Git et dans le compte rendu.
+- Les pushes, la PR distante et l'activation des protections restent en attente
+  de validation explicite. Aucun tag, déploiement, suppression de branche,
+  rebase, reset, amend ou push forcé n'est demandé ou effectué.
+
+### Revue de la phase 0 et clôture technique 0.2
+
+- Revue des étapes « 0.1 — Initialisation » et « 0.2 — Backend Core » avec les
+  skills `security-best-practices` (guide Express) et `playwright`. Le périmètre
+  correspond aux étapes de la roadmap, sans incrémenter la version produit.
+- `apps/core/src/services/{contracts.ts,services.module.ts}` : contrats applicatifs
+  contextualisés d'identité, d'organisation, de permissions et de capabilities,
+  jetons d'injection NestJS et exports pour les futurs managers du Core.
+- `apps/core/src/services/{unavailable-services.ts,sdk-factory.ts}` : fournisseurs
+  qui renvoient explicitement `unavailable`, et adaptation vers `CoreSdk` avec
+  copie gelée du contexte. Chaque appel délègue au service ; aucun résultat de
+  permission n'est mis en cache. Aucun faux utilisateur ni droit n'est créé.
+  La factory ne valide pas l'identité : le Core devra lui fournir un contexte
+  préalablement autorisé et revérifier les droits dans chaque service métier.
+- `apps/core/{package.json,src/app.module.ts}`, `pnpm-lock.yaml` : raccord du module
+  de services, dépendances explicites au SDK existant ; aucun paquet externe ajouté.
+- `apps/core/src/application.ts` : activation des en-têtes de sécurité intégrés à
+  NestJS 12.3.2, dont CSP, nosniff, protection de cadrage et politique de referrer.
+  HSTS et upgrade automatique vers HTTPS restent désactivés pour ce socle HTTP local.
+- `tests/core-services.test.mjs`, `tests/types/core-services.ts` : trois tests
+  exécutables et contrats de types ; injection Nest, indisponibilité, délégation,
+  immuabilité, contextes synthétiques distincts et propagation des erreurs.
+  `tests/core.test.mjs` contrôle aussi les en-têtes sur vitalité, erreurs et Swagger.
+- `.gitignore`, `.prettierignore`, `eslint.config.mjs` : exclusion des artefacts
+  temporaires Playwright, capture locale sous `output/playwright/`.
+- `DOCS/REVIEW_PHASE_0.md` : constats, corrections, preuves et limites de la revue.
+  `DOCS/{CORE,SDK,ARCHITECTURE,ROADMAP}.md`, `README.md` : documentation synchronisée ;
+  dernier point de la section technique 0.2 coché.
+- `DOCS/ORKOBI_VERSIONING.md`, brouillon apparu pendant la revue : formatage
+  Prettier uniquement pour le contrôle global ; aucune politique de release
+  adoptée ou automatisation ajoutée dans ce lot.
+
+Validation de cette revue :
+
+- `pnpm check` avant changements : 24 tests réussis ; après changements :
+  formatage, lint, huit compilations, contrats TypeScript et 27 tests réussis.
+- `pnpm typecheck`, `pnpm install --frozen-lockfile`, `pnpm peers check` : réussis.
+- `pnpm audit --prod` : aucune vulnérabilité connue signalée à la date du contrôle.
+- `pnpm dev` : HTTP 200 avant et après modification du mtime d'une nouvelle source,
+  recompilation et redémarrage sans boucle, arrêt Ctrl+C et port libéré.
+- Chrome headless via Playwright : Swagger affiché avec la CSP active, puis
+  « Try it out » / « Execute » sur `/health`, réponse réelle HTTP 200 et capture
+  `output/playwright/orkobi-core-swagger.png` (ignorée par Git).
+- `git diff --check` : réussi. Aucun commit, push, déploiement ou publication.
+
+Les sections suivantes décrivent le lot HTTP antérieur à cette revue. Leurs
+comptes de tests et limites correspondent à ce premier état. Les sections
+techniques 0.1/0.2 sont désormais terminées ; la version produit 0.1.0-EXP,
+les managers métier, l'authentification, PostgreSQL et l'isolation réelle
+multi-organisation restent ouverts.
+
+### Core HTTP et outillage
+
+- `apps/core/{package.json,tsconfig.json,src/*}` : première application NestJS ESM,
+  compilée avec les métadonnées des décorateurs. Configuration immuable et validée
+  avant écoute, interface locale par défaut, fermeture sur SIGINT/SIGTERM.
+- `GET /health` : sonde de vitalité du processus HTTP ; aucun accès SQL implicite.
+- Middleware de corrélation avant parsing JSON, UUID émis par le serveur,
+  en-tête `x-request-id`, absence de cache et limite JSON de 100 Ko.
+- Filtre global : réponses selon `CoreError`, messages publics fixes et erreurs
+  inattendues masquées. `lib/contracts/src/index.ts` ajoute les codes
+  `unauthenticated`, `rate_limited` et `internal_error` sans changer `Result`.
+- Logger JSON : démarrage, requêtes, erreurs et événements Nest sans URL, corps,
+  en-têtes ou détail brut d'exception. Ce journal technique n'est pas un audit métier.
+- OpenAPI interne et Swagger sur activation explicite ; toutes leurs routes sont
+  absentes par défaut. Aucune API d'intégration externe n'est créée.
+- `scripts/dev-core.mjs` et `package.json` : compilation puis démarrage, surveillance
+  explicite des sources et de `.env`, redémarrages sérialisés et arrêt des processus
+  enfants. Le premier essai avec le watch natif Node réagissait aux fichiers générés ;
+  remplacé après observation de la boucle de recompilation sur cette machine.
+- `.env.example`, `.prettierrc.json`, `.prettierignore` : configuration locale
+  documentée et formatage contrôlé par `pnpm check`. Les bibliothèques et tests
+  préexistants ont reçu le formatage initial ; leurs changements hors `contracts`
+  sont uniquement typographiques. Le rapport historique de bootstrap reste intact.
+- NestJS et adaptateur Express 12.3.2, Swagger 12.0.5, reflect-metadata 0.2.2,
+  RxJS 7.8.2 ; types Node 24.19.2/Express 5.0.6 et Prettier 3.9.10.
+  Versions exactes et lockfile actualisé. `pnpm-workspace.yaml` refuse explicitement
+  le script transitif de télémétrie `@scarf/scarf` via `allowBuilds` ; aucune
+  autorisation globale des scripts de dépendances.
+- `README.md`, `DOCS/CORE.md`, `DOCS/ARCHITECTURE.md`, `DOCS/ROADMAP.md` : démarrage,
+  configuration, contrats, preuves et périmètre restant. Retrait du `.gitkeep` du Core.
+
+### Validation locale
+
+- Environnement : macOS, Node.js 24.19.0, pnpm 12.16.1.
+- `pnpm install --frozen-lockfile` : réussi avec la politique de builds explicite.
+- `pnpm check` : formatage, lint sans avertissement, huit compilations, contrats
+  TypeScript et 24 tests Node.js réussis, dont 10 tests du Core.
+- `pnpm typecheck` et `pnpm peers check` : réussis, aucun conflit de peers.
+- Tests Core sur de vrais ports HTTP éphémères : vitalité, UUID, absence de détails
+  sensibles, OpenAPI activé/désactivé, 404, JSON invalide, corps trop gros et 500.
+  Tests des erreurs communes et processus avec configuration invalide ou port occupé.
+- `pnpm dev` exécuté sur loopback : HTTP 200 avant et après modification du mtime
+  d'une source, une recompilation sans boucle, arrêt Ctrl+C et port libéré.
+- `pnpm start:core` exécuté sur loopback avec OpenAPI activé : document JSON reçu
+  avec le schéma de `/health`, puis arrêt Ctrl+C. Aucun test navigateur revendiqué.
+- `git diff --check` : réussi. Aucun commit, push, déploiement ou publication.
+
+### Limites restantes
+
+- La section d'initialisation 0.1 de la phase 0 est terminée ; la version
+  0.1.0-EXP complète reste ouverte. Les interfaces applicatives des services métier,
+  BFF, React, PostgreSQL, migrations, installation, identité et administration
+  restent à construire ; aucune isolation multi-organisation réelle n'est prouvée.
+- Les logs masquent volontairement les messages arbitraires de Nest ; les échecs
+  de démarrage hors configuration sont génériques. Aucun test de production,
+  de navigateur ou de compatibilité Windows n'a été effectué.
 
 ## Non publié — 0.1.0-EXP — 2026-10-28
 

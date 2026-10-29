@@ -1,7 +1,11 @@
 # pnpm-workspace.yaml
 packages:
-  - "apps/*"
-  - "lib/*"
-  - "sdk/*"
-  - "modules/*"
-  - "tests/types"
+  - 'apps/*'
+  - 'lib/*'
+  - 'sdk/*'
+  - 'modules/*'
+  - 'tests/types'
+
+# Le script de télémétrie transitif de Swagger n'est pas nécessaire au Core.
+allowBuilds:
+  '@scarf/scarf': false

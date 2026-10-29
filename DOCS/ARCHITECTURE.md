@@ -1,11 +1,16 @@
 <!-- DOCS/ARCHITECTURE.md -->
+
 # Architecture des fondations
 
 ## Responsabilités
 
-Le futur **Core** sera l'autorité : identité vérifiée, organisation active,
-permissions, orchestration et accès aux ressources. NestJS est prévu pour son
-implémentation, sans dépendance NestJS dans les contrats.
+Le **Core** sera l'autorité : identité vérifiée, organisation active,
+permissions, orchestration et accès aux ressources. Son socle HTTP NestJS existe
+dans `apps/core`, sans dépendance NestJS dans les contrats. Il fournit uniquement
+la vitalité du processus, les erreurs, la corrélation, les en-têtes de sécurité
+et OpenAPI à ce stade. Les contrats applicatifs des services et leur adaptation
+vers le SDK sont raccordés à NestJS ; les services métier restent indisponibles.
+Le [guide Core](CORE.md) décrit ses points d'entrée et ses limites.
 
 **`lib/`** regroupe les mécanismes internes. Le package `contracts` n'accède à
 aucune base. `identity` décrit les appartenances et la paire OIDC `issuer/subject`,
@@ -15,7 +20,10 @@ transport futur, sans imposer de broker.
 
 **`sdk/`** expose des types sélectionnés et les interfaces d'une façade liée à
 une organisation. Il ne réexporte ni SQL, ni transaction, ni données OIDC internes.
-La façade n'a pas encore d'implémentation : le futur Core la fournira aux modules.
+`apps/core/src/services` fournit l'adaptateur de façade et les jetons d'injection.
+Les fournisseurs par défaut renvoient explicitement `unavailable` ; le Core futur
+devra authentifier et autoriser le contexte avant de créer une façade, puis
+revérifier les droits à chaque opération. L'adaptateur n'authentifie personne.
 
 Les **modules** porteront les fonctionnalités métier. Aucun chargeur dynamique,
 registre de capabilities ou Store n'est construit par ce bootstrap.
