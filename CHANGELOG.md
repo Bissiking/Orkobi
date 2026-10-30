@@ -8,6 +8,26 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.1.0-EXP — 2026-10-29
 
+### Corrections d'exploitation — 2026-10-30
+
+- `infra/postgres/init.sh` : mode exécutable `100755` versionné. Sous Docker
+  Desktop/macOS, le montage en lecture seule rendait le script inéxécutable
+  (`bad interpreter : Permission denied`) : les rôles `orkobi_app` et
+  `orkobi_migrator` n'étaient jamais créés et PostgreSQL repartait sur un volume
+  à moitié initialisé en restant « sain » au regard de `pg_isready`.
+- `compose.yaml` : le healthcheck PostgreSQL exige maintenant la présence des
+  deux rôles Orkobi en plus de `pg_isready`, pour refuser un volume dont l'initialisation
+  a échoué au lieu de laisser `migrate` échouer plus tard sans contexte.
+- `apps/bff/src/errors.ts`, `tests/bff.test.mjs` : table de codes d'erreur du
+  filtre BFF alignée sur celle du Core (`401`, `403`, `409`, `429` manquants) ;
+  un refus 403 relais retournait `internal_error` au lieu de `forbidden`.
+  Test de non-régression ajouté sur l'écriture platform sans origine.
+- Validations : `pnpm check` (format, lint, build, 48 tests), `pnpm typecheck`,
+  `pnpm infra:test` (10 contrôles : migrations, rollback, concurrence, empreintes,
+  rôles, HTTP, panne SQL, redémarrage, recréation des conteneurs, persistance du
+  volume) et parcours navigateur réel (installation, connexion, reconnexion après
+  `down`/`up` complet).
+
 ### Phase 1 — plateforme administrable et multi-organisation
 
 - `lib/database/src/platform-migration.ts`, migrations et dépôt : migration

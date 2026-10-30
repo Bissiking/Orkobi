@@ -6,8 +6,12 @@ import type { JsonLogger } from './logger.js';
 
 const messages: Readonly<Record<number, readonly [ErrorCode, string]>> = {
   400: ['invalid_argument', 'Requête invalide.'],
+  401: ['unauthenticated', 'Authentification requise.'],
+  403: ['forbidden', 'Accès refusé.'],
   404: ['not_found', 'Ressource introuvable.'],
+  409: ['conflict', 'Conflit avec l’état actuel de la ressource.'],
   413: ['invalid_argument', 'Requête trop volumineuse.'],
+  429: ['rate_limited', 'Trop de requêtes.'],
   503: ['unavailable', 'Service temporairement indisponible.'],
 };
 

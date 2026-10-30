@@ -46,12 +46,12 @@ reconstruit pas les images. Après une mise à jour du code, utiliser `infra:up`
 
 ## Services, réseau et stockage
 
-| Service    | Fonction                                          | Condition de démarrage / santé      |
-| ---------- | ------------------------------------------------- | ----------------------------------- |
-| `postgres` | PostgreSQL 18, volume `postgres_data`             | `pg_isready`                        |
-| `migrate`  | Migration ponctuelle, arrêt avec code 0 si succès | PostgreSQL sain                     |
-| `core`     | Core NestJS, pool SQL fermé à l'arrêt             | Migration réussie ; `/health/ready` |
-| `bff`      | BFF NestJS et React compilé                       | Core sain ; `/api/ready`            |
+| Service    | Fonction                                          | Condition de démarrage / santé                                    |
+| ---------- | ------------------------------------------------- | ----------------------------------------------------------------- |
+| `postgres` | PostgreSQL 18, volume `postgres_data`             | `pg_isready` et présence des rôles `orkobi_app`/`orkobi_migrator` |
+| `migrate`  | Migration ponctuelle, arrêt avec code 0 si succès | PostgreSQL sain                                                   |
+| `core`     | Core NestJS, pool SQL fermé à l'arrêt             | Migration réussie ; `/health/ready`                               |
+| `bff`      | BFF NestJS et React compilé                       | Core sain ; `/api/ready`                                          |
 
 Seul le BFF est publié, sur loopback. Core et PostgreSQL restent accessibles
 sur le réseau interne Compose. Aucun Redis, NoSQL, Store ou service cloud

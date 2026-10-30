@@ -223,6 +223,14 @@ test('BFF : routes React directes, CSP, ressources, erreurs API et absence de fi
   });
   assert.equal(malformed.status, 400);
   assert.equal((await malformed.json()).error.code, 'invalid_argument');
+  // Écriture platform sans origine : le refus 403 garde le code public `forbidden`.
+  const refused = await fetch(`${url}/api/platform/setup`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(refused.status, 403);
+  assert.equal((await refused.json()).error.code, 'forbidden');
   assert.ok(!JSON.stringify(logs).includes('secret-test'));
 });
 
