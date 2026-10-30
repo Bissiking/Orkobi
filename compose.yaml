@@ -44,6 +44,8 @@ services:
       CORE_HOST: 0.0.0.0
       CORE_PORT: 3001
       CORE_OPENAPI_ENABLED: 'false'
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      SESSION_SECURE: ${SESSION_SECURE:-false}
       DB_ENABLED: 'true'
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-orkobi}
@@ -68,6 +70,7 @@ services:
       BFF_PORT: 3000
       CORE_URL: http://core:3001
       CORE_TIMEOUT_MS: 4000
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
     ports:
       - '127.0.0.1:${BFF_PUBLISHED_PORT:-3000}:3000'
     depends_on:
@@ -84,7 +87,14 @@ services:
   test-db:
     <<: *app
     profiles: [test]
-    command: [node, --test, tests/database.integration.mjs]
+    command:
+      [
+        node,
+        --test,
+        --test-concurrency=1,
+        tests/database.integration.mjs,
+        tests/platform.integration.mjs,
+      ]
     environment:
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-orkobi}

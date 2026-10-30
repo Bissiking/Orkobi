@@ -85,65 +85,65 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 1.1 — Installation initiale
 
-- [ ] Détecter si une instance est déjà initialisée.
-- [ ] Créer un assistant d'installation.
-- [ ] Vérifier la connexion SQL.
-- [ ] Créer le premier administrateur plateforme.
-- [ ] Bloquer les nouvelles initialisations après installation.
-- [ ] Journaliser les opérations sensibles.
+- [x] Détecter si une instance est déjà initialisée.
+- [x] Créer un assistant d'installation.
+- [x] Vérifier la connexion SQL.
+- [x] Créer le premier administrateur plateforme.
+- [x] Bloquer les nouvelles initialisations après installation.
+- [x] Journaliser les opérations sensibles.
 
 ## 1.2 — Identity Manager
 
-- [ ] Créer les identifiants uniques des utilisateurs.
-- [ ] Implémenter l'authentification locale.
-- [ ] Sécuriser le stockage des mots de passe.
-- [ ] Implémenter les sessions serveur.
-- [ ] Configurer les cookies sécurisés et protections CSRF.
-- [ ] Implémenter connexion et déconnexion.
-- [ ] Implémenter l'expiration et la révocation des sessions.
-- [ ] Créer la page Profil.
-- [ ] Préparer le modèle des identités OIDC externes.
+- [x] Créer les identifiants uniques des utilisateurs.
+- [x] Implémenter l'authentification locale.
+- [x] Sécuriser le stockage des mots de passe.
+- [x] Implémenter les sessions serveur.
+- [x] Configurer les cookies sécurisés et protections CSRF.
+- [x] Implémenter connexion et déconnexion.
+- [x] Implémenter l'expiration et la révocation des sessions.
+- [x] Créer la page Profil.
+- [x] Préparer le modèle des identités OIDC externes.
 
 ## 1.3 — Organization Manager
 
-- [ ] Créer les identifiants uniques d'organisation.
-- [ ] Permettre la création d'une entreprise ou association.
-- [ ] Implémenter les appartenances utilisateur/organisation.
-- [ ] Permettre plusieurs organisations par utilisateur.
-- [ ] Gérer la sélection de l'organisation active.
-- [ ] Séparer les paramètres de chaque organisation.
-- [ ] Vérifier l'isolation des données entre organisations.
+- [x] Créer les identifiants uniques d'organisation.
+- [x] Permettre la création d'une entreprise ou association.
+- [x] Implémenter les appartenances utilisateur/organisation.
+- [x] Permettre plusieurs organisations par utilisateur.
+- [x] Gérer la sélection de l'organisation active.
+- [x] Séparer les paramètres de chaque organisation.
+- [x] Vérifier l'isolation des données entre organisations.
 
 ## 1.4 — Security Manager
 
-- [ ] Créer les rôles et permissions.
-- [ ] Séparer administrateur plateforme et administrateur organisation.
-- [ ] Implémenter les contrôles d'accès côté Core.
-- [ ] Refuser par défaut les opérations non autorisées.
-- [ ] Implémenter l'audit des actions sensibles.
-- [ ] Protéger les endpoints administratifs.
-- [ ] Tester les accès inter-organisations non autorisés.
+- [x] Créer les rôles et permissions.
+- [x] Séparer administrateur plateforme et administrateur organisation.
+- [x] Implémenter les contrôles d'accès côté Core.
+- [x] Refuser par défaut les opérations non autorisées.
+- [x] Implémenter l'audit des actions sensibles.
+- [x] Protéger les endpoints administratifs.
+- [x] Tester les accès inter-organisations non autorisés.
 
 ## 1.5 — Administration
 
-- [ ] Créer le dashboard administratif minimal.
-- [ ] Gérer les utilisateurs.
-- [ ] Gérer les organisations.
-- [ ] Gérer les appartenances et rôles.
-- [ ] Afficher l'état des services.
-- [ ] Afficher la version d'Orkobi.
-- [ ] Consulter les journaux d'audit.
+- [x] Créer le dashboard administratif minimal.
+- [x] Gérer les utilisateurs.
+- [x] Gérer les organisations.
+- [x] Gérer les appartenances et rôles.
+- [x] Afficher l'état des services.
+- [x] Afficher la version d'Orkobi.
+- [x] Consulter les journaux d'audit.
 
 ### Critères de validation V0.1.0
 
-- [ ] Installation initiale réussie.
-- [ ] Administrateur local fonctionnel.
-- [ ] Connexion et déconnexion fonctionnelles.
-- [ ] Création de deux organisations.
-- [ ] Gestion des utilisateurs et de leurs appartenances.
-- [ ] Isolation des organisations vérifiée par tests.
-- [ ] Redémarrage sans perte de données.
-- [ ] Tests automatisés essentiels réussis.
+- [x] Installation initiale réussie.
+- [x] Administrateur local fonctionnel.
+- [x] Connexion et déconnexion fonctionnelles.
+- [x] Création de deux organisations.
+- [x] Gestion des utilisateurs et de leurs appartenances.
+- [x] Isolation des organisations vérifiée par tests.
+- [x] Redémarrage sans perte de données.
+- [x] Tests automatisés essentiels réussis.
 
 ---
 
@@ -332,12 +332,12 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Étapes techniques 0.1 à 0.4 terminées ; poursuivre l'installation initiale 1.1.**
+**Phase 0 et Phase 1 terminées ; poursuivre le Module Manager 2.1.**
 
-Prochain objectif concret : détection d'instance initialisée, assistant
-d'installation et premier administrateur plateforme.
-La version produit 0.1.0-EXP complète reste ouverte : installation, identité,
-administration et isolation réelle des organisations ne sont pas encore implémentées.
+Prochain objectif concret : manifeste, registre des modules et activation par organisation.
+La plateforme expérimentale 0.1.0-EXP dispose de l'installation, de l'identité,
+de l'administration et d'une isolation applicative des organisations testée.
+Les conditions de publication et de production restent distinctes.
 
 Les preuves et limites du Core figurent dans [CORE.md](CORE.md) et la
 [revue 0.1/0.2](REVIEW_PHASE_0.md). Le [guide frontend/BFF](FRONTEND_BFF.md)
@@ -346,5 +346,9 @@ qui restent indisponibles.
 
 Le [guide infrastructure](INFRASTRUCTURE.md) décrit PostgreSQL, les migrations,
 Compose et la recette réelle de redémarrage avec conservation des données.
+
+Le [guide de Phase 1](PHASE_1.md) décrit installation, identité, organisations,
+délégation et administration ; les [preuves de sécurité](PHASE_1_SECURITY.md)
+précisent l'isolation applicative et les conditions restant ouvertes.
 
 **Orkobi s'adapte à vous.**

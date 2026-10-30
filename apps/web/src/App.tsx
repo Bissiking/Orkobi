@@ -14,14 +14,21 @@ import {
 } from 'lucide-react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
+import { ModulesPage, SettingsPage, StatusPage, NotFoundPage } from './pages';
 import {
-  HomePage,
-  ModulesPage,
-  OrganizationsPage,
-  SettingsPage,
-  StatusPage,
-  NotFoundPage,
-} from './pages';
+  PlatformGate,
+  InstallationPage,
+  LoginPage,
+  WorkspacePage,
+  ManagedOrganizationsPage,
+  OrganizationDetailPage,
+  ProfilePage,
+  AdministrationPage,
+  AccountControls,
+  OrganizationSelector,
+} from './platform/pages';
+import { usePlatform } from './platform/context';
+import { usePlatformCopy } from './platform/hooks';
 
 const navigation = [
   { to: '/', label: 'overview', icon: House },
@@ -52,14 +59,25 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 }
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const { messages: t } = usePreferences();
+  const p = usePlatformCopy(),
+    { session } = usePlatform();
+  const activeOrganization = session.organizations.find(
+    (org) => org.id === session.activeOrganizationId,
+  );
   return (
     <>
       <Brand {...(onNavigate ? { onNavigate } : {})} />
       <div className="workspace-label">
         <span className="workspace-symbol">O</span>
         <span>
-          {t.workspace}
-          <small>{t.preparation}</small>
+          {activeOrganization?.name ?? t.workspace}
+          <small>
+            {session.user
+              ? session.user.platformAdmin
+                ? p.platformAdmin
+                : session.user.name
+              : t.preparation}
+          </small>
         </span>
       </div>
       <nav aria-label={t.navigation} className="navigation">
@@ -72,6 +90,18 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
           ))}
         </div>
         <div className="nav-group nav-secondary">
+          {session.user?.platformAdmin && (
+            <NavLink to="/admin" onClick={onNavigate}>
+              <ShieldCheck size={18} />
+              {p.administration}
+            </NavLink>
+          )}
+          {session.user && (
+            <NavLink to="/profile" onClick={onNavigate}>
+              <Building2 size={18} />
+              {p.profile}
+            </NavLink>
+          )}
           {secondary.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} onClick={onNavigate}>
               <Icon size={18} />
@@ -107,20 +137,34 @@ function ConnectionNotice() {
 }
 export default function App() {
   const { messages: t, locale, setLocale, setTheme } = usePreferences();
+  const p = usePlatformCopy();
   const location = useLocation();
   const drawer = useRef<HTMLDialogElement>(null);
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(location.pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const page = [...navigation, ...secondary].find((item) => item.to === location.pathname)?.label;
+  const pageTitle = page
+    ? t[page]
+    : location.pathname === '/admin'
+      ? p.administration
+      : location.pathname === '/profile'
+        ? p.profile
+        : location.pathname === '/setup'
+          ? p.setup
+          : location.pathname === '/login'
+            ? p.signIn
+            : location.pathname.startsWith('/organizations/')
+              ? p.organizations
+              : t.notFoundTitle;
   useEffect(() => {
-    document.title = `${page ? t[page] : t.notFoundTitle} · Orkobi`;
+    document.title = `${pageTitle} · Orkobi`;
     if (previousPath.current !== location.pathname) {
       main.current?.focus();
       window.scrollTo(0, 0);
       previousPath.current = location.pathname;
     }
-  }, [location.pathname, page, t]);
+  }, [location.pathname, pageTitle]);
   useEffect(() => {
     const media = matchMedia('(min-width: 880px)');
     const close = () => {
@@ -174,9 +218,11 @@ export default function App() {
           <div className="breadcrumbs">
             <span>{t.workspace}</span>
             <ChevronRight size={14} aria-hidden="true" />
-            <strong>{page ? t[page] : 'Orkobi'}</strong>
+            <strong>{pageTitle}</strong>
           </div>
           <div className="topbar-controls">
+            <OrganizationSelector />
+            <AccountControls />
             <label className="language-control">
               <span className="sr-only">{t.language}</span>
               <select
@@ -201,17 +247,26 @@ export default function App() {
         </header>
         <main id="main" ref={main} tabIndex={-1} className="main-content">
           <ConnectionNotice />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/organizations" element={<OrganizationsPage />} />
-            <Route path="/modules" element={<ModulesPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/system" element={<StatusPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          <PlatformGate>
+            <Routes>
+              <Route path="/" element={<WorkspacePage />} />
+              <Route path="/setup" element={<InstallationPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/admin" element={<AdministrationPage />} />
+              <Route path="/organizations" element={<ManagedOrganizationsPage />} />
+              <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
+              <Route path="/modules" element={<ModulesPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/system" element={<StatusPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </PlatformGate>
           <footer className="page-footer">
             <span>Orkobi</span>
-            <span>{t.preparation}</span>
+            <span>
+              {t.version} {__APP_VERSION__}
+            </span>
           </footer>
         </main>
       </div>

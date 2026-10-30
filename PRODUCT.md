@@ -14,9 +14,9 @@ React avec Vite et TypeScript ; BFF NestJS séparé du Core NestJS, conformémen
 ## Users
 
 Entreprises, associations et autres organisations, d'après la roadmap.
-Hypothèse de travail pour ce premier shell : la personne qui prépare son espace
-et découvre les fonctionnalités futures. Le profil précis des administrateurs
-et les parcours métier restent à définir lors de leur implémentation.
+La Phase 1 sert les administrateurs plateforme, les administrateurs
+d'organisation et leurs membres. La personne qui prépare l'instance crée le
+premier compte ; elle crée ensuite les organisations et peut déléguer leur gestion.
 
 ## Product Purpose
 
@@ -32,12 +32,14 @@ le rendu dans le navigateur. Utilisation sur ordinateur et navigateur mobile.
 
 ## Capabilities and Constraints
 
-Le lot 0.3 fournit le shell, le routage persistant dans l'URL, le BFF, les échanges
-avec le Core et les préférences de thème et langue FR/EN. Le Core expose sa
-vitalité HTTP ; les services métier restent indisponibles. Ne pas inventer
-utilisateur connecté, organisation, modules installés, chiffres ou données réelles.
-L'authentification, PostgreSQL, l'installation et l'activation de modules restent
-hors de ce lot. Les contrôles doivent avoir un comportement effectif.
+Le shell conserve routage, BFF, thèmes et langue FR/EN. La Phase 1 ajoute
+installation, authentification locale, sessions serveur, profil, organisations,
+appartenances, permissions, rôles et audit persistants sur PostgreSQL. La création
+des comptes et organisations est réservée à l'administration plateforme ; les
+droits des organisations peuvent être délégués, conformément au choix utilisateur.
+Les écrans affichent uniquement les données réellement chargées et autorisées.
+Le catalogue de modules reste une présentation, sans installation ni activation.
+Les exemples des captures de recette sont des données synthétiques de test.
 
 ## Brand Commitments
 

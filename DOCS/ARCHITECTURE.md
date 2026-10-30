@@ -4,12 +4,13 @@
 
 ## Responsabilités
 
-Le **Core** sera l'autorité : identité vérifiée, organisation active,
+Le **Core** est l'autorité : identité vérifiée, organisation active,
 permissions, orchestration et accès aux ressources. Son socle HTTP NestJS existe
-dans `apps/core`, sans dépendance NestJS dans les contrats. Il fournit uniquement
-la vitalité du processus, les erreurs, la corrélation, les en-têtes de sécurité
-et OpenAPI à ce stade. Les contrats applicatifs des services et leur adaptation
-vers le SDK sont raccordés à NestJS ; les services métier restent indisponibles.
+dans `apps/core`, sans dépendance NestJS dans les contrats. Il fournit la vitalité,
+la readiness SQL, les erreurs, la corrélation, les en-têtes de sécurité et OpenAPI.
+La [Phase 1](PHASE_1.md) ajoute installation, identité locale, sessions,
+organisations, rôles, permissions et audit. Identité, organisation et permissions
+sont raccordées au SDK ; les capabilities et modules métier restent indisponibles.
 Le [guide Core](CORE.md) décrit ses points d'entrée et ses limites.
 
 **`lib/`** regroupe les mécanismes internes. Le package `contracts` n'accède à
@@ -21,9 +22,10 @@ transport futur, sans imposer de broker.
 **`sdk/`** expose des types sélectionnés et les interfaces d'une façade liée à
 une organisation. Il ne réexporte ni SQL, ni transaction, ni données OIDC internes.
 `apps/core/src/services` fournit l'adaptateur de façade et les jetons d'injection.
-Les fournisseurs par défaut renvoient explicitement `unavailable` ; le Core futur
-devra authentifier et autoriser le contexte avant de créer une façade, puis
-revérifier les droits à chaque opération. L'adaptateur n'authentifie personne.
+Le module autonome conserve des fournisseurs `unavailable` ; l'application
+enregistre les fournisseurs persistants de Phase 1. Le Core doit authentifier et
+autoriser le contexte avant de créer une façade, puis les services revérifient
+les droits à chaque opération. La factory n'authentifie personne.
 
 Les **modules** porteront les fonctionnalités métier. Aucun chargeur dynamique,
 registre de capabilities ou Store n'est construit par ce bootstrap.
@@ -34,11 +36,11 @@ registre de capabilities ou Store n'est construit par ce bootstrap.
 et traductions. Le navigateur contacte uniquement le BFF via `/api` sur sa
 propre origine. En développement, Vite relaie ces requêtes au BFF local.
 
-`apps/bff` est une application NestJS distincte. Elle interroge exclusivement
-la vitalité du Core, valide son contrat HTTP et expose un bootstrap versionné
-avec une indisponibilité explicite des services métier. Elle sert aussi le
-frontend compilé et les routes SPA lors de l'exécution sans Vite.
-Aucun cookie ni en-tête d'autorisation utilisateur n'est relayé au Core.
+`apps/bff` est une application NestJS distincte. Elle interroge les sondes internes
+du Core, expose le bootstrap de schéma 2 et relaie une liste fermée de routes
+authentifiées sous `/api/platform`. Seuls les cookies Orkobi et le jeton CSRF
+nécessaires sont transmis ; aucun cookie tiers, Authorization ou en-tête de proxy
+utilisateur n'est relayé. Elle sert aussi le frontend compilé et les routes SPA.
 
 Les types et validateurs HTTP sont neutres dans `lib/contracts/src/http.ts` ;
 aucune dépendance NestJS n'est introduite dans les bibliothèques ou le frontend.
@@ -86,8 +88,11 @@ appliquer réellement l'isolation par organisation, les commits et les rollbacks
 L'interface `PostgreSqlAdapter` prépare ce point d'extension sans implémenter
 l'accès métier. Depuis la [0.4](INFRASTRUCTURE.md), `PostgreSqlDatabase` ouvre
 un pool interne pour les migrations et la readiness. Les comptes migration et
-Core sont distincts ; aucune transaction métier ni isolation d'organisation
-n'est encore implémentée et aucun SQL n'est exposé au SDK.
+Core sont distincts. La Phase 1 ajoute `PlatformRepository`, des transactions
+internes et des requêtes contextualisées, autorisées par le Core. La FK des rôles
+impose la même organisation pour une appartenance et son rôle. L'isolation est
+applicative ; aucune RLS ni implémentation de l'adaptateur SQL générique n'est
+annoncée. Aucun SQL n'est exposé au SDK.
 Le type générique des lignes ne remplace pas une validation des résultats SQL.
 
 Les événements portent un identifiant, une version, une organisation, un module
@@ -109,7 +114,8 @@ déclarations des dépendances (`skipLibCheck` n'est pas activé).
 
 TypeScript 6.0.3 remplace 7.0.2, incompatible avec les peer dependencies du linter
 disponible. Les versions des outils sont exactes et le lockfile est versionné.
-Les tests reposent sur `node:test`, sans framework ni dépendance d'exécution externe.
+Les tests reposent sur `node:test`, sans framework de test ; PostgreSQL réel est
+exercé par les suites d'intégration Docker.
 
 Références : [packages et exports Node.js](https://nodejs.org/api/packages.html)
 et [mode NodeNext de TypeScript](https://www.typescriptlang.org/tsconfig/module.html).
@@ -118,5 +124,6 @@ et [mode NodeNext de TypeScript](https://www.typescriptlang.org/tsconfig/module.
 
 Les interfaces et les exports de packages organisent le code mais ne constituent
 pas une frontière d'exécution. Un module exécuté dans le même processus peut
-accéder aux ressources du processus. L'isolation des plugins tiers, la validation
-des entrées, l'authentification et les contrôles aux points d'accès restent à réaliser.
+accéder aux ressources du processus. La validation des entrées et les contrôles
+d'accès de la plateforme sont présents en Phase 1.
+La frontière d'exécution des plugins tiers reste à réaliser.

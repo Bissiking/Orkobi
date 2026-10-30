@@ -1,0 +1,426 @@
+.platform-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px;
+  min-width: 0;
+}
+.platform-panel + .platform-panel {
+  margin-top: 24px;
+}
+.platform-panel h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.platform-panel h3 {
+  font-size: 14px;
+}
+.platform-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.platform-form {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.platform-form > fieldset {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.platform-form h2 {
+  margin-bottom: 0;
+}
+.platform-field {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  min-width: 0;
+}
+.platform-field input,
+.platform-field select,
+.organization-selector select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.platform-field small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.platform-form p {
+  font-size: 13px;
+}
+.form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.form-error {
+  color: var(--warning) !important;
+  background: var(--warning-soft);
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.form-success {
+  color: var(--success) !important;
+  font-size: 13px;
+}
+.access-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 460px);
+  gap: 64px;
+  align-items: start;
+  max-width: 1000px;
+  padding: 42px 0;
+}
+.access-intro {
+  padding-top: 24px;
+}
+.access-intro > svg {
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+.access-intro h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+.access-intro p {
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 14px;
+}
+.access-intro .access-assurance {
+  margin-top: 40px;
+  font-size: 12px;
+  max-width: 34ch;
+}
+.access-layout .platform-panel > .form-success {
+  margin-bottom: 20px;
+}
+.platform-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.4fr);
+  gap: 24px;
+  align-items: start;
+}
+.platform-empty {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding: 32px 0 12px;
+}
+.platform-empty > svg {
+  color: var(--accent);
+}
+.platform-row,
+.session-row,
+.role-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.platform-row:last-child,
+.session-row:last-child,
+.role-row:last-child {
+  border-bottom: 0;
+}
+.platform-row > svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.row-main {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.platform-row .platform-form,
+.session-row .platform-form {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.platform-row .platform-form > fieldset,
+.session-row .platform-form > fieldset {
+  display: none;
+}
+.workspace-tools {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.platform-link-row {
+  display: flex;
+  gap: 20px;
+  padding: 26px 0;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.platform-link-row > svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.platform-link-row > svg:last-child {
+  margin-left: auto;
+}
+.platform-link-row h2 {
+  font-size: 17px;
+  margin-bottom: 7px;
+}
+.platform-link-row p {
+  color: var(--muted);
+  font-size: 13px;
+}
+.platform-tabs {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.platform-tabs button {
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.platform-tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.platform-tabs button:hover {
+  color: var(--ink);
+}
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+  margin: 12px 0 28px;
+}
+.table-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 680px;
+  font-size: 13px;
+  text-align: left;
+}
+.table-scroll th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 12px 16px 12px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.table-scroll td {
+  padding: 15px 16px 15px 0;
+  border-bottom: 1px solid var(--line);
+  max-width: 280px;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+}
+.table-scroll td:last-child {
+  padding-right: 0;
+  white-space: nowrap;
+}
+.table-scroll th:nth-last-child(2),
+.table-scroll td:nth-last-child(2) {
+  min-width: 80px;
+}
+.table-scroll .text-button {
+  white-space: nowrap;
+  min-height: 44px;
+}
+.platform-panel > .platform-form {
+  max-width: 560px;
+}
+.platform-panel > .platform-form:not(:first-child) {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  min-height: 32px;
+}
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.permission-list {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.permission-list legend {
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.role-list {
+  margin: 16px 0 24px;
+}
+.role-row > div {
+  flex: 1;
+}
+.role-row small {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 8px;
+}
+.role-row p {
+  font-size: 12px;
+  margin-top: 8px;
+}
+.session-row {
+  flex-wrap: wrap;
+}
+.session-row p {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.account-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.account-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  max-width: 160px;
+}
+.account-link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-controls [role='alert'] {
+  max-width: 160px;
+  font-size: 11px;
+  color: var(--warning);
+}
+.organization-selector {
+  max-width: 210px;
+}
+.organization-selector select {
+  font-size: 12px;
+  max-width: 210px;
+  min-height: 38px;
+}
+.platform-details {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: max-content 1fr;
+  font-size: 14px;
+}
+.platform-details dt {
+  color: var(--muted);
+}
+.platform-details dd {
+  margin: 0;
+}
+.list-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 24px;
+}
+@media (max-width: 1180px) {
+  .breadcrumbs {
+    display: none;
+  }
+  .topbar-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 879px) {
+  .access-layout {
+    gap: 32px;
+  }
+  .platform-split {
+    grid-template-columns: 1fr;
+  }
+  .platform-split .platform-panel + .platform-panel {
+    margin-top: 0;
+  }
+  .account-link span {
+    max-width: 90px;
+  }
+}
+@media (max-width: 620px) {
+  .access-layout {
+    grid-template-columns: 1fr;
+    padding: 0;
+    gap: 24px;
+  }
+  .access-intro {
+    padding-top: 0;
+  }
+  .access-intro > svg {
+    display: none;
+  }
+  .access-intro h1 {
+    font-size: 26px;
+  }
+  .access-intro .access-assurance {
+    margin-top: 12px;
+    max-width: none;
+  }
+  .platform-panel {
+    padding: 20px;
+  }
+  .form-columns {
+    grid-template-columns: 1fr;
+  }
+  .account-link {
+    display: none;
+  }
+  .organization-selector {
+    max-width: 140px;
+  }
+  .organization-selector select {
+    max-width: 140px;
+  }
+  .topbar-controls {
+    gap: 5px;
+  }
+  .platform-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .platform-row .row-main {
+    flex-basis: calc(100% - 50px);
+  }
+  .platform-row .platform-form {
+    margin-left: 36px;
+  }
+  .platform-tabs {
+    gap: 18px;
+  }
+  .platform-details {
+    grid-template-columns: 1fr;
+  }
+}

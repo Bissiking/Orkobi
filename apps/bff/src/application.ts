@@ -17,9 +17,10 @@ import type { NextFunction, Request, Response } from 'express';
 import type { BffBootstrap } from '@orkobi/contracts';
 import { productVersion } from './config.js';
 import type { BffConfig } from './config.js';
-import { probeCore } from './core-client.js';
+import { probeCore, platformIsAvailable } from './core-client.js';
 import { JsonLogger } from './logger.js';
 import { BffExceptionFilter } from './errors.js';
+import { BffPlatformController, BFF_PLATFORM_CONFIG } from './platform.js';
 
 const CONFIG = Symbol('BFF_CONFIG');
 const WEB_ROOT = Symbol('WEB_ROOT');
@@ -47,11 +48,18 @@ class ApiController {
   @Get('bootstrap')
   async bootstrap(@Res({ passthrough: true }) response: Response): Promise<BffBootstrap> {
     const core = await probeCore(this.config, String(response.locals.correlationId));
+    const available =
+      core.status === 'ok' &&
+      (await platformIsAvailable(this.config, String(response.locals.correlationId)));
     return {
-      schemaVersion: 1,
+      schemaVersion: 2,
       product: { name: 'Orkobi', version: productVersion },
       core,
-      features: { identity: 'unavailable', organizations: 'unavailable', modules: 'unavailable' },
+      features: {
+        identity: available ? 'available' : 'unavailable',
+        organizations: available ? 'available' : 'unavailable',
+        modules: 'unavailable',
+      },
       checkedAt: new Date().toISOString(),
     };
   }
@@ -82,9 +90,10 @@ export async function createBffApplication(
   webRoot = fileURLToPath(new URL('../../web/dist/', import.meta.url)),
 ) {
   @Module({
-    controllers: [ApiController, WebController],
+    controllers: [ApiController, BffPlatformController, WebController],
     providers: [
       { provide: CONFIG, useValue: config },
+      { provide: BFF_PLATFORM_CONFIG, useValue: config },
       { provide: WEB_ROOT, useValue: webRoot },
     ],
   })

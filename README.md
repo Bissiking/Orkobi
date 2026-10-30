@@ -7,9 +7,9 @@
 Fondations d'un ERP open source, modulaire et multi-organisation, indépendant de
 LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK et un premier
 Core NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
-0.1 à 0.4 de la phase 0 sont terminées. PostgreSQL, les migrations et une pile
-Docker Compose locale sont disponibles. L'installation applicative,
-l'authentification et les fonctionnalités métier restent à construire.
+0.1 à 0.4 et la Phase 1 sont livrées : PostgreSQL, migrations, installation,
+authentification locale, sessions, organisations, rôles et administration.
+Les modules métier et l'activation d'extensions restent à construire.
 
 ## Démarrage
 
@@ -53,14 +53,19 @@ Pour lancer toute la pile avec PostgreSQL et persistance :
 
 ```sh
 pnpm infra:init
+pnpm setup:prepare
 pnpm infra:up
 ```
 
 Ouvrir `http://127.0.0.1:3000`. `infra:init` conserve tout `.env` existant :
 dans ce cas, compléter les variables SQL manquantes. `pnpm infra:down` arrête
-la pile en conservant les données. `pnpm infra:test` vérifie migrations,
+la pile en conservant les données. `setup:prepare` ajoute le jeton d'installation
+si votre `.env` vient de la 0.4. Saisir le `SETUP_TOKEN` de `.env` dans l'assistant
+pour créer le premier administrateur, puis se connecter.
+`pnpm infra:test` vérifie migrations, identité, permissions, isolation,
 redémarrage et persistance dans un projet Docker isolé.
 Voir [l'installation et l'exploitation locales](DOCS/INFRASTRUCTURE.md).
+Le [guide de Phase 1](DOCS/PHASE_1.md) décrit les parcours et la délégation.
 
 ## Organisation
 
@@ -91,7 +96,8 @@ Voir [l'architecture](DOCS/ARCHITECTURE.md), les [conventions SDK](DOCS/SDK.md),
 le [rapport du bootstrap](DOCS/BOOTSTRAP.md), la [roadmap](DOCS/ROADMAP.md)
 et le [changelog](CHANGELOG.md).
 La [revue des étapes 0.1/0.2](DOCS/REVIEW_PHASE_0.md) détaille les corrections
-et les preuves locales ; la version produit 0.1.0-EXP reste à construire.
+et les preuves locales de ces fondations. Les preuves actuelles figurent dans
+[la Phase 1](DOCS/PHASE_1.md) et [ses contrôles de sécurité](DOCS/PHASE_1_SECURITY.md).
 
 La [stratégie Git et de versioning](DOCS/VERSIONING.md) définit les branches,
 les Pull Requests et le cycle de publication. Le [diagnostic d'initialisation](DOCS/GIT_BOOTSTRAP.md)

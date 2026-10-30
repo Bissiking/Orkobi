@@ -107,7 +107,9 @@ export const fr = {
   coreName: 'Service principal',
   coreDescription: 'Le service central auquel se connecte Orkobi.',
   serviceNote:
-    'Ces vérifications confirment uniquement la réponse des services. Les comptes utilisateurs, les organisations et les données métier sont encore en préparation.',
+    'Les sondes HTTP vérifient la vitalité des services. PostgreSQL doit être prêt pour les comptes et les organisations. Les modules métier restent en préparation.',
+  databaseName: 'Base de données',
+  databaseDescription: 'PostgreSQL et migrations de cette instance.',
   connectionError: 'Le service de l’interface ne répond pas.',
   connectionRecovery: 'Vérifiez votre connexion, puis réessayez.',
   coreError: 'Le service principal est momentanément indisponible.',
@@ -231,7 +233,9 @@ export const en: Messages = {
   coreName: 'Core service',
   coreDescription: 'The central service Orkobi connects to.',
   serviceNote:
-    'These checks only confirm that services respond. User accounts, organizations and business data are still in preparation.',
+    'HTTP probes check service liveness. PostgreSQL must be ready for accounts and organizations. Business modules are still in preparation.',
+  databaseName: 'Database',
+  databaseDescription: 'PostgreSQL and this instance’s migrations.',
   connectionError: 'The interface service is not responding.',
   connectionRecovery: 'Check your connection, then try again.',
   coreError: 'The core service is temporarily unavailable.',

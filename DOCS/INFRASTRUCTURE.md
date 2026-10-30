@@ -1,9 +1,9 @@
 # Infrastructure — étape technique 0.4
 
 La version produit reste **0.1.0-EXP**. Ce lot fournit PostgreSQL, les migrations,
-la pile Docker Compose locale et des contrôles de disponibilité. Il ne fournit
-pas encore l'assistant d'installation, les comptes utilisateurs, les données
-métier ou l'isolation des organisations prévus dans les phases suivantes.
+la pile Docker Compose locale et des contrôles de disponibilité. L'assistant,
+les comptes et l'isolation applicative des organisations sont maintenant ajoutés
+par la [Phase 1](PHASE_1.md). Les modules métier restent à construire.
 
 ## Installer et démarrer
 
@@ -19,8 +19,10 @@ pnpm infra:init
 pnpm infra:up
 ```
 
-`infra:init` crée `.env` à partir de `.env.example`, avec trois secrets aléatoires
-distincts. Il refuse d'écraser un fichier existant. Si `.env` existe déjà, ajouter
+`infra:init` crée `.env` à partir de `.env.example`, avec des secrets SQL aléatoires
+distincts et un jeton d'installation. Il refuse d'écraser un fichier existant.
+Pour un `.env` venant de la 0.4, lancer `pnpm setup:prepare` avant `infra:up`.
+Si `.env` existe déjà, ajouter
 les variables manquantes du modèle et générer chaque mot de passe séparément,
 par exemple avec `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
 Ne pas commiter `.env`. Les secrets sont requis par Compose, sans mot de passe
@@ -152,8 +154,9 @@ sur une base utilisée pour faire passer un contrôle.
 ## Vitalité et disponibilité
 
 `/health` du Core et `/api/health` du BFF restent des sondes de vitalité HTTP.
-Elles restent vertes pendant une panne SQL. Le bootstrap frontend conserve ce
-contrat et n'annonce toujours aucun service métier disponible.
+Elles restent vertes pendant une panne SQL. Le bootstrap frontend conserve cette
+distinction ; son schéma 2 annonce identité et organisations disponibles après
+installation avec SQL prêt, sans accorder de permission.
 
 `/health/ready` du Core retourne 200 uniquement si PostgreSQL répond et si le
 registre correspond exactement aux migrations attendues ; sinon 503 avec le
@@ -215,10 +218,11 @@ Le résultat est enregistré dans `output/infrastructure/<id>/result.json`, igno
 par Git. Le volume de test est conservé et son nom est affiché ; sa suppression
 éventuelle est une opération destructive à décider explicitement.
 
-La pile cible une installation locale de développement/évaluation. TLS public,
-authentification, accès SQL métier contextualisé, RLS, isolation multi-organisation,
-isolation des plugins, CI distante et déploiement de production restent hors de
-ce lot. Les interfaces `DatabaseAdapter` et `PostgreSqlAdapter` ne sont pas
+La pile cible une installation locale de développement/évaluation. La Phase 1
+ajoute authentification, opérations SQL internes contextualisées et isolation
+applicative des organisations. TLS public, RLS, isolation des plugins, CI distante
+et déploiement de production restent hors de ce lot. Les interfaces génériques
+`DatabaseAdapter` et `PostgreSqlAdapter` ne sont pas
 encore implémentées : aucun accès SQL métier n'est ajouté au SDK.
 
 Références : [pool node-postgres](https://node-postgres.com/apis/pool),

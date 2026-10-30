@@ -1,5 +1,11 @@
 # Frontend et BFF — étape technique 0.3
 
+> Ce guide conserve la description du shell livré en 0.3. La
+> [Phase 1](PHASE_1.md) ajoute les parcours authentifiés, la délégation et
+> l'administration ; elle prévaut pour les routes et contrats actuels.
+> Le bootstrap est désormais de schéma 2 et le BFF ne relaie les cookies
+> Orkobi/CSRF que pour la liste fermée de routes `/api/platform/*`.
+
 Livraison locale du 29 octobre 2026, version produit **0.1.0-EXP conservée**.
 La 0.3 désigne la section de la phase 0, pas une publication produit 0.3.0.
 
@@ -82,7 +88,7 @@ pas ; il retourne donc HTTP 200 avec un état Core explicite :
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "product": { "name": "Orkobi", "version": "0.1.0-EXP" },
   "core": { "status": "ok" },
   "features": {

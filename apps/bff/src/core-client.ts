@@ -2,6 +2,52 @@ import { isCoreHealth } from '@orkobi/contracts';
 import type { CoreAvailability } from '@orkobi/contracts';
 import type { BffConfig } from './config.js';
 
+/** État public de préparation, distinct de la vitalité et des permissions utilisateur. */
+export async function platformIsAvailable(
+  config: BffConfig,
+  correlationId: string,
+): Promise<boolean> {
+  try {
+    const response = await fetch(new URL('/platform/status', config.coreUrl), {
+      redirect: 'error',
+      signal: AbortSignal.timeout(config.coreTimeoutMs),
+      headers: { accept: 'application/json', 'x-request-id': correlationId },
+    });
+    if (
+      !response.ok ||
+      response.headers.get('content-type')?.split(';')[0] !== 'application/json'
+    ) {
+      await response.body?.cancel();
+      return false;
+    }
+    const reader = response.body?.getReader();
+    if (!reader) return false;
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > 4096) {
+        await reader.cancel();
+        return false;
+      }
+      chunks.push(value);
+    }
+    const value: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      'initialized' in value &&
+      value.initialized === true &&
+      'databaseReady' in value &&
+      value.databaseReady === true
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Unique requête amont autorisée ; aucune URL ou autorisation fournie par le navigateur. */
 export async function probeCore(
   config: BffConfig,

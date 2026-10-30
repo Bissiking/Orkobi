@@ -5,6 +5,7 @@ export interface BffConfig {
   readonly port: number;
   readonly coreUrl: string;
   readonly coreTimeoutMs: number;
+  readonly publicOrigin?: string;
 }
 export class BffConfigurationError extends Error {}
 
@@ -39,7 +40,24 @@ export function loadBffConfig(env: NodeJS.ProcessEnv = process.env): BffConfig {
       'CORE_URL doit être une origine HTTP ou HTTPS sans identifiants ni chemin.',
     );
   }
-  return Object.freeze({ host, port, coreUrl: upstream.origin, coreTimeoutMs });
+  let publicOrigin: string | undefined;
+  if (env.PUBLIC_ORIGIN) {
+    try {
+      const origin = new URL(env.PUBLIC_ORIGIN);
+      if (!['http:', 'https:'].includes(origin.protocol) || origin.origin !== env.PUBLIC_ORIGIN)
+        throw new Error();
+      publicOrigin = origin.origin;
+    } catch {
+      throw new BffConfigurationError('PUBLIC_ORIGIN doit être une origine HTTP(S) sans chemin.');
+    }
+  }
+  return Object.freeze({
+    host,
+    port,
+    coreUrl: upstream.origin,
+    coreTimeoutMs,
+    ...(publicOrigin ? { publicOrigin } : {}),
+  });
 }
 
 function integer(value: string, name: string, min: number, max: number): number {

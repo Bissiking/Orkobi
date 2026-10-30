@@ -101,9 +101,9 @@ test('BFF ↔ Core : HTTP réel, contrat de bootstrap et aucun transfert de secr
   assert.ok(!JSON.stringify(logs).includes('secret-test'));
 });
 
-test('BFF : seule la route health est interrogée et les en-têtes utilisateur ne sont pas relayés', async (t) => {
+test('BFF : seules les sondes internes sont interrogées sans en-têtes utilisateur', async (t) => {
   const coreUrl = await upstream(t, (request, response) => {
-    assert.equal(request.url, '/health');
+    assert.ok(['/health', '/platform/status'].includes(request.url));
     assert.equal(request.headers.authorization, undefined);
     assert.equal(request.headers.cookie, undefined);
     assert.equal(request.headers.origin, undefined);
@@ -231,7 +231,7 @@ test('contrats HTTP : validation runtime rejette les identités de service et sc
   for (const value of [null, [], {}, { status: 'ok', service: 'orkobi-bff' }])
     assert.equal(isCoreHealth(value), false);
   const valid = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     product: { name: 'Orkobi', version: productVersion },
     core: { status: 'ok' },
     features: { identity: 'unavailable', organizations: 'unavailable', modules: 'unavailable' },
@@ -241,7 +241,7 @@ test('contrats HTTP : validation runtime rejette les identités de service et sc
   for (const value of [
     null,
     [],
-    { ...valid, schemaVersion: 2 },
+    { ...valid, schemaVersion: 1 },
     { ...valid, core: { status: 'healthy' } },
     { ...valid, checkedAt: 'bad' },
     { ...valid, features: { ...valid.features, identity: 'active' } },

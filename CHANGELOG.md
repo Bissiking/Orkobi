@@ -8,6 +8,74 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.1.0-EXP — 2026-10-29
 
+### Phase 1 — plateforme administrable et multi-organisation
+
+- `lib/database/src/platform-migration.ts`, migrations et dépôt : migration
+  additive `0002_platform` après la 0.4, sans changement de 0001. Utilisateurs,
+  installation unique, organisations, rôles contextualisés, appartenances,
+  sessions persistantes, modèle OIDC et audit. Requêtes paramétrées dans
+  `lib/database`, FK rôle/organisation, transactions et sérialisation des
+  changements de droits pour protéger les derniers administrateurs.
+- `apps/core/src/platform/` : assistant protégé par jeton opérateur,
+  authentification locale, scrypt avec sels individuels, sessions sous empreinte,
+  délais absolu/inactif et révocation. Cookies HttpOnly/SameSite, Secure en HTTPS,
+  protections CSRF, limite persistante de connexions par compte et borne de
+  concurrence des dérivations. Validation des entrées et refus par défaut.
+- Création des comptes et organisations par l'administrateur plateforme, selon
+  le choix confirmé ; délégation de l'administration d'organisation avec des
+  permissions exactes. Aucun accès membre implicite pour un administrateur
+  plateforme, aucune attribution ou modification au-delà des droits du délégant.
+  Désactivation et rétrogradation du dernier administrateur actif refusées,
+  y compris sous concurrence. Mutations réussies et audit atomiques.
+- `apps/core/src/services/` : raccord persistant identité/organisation/permissions
+  au SDK, contexte relu à chaque appel. La factory ne certifie toujours pas une
+  identité fournie par un appelant ; capabilities et SQL générique restent futurs.
+- `apps/bff/src/platform.ts` : proxy de routes fermé, contrôle d'origine et JSON,
+  cookies Orkobi/CSRF uniquement, délais et corps bornés, sans transfert des
+  en-têtes d'autorisation/proxy arbitraires. Bootstrap de schéma 2 : disponibilité
+  identité/organisations dérivée de l'état réel, modules toujours indisponibles.
+- `apps/web/src/platform/`, App, entrée et traductions : installation, connexion,
+  espace de travail réel, profil/sessions, administration, organisations,
+  appartenances, rôles, audit, sélection serveur et récupération après expiration.
+  FR/EN, thèmes, mobile, droits explicites et maintien du catalogue de présentation.
+  État SQL ajouté à la page des services ; la version produit reste 0.1.0-EXP.
+- Revue Impeccable indépendante : tableaux mobiles rendus lisibles par défilement
+  local, formulaires de création vidés après succès (mot de passe compris),
+  cibles de modification explicites et annulation. Vérification navigateur des
+  corrections ; les trois constats sont résolus, disposition `ship` sur ces fixes.
+- `apps/web/build.mjs` : build frontend explicitement en production, indépendant
+  du `NODE_ENV=development` du `.env` backend. La première tentative de séparation
+  par une constante Vite créait un mélange jsxDEV/runtime production ; remplacée
+  par un lancement Vite cohérent et revalidée dans Chrome.
+- `scripts/prepare-installation.mjs`, `.env.example`, Compose et scripts racine :
+  ajout non destructif du jeton opérateur à un environnement 0.4, configuration
+  des cookies/origine et intégration de la suite Phase 1 à la recette Docker.
+- `tests/platform.test.mjs`, `tests/platform.integration.mjs` et suites existantes :
+  cryptographie/configuration, installation concurrente, identités persistantes,
+  CSRF, deux organisations, accès croisés refusés, délégation bornée, expiration,
+  révocation étrangère refusée, audit sans secrets et protection concurrente du
+  dernier administrateur. `tests/browser/phase1*.mjs` : parcours réels et correctifs
+  de revue avec captures desktop/mobile, sans secrets opérateur versionnés.
+- README, PRODUCT et `DOCS/` : guide d'installation/exploitation Phase 1,
+  contrôles et preuves de sécurité, architecture, SDK, guides historiques et
+  roadmap synchronisés. La prochaine phase est la modularité 2.1.
+
+Validation locale : 48 tests Node.js, 18 tests SQL/HTTP sur PostgreSQL réel,
+contrats TypeScript, lint et formatage. Mise à niveau 0.4, panne/reprise SQL,
+redémarrage des applications et recréation complète des conteneurs vérifiés.
+Preuve de recette : `output/infrastructure/c6b49f6c1be6/result.json`.
+Chrome headless : installation jusqu'à la délégation, profil, persistance,
+FR/EN, thèmes, mobile et corrections ; captures `output/playwright/phase1-*.png`.
+Les premiers passages navigateur ont corrigé des sélecteurs de test trop stricts
+et un nom de champ mêlé à son aide. Les scénarios ont été poursuivis après
+correction ; les résultats ne sont pas présentés comme une publication distante.
+
+Limites : listes bornées sans pagination (200 entrées, sessions 100), isolation
+applicative sans RLS, TLS et authentification interservices de production non
+validés, pas de MFA/récupération de mot de passe/OIDC actif/activation de modules
+ou isolation de plugins. Les volumes de recette sont conservés. Aucun compte
+réel précréé, commit, push, tag ou déploiement de production effectué par ce lot.
+
 ### Étape technique 0.4 — Infrastructure
 
 - `compose.yaml`, `compose.dev.yaml`, `Dockerfile`, `.dockerignore` et

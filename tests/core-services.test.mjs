@@ -11,7 +11,7 @@ import {
 } from '../apps/core/dist/services/contracts.js';
 import { CoreSdkFactory } from '../apps/core/dist/services/sdk-factory.js';
 
-test('services Core : injection Nest et indisponibilité explicite de tous les services métier', async (t) => {
+test('services Core : injection Nest et indisponibilité explicite sans SQL', async (t) => {
   const app = await createApplication(loadConfig({ NODE_ENV: 'test' }), new JsonLogger(() => {}));
   t.after(() => app.close());
   await app.init();
@@ -35,7 +35,9 @@ test('services Core : injection Nest et indisponibilité explicite de tous les s
     sdk.permissions.can('contacts:read'),
     sdk.capabilities.has('core.identity'),
   ])) {
-    assert.deepEqual(result, unavailable);
+    assert.equal(result.ok, false);
+    assert.equal(result.error.code, 'unavailable');
+    assert.equal(result.error.correlationId, unavailable.error.correlationId);
   }
   const withoutCorrelation = app.get(CoreSdkFactory).forAuthorizedContext({
     userId: 'user-a',

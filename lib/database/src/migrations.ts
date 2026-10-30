@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { platformMigration } from './platform-migration.js';
 
 export interface Migration {
   readonly id: string;
@@ -12,6 +13,7 @@ export const migrations: readonly Migration[] = Object.freeze([
     id: '0001_core_schema',
     sql: 'CREATE SCHEMA orkobi_core;',
   }),
+  Object.freeze(platformMigration),
 ]);
 
 export function checksum(migration: Migration): string {

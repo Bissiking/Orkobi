@@ -1,10 +1,12 @@
 import pg from 'pg';
 import type { PostgreSqlConfig } from './config.js';
 import { applyMigrations, schemaIsCurrent } from './migrations.js';
+import { PlatformRepository } from './platform.js';
 
 /** Infrastructure interne, sans accès SQL public ni promesse d'isolation métier. */
 export class PostgreSqlDatabase {
   readonly #pool: pg.Pool;
+  readonly platform: PlatformRepository;
 
   constructor(config: PostgreSqlConfig) {
     this.#pool = new pg.Pool({
@@ -20,6 +22,7 @@ export class PostgreSqlDatabase {
     });
     // Une déconnexion d'un client inactif ne doit pas arrêter le processus HTTP.
     this.#pool.on('error', () => {});
+    this.platform = new PlatformRepository(this.#pool);
   }
 
   async isReady(): Promise<boolean> {

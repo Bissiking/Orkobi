@@ -4,6 +4,12 @@ import type { OrganizationContext, OrganizationId } from '@orkobi/contracts';
 export { DatabaseConfigurationError, loadDatabaseConfig } from './config.js';
 export type { PostgreSqlConfig } from './config.js';
 export { PostgreSqlDatabase } from './postgres.js';
+export type {
+  PlatformRepository,
+  PlatformTransaction,
+  CredentialUser,
+  StoredSession,
+} from './platform.js';
 
 export type SqlParameter = string | number | boolean | bigint | Date | Uint8Array | null;
 

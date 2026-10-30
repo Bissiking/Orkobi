@@ -12,12 +12,12 @@ export type CoreAvailability =
     };
 
 export interface BffBootstrap {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly product: { readonly name: 'Orkobi'; readonly version: string };
   readonly core: CoreAvailability;
   readonly features: {
-    readonly identity: 'unavailable';
-    readonly organizations: 'unavailable';
+    readonly identity: 'available' | 'unavailable';
+    readonly organizations: 'available' | 'unavailable';
     readonly modules: 'unavailable';
   };
   readonly checkedAt: string;
@@ -32,7 +32,7 @@ export function isCoreHealth(value: unknown): value is CoreHealth {
 }
 
 export function isBffBootstrap(value: unknown): value is BffBootstrap {
-  if (!record(value) || value.schemaVersion !== 1) return false;
+  if (!record(value) || value.schemaVersion !== 2) return false;
   const { product, core, features, checkedAt } = value;
   return (
     record(product) &&
@@ -47,8 +47,8 @@ export function isBffBootstrap(value: unknown): value is BffBootstrap {
           core.reason === 'unreachable' ||
           core.reason === 'invalid_response'))) &&
     record(features) &&
-    features.identity === 'unavailable' &&
-    features.organizations === 'unavailable' &&
+    (features.identity === 'unavailable' || features.identity === 'available') &&
+    (features.organizations === 'unavailable' || features.organizations === 'available') &&
     features.modules === 'unavailable' &&
     typeof checkedAt === 'string' &&
     Number.isFinite(Date.parse(checkedAt))

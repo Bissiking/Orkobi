@@ -11,6 +11,7 @@
     "start:core": "pnpm --filter @orkobi/core start",
     "start:bff": "pnpm --filter @orkobi/bff start",
     "infra:init": "node scripts/setup-env.mjs",
+    "setup:prepare": "node scripts/prepare-installation.mjs",
     "infra:up": "docker compose up --build --wait",
     "infra:down": "docker compose down",
     "infra:test": "node scripts/test-infrastructure.mjs",

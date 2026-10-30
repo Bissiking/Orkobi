@@ -59,15 +59,19 @@ capabilities ; elle n'expose aucun service SQL ou système et aucun chargeur de 
 `apps/core/src/services/contracts.ts` définit les interfaces internes contextualisées
 `CoreIdentityService`, `CoreOrganizationService`, `CorePermissionService` et
 `CoreCapabilityService`, avec des jetons d'injection NestJS séparés du SDK public.
-`CoreServicesModule` les enregistre avec des fournisseurs qui renvoient
-`Result` en erreur `unavailable`, sans inventer d'identité ni de permission.
+Le module autonome `CoreServicesModule` conserve des fournisseurs `unavailable`.
+Dans l'application, `CoreServicesModule.register()` raccorde depuis la Phase 1
+les fournisseurs persistants d'identité, d'organisation et de permissions.
+Ils vérifient le compte, l'organisation, l'appartenance et le rôle actuels à
+chaque appel ; sans SQL prêt ils renvoient `unavailable`. Le catalogue de
+capabilities demeure indisponible.
 
 `CoreSdkFactory.forAuthorizedContext(context)` adapte ces interfaces vers `CoreSdk`.
 La façade et sa copie explicite du contexte sont gelées. Chaque appel transmet
 le même utilisateur, la même organisation et la corrélation éventuelle au service
 concerné, sans mettre en cache les décisions de permission. La factory est interne :
 elle ne vérifie ni session ni appartenance. Le futur point d'entrée du Core devra
-établir et autoriser le contexte, et les implémentations métier devront contrôler
+établir et autoriser le contexte, et les implémentations persistantes contrôlent
 son état et ses droits courants. Aucun endpoint de création de façade n'est exposé.
 
 Ces contrats préparent les services métier ; ils ne fournissent pas encore de

@@ -31,7 +31,13 @@ test('configuration : valeurs par défaut locales, explicites et immuables', () 
       CORE_PORT: '4201',
       CORE_OPENAPI_ENABLED: 'true',
     }),
-    { environment: 'production', host: '0.0.0.0', port: 4201, openApiEnabled: true },
+    {
+      environment: 'production',
+      host: '0.0.0.0',
+      port: 4201,
+      openApiEnabled: true,
+      platform: { setupToken: '', secureCookies: true },
+    },
   );
 });
 

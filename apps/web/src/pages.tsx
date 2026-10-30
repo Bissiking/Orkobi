@@ -22,6 +22,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
+import { usePlatform } from './platform/context';
 import type { TranslationKey } from './i18n';
 
 interface PlannedModule {
@@ -352,6 +353,7 @@ export function SettingsPage() {
   );
 }
 export function StatusPage() {
+  const platform = usePlatform();
   const { messages: t, locale } = usePreferences();
   const { data, loading, error, refresh } = useBootstrap();
   const state = (available: boolean) => (
@@ -368,7 +370,14 @@ export function StatusPage() {
         title={t.systemTitle}
         description={t.systemDescription}
         action={
-          <button className="button secondary" onClick={refresh} disabled={loading}>
+          <button
+            className="button secondary"
+            onClick={() => {
+              refresh();
+              void platform.refresh();
+            }}
+            disabled={loading}
+          >
             <RefreshCw size={16} className={loading ? 'is-refreshing' : ''} />
             {loading ? t.refreshing : t.refresh}
           </button>
@@ -392,6 +401,13 @@ export function StatusPage() {
             <p>{t.coreDescription}</p>
           </div>
           {state(!error && data?.core.status === 'ok')}
+        </div>
+        <div className="service-row">
+          <div>
+            <h2>{t.databaseName}</h2>
+            <p>{t.databaseDescription}</p>
+          </div>
+          {state(platform.status?.databaseReady === true)}
         </div>
         <div className="checked-at">
           {loading

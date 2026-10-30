@@ -25,10 +25,25 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
   assert.equal(await runtime.isReady(), false);
 
   await t.test(
+    'mise à niveau depuis 0.4 : schéma 0001 conservé, plateforme encore indisponible',
+    async () => {
+      const client = await pool.connect();
+      try {
+        assert.deepEqual(await applyMigrations(client, migrations.slice(0, 1)), [
+          '0001_core_schema',
+        ]);
+      } finally {
+        client.release();
+      }
+      assert.equal(await runtime.isReady(), false);
+    },
+  );
+
+  await t.test(
     'deux migrations concurrentes : une application, puis aucun changement',
     async () => {
       const results = await Promise.all([first.migrate(), second.migrate()]);
-      assert.deepEqual(results.map((value) => value.length).sort(), [0, 1]);
+      assert.deepEqual(results.map((value) => value.length).sort(), [0, migrations.length - 1]);
       assert.deepEqual(await first.migrate(), []);
       assert.equal(await runtime.isReady(), true);
     },
@@ -41,7 +56,7 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
         applyMigrations(client, [
           ...migrations,
           {
-            id: '0002_rollback_probe',
+            id: '0003_rollback_probe',
             sql: 'CREATE TABLE orkobi_core.rollback_probe (id integer); SELECT absent_column;',
           },
         ]),
@@ -57,7 +72,7 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
             'SELECT count(*)::integer AS count FROM orkobi_infrastructure.schema_migrations',
           )
         ).rows[0].count,
-        1,
+        migrations.length,
       );
       assert.equal(await runtime.isReady(), true);
     } finally {
@@ -75,15 +90,16 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
           /incompatible/u,
         );
         await client.query(
-          "UPDATE orkobi_infrastructure.schema_migrations SET checksum = 'invalid'",
+          "UPDATE orkobi_infrastructure.schema_migrations SET checksum = 'invalid' WHERE id = '0001_core_schema'",
         );
         assert.equal(await runtime.isReady(), false);
         await assert.rejects(first.migrate(), /incompatible/u);
         // Restaure uniquement l'empreinte de cette base de test, jamais une base opérateur.
         const { checksum } = await import('../lib/database/dist/migrations.js');
-        await client.query('UPDATE orkobi_infrastructure.schema_migrations SET checksum = $1', [
-          checksum(migrations[0]),
-        ]);
+        await client.query(
+          "UPDATE orkobi_infrastructure.schema_migrations SET checksum = $1 WHERE id = '0001_core_schema'",
+          [checksum(migrations[0])],
+        );
         await client.query(
           "INSERT INTO orkobi_infrastructure.schema_migrations (id, checksum) VALUES ('9999_future', 'future')",
         );
@@ -107,7 +123,7 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
             'SELECT count(*)::integer AS count FROM orkobi_infrastructure.schema_migrations',
           )
         ).rows[0].count,
-        1,
+        migrations.length,
       );
       for (const sql of [
         'CREATE SCHEMA forbidden',

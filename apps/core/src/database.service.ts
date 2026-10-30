@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import { PostgreSqlDatabase } from '@orkobi/database';
 import type { PostgreSqlConfig } from '@orkobi/database';
@@ -15,6 +15,12 @@ export class CoreDatabase implements OnApplicationShutdown {
 
   async isReady(): Promise<boolean> {
     return this.#database ? this.#database.isReady() : false;
+  }
+
+  async repository() {
+    if (!this.#database || !(await this.#database.isReady()))
+      throw new ServiceUnavailableException();
+    return this.#database.platform;
   }
 
   async onApplicationShutdown(): Promise<void> {

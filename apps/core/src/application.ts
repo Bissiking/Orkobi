@@ -11,7 +11,7 @@ import { JsonLogger } from './logger.js';
 
 export async function createApplication(config: CoreConfig, logger = new JsonLogger()) {
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.register(config.database),
+    AppModule.register(config.database, config.platform),
     {
       logger,
       abortOnError: false,

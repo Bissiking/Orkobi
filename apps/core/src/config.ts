@@ -1,5 +1,6 @@
 import { DatabaseConfigurationError, loadDatabaseConfig } from '@orkobi/database';
 import type { PostgreSqlConfig } from '@orkobi/database';
+import type { PlatformConfig } from './platform/config.js';
 
 export interface CoreConfig {
   readonly environment: 'development' | 'test' | 'production';
@@ -7,6 +8,7 @@ export interface CoreConfig {
   readonly port: number;
   readonly openApiEnabled: boolean;
   readonly database?: PostgreSqlConfig;
+  readonly platform?: PlatformConfig;
 }
 
 export class ConfigurationError extends Error {}
@@ -30,6 +32,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
     throw new ConfigurationError('CORE_OPENAPI_ENABLED doit être true ou false.');
   }
   let database: PostgreSqlConfig | undefined;
+  const secure = env.SESSION_SECURE ?? (environment === 'production' ? 'true' : 'false');
+  if (secure !== 'true' && secure !== 'false')
+    throw new ConfigurationError('SESSION_SECURE doit être true ou false.');
+  if (env.SETUP_TOKEN && !/^[a-f0-9]{64}$/u.test(env.SETUP_TOKEN)) {
+    throw new ConfigurationError('SETUP_TOKEN doit contenir 64 caractères hexadécimaux.');
+  }
   try {
     database = loadDatabaseConfig(env);
   } catch (error) {
@@ -42,5 +50,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
     port: Number(port),
     openApiEnabled: openApi === 'true',
     ...(database ? { database } : {}),
+    ...(env.SETUP_TOKEN || env.SESSION_SECURE || environment === 'production'
+      ? {
+          platform: Object.freeze({
+            setupToken: env.SETUP_TOKEN ?? '',
+            secureCookies: secure === 'true',
+          }),
+        }
+      : {}),
   });
 }

@@ -1,5 +1,10 @@
 # Core HTTP — 0.1.0-EXP
 
+> Ce guide décrit les fondations 0.2 et leur évolution SQL 0.4. La
+> [Phase 1](PHASE_1.md) fournit désormais installation, authentification,
+> sessions, organisations, permissions, audit et services SDK persistants.
+> Elle fait référence pour ces nouveaux contrats et leurs conditions.
+
 Livraison locale du 29 octobre 2026 : première application NestJS dans `apps/core`,
 au-dessus des contrats ESM existants. Ce lot complète l'initialisation 0.1 de la
 phase 0. La revue et les contrats applicatifs décrits ci-dessous terminent
@@ -52,7 +57,9 @@ restent génériques pour ne pas exposer d'exception brute.
 Le Core écoute uniquement sur l'interface locale par défaut. Il ne configure
 aucun CORS et ne fait pas confiance aux en-têtes de proxy. Ouvrir l'interface ou
 activer OpenAPI demande un choix explicite de l'opérateur ; aucune
-authentification n'est encore disponible pour ces routes techniques.
+authentification n'est requise pour les sondes techniques. Les routes métier de
+Phase 1 vérifient sessions et permissions côté Core ; OpenAPI demeure une
+documentation interne à n'activer que dans un réseau de confiance.
 
 Les réponses incluent CSP (`script-src 'self'`), `X-Content-Type-Options: nosniff`,
 `X-Frame-Options: SAMEORIGIN` et `Referrer-Policy: no-referrer` via
@@ -167,7 +174,7 @@ contraintes des consommateurs TypeScript.
 
 Le [changelog](../CHANGELOG.md) et la [revue 0.1/0.2](REVIEW_PHASE_0.md)
 consignent les commandes et contrôles de ce lot.
-La connexion PostgreSQL et les migrations techniques sont désormais fournies
-par la [0.4](INFRASTRUCTURE.md). Aucune identité réelle, façade métier,
-installation initiale ou isolation multi-organisation n'est livrée par le Core.
+La connexion PostgreSQL et les migrations techniques sont fournies par la
+[0.4](INFRASTRUCTURE.md). La [Phase 1](PHASE_1.md) ajoute identité réelle,
+installation, permissions et isolation applicative multi-organisation.
 Le BFF et React sont désormais disponibles dans le [lot 0.3](FRONTEND_BFF.md). Aucune publication ou validation de production n'est revendiquée.

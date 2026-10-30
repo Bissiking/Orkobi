@@ -6,6 +6,8 @@ import App from './App';
 import { PreferencesProvider } from './preferences';
 import { BootstrapProvider } from './api';
 import AppErrorBoundary from './ErrorBoundary';
+import { PlatformProvider } from './platform/provider';
+import './platform/styles.css';
 import './styles.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -14,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
       <PreferencesProvider>
         <BootstrapProvider>
           <BrowserRouter>
-            <App />
+            <PlatformProvider>
+              <App />
+            </PlatformProvider>
           </BrowserRouter>
         </BootstrapProvider>
       </PreferencesProvider>
