@@ -206,21 +206,21 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 3.1 — Authentification avancée
 
-- [ ] Ajouter les fournisseurs OIDC externes.
-- [ ] Permettre la liaison des identités.
-- [ ] Ajouter la MFA locale.
-- [ ] Prévoir les mécanismes de récupération sécurisés.
-- [ ] Gérer les sessions actives depuis le profil.
+- [x] Ajouter les fournisseurs OIDC externes.
+- [x] Permettre la liaison des identités.
+- [x] Ajouter la MFA locale.
+- [x] Prévoir les mécanismes de récupération sécurisés.
+- [x] Gérer les sessions actives depuis le profil.
 
 ## 3.2 — API Access Manager
 
-- [ ] Séparer les API internes des API d'intégration.
-- [ ] Autoriser la désactivation globale des intégrations.
-- [ ] Ajouter les restrictions par organisation.
-- [ ] Gérer les identités et jetons d'intégration.
-- [ ] Définir scopes, expiration et révocation.
-- [ ] Journaliser les appels sensibles.
-- [ ] Sécuriser l'authentification BFF ↔ Core.
+- [x] Séparer les API internes des API d'intégration.
+- [x] Autoriser la désactivation globale des intégrations.
+- [x] Ajouter les restrictions par organisation.
+- [x] Gérer les identités et jetons d'intégration.
+- [x] Définir scopes, expiration et révocation.
+- [x] Journaliser les appels sensibles.
+- [x] Sécuriser l'authentification BFF ↔ Core.
 
 ## 3.3 — Services optionnels
 
@@ -341,14 +341,13 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0, 1 et 2 terminées ; poursuivre l'authentification avancée 3.1.**
+**Phases 0, 1, 2 et sous-sections 3.1/3.2 terminées ; poursuivre 3.3 puis 3.4.**
 
-Prochain objectif concret : fournisseurs OIDC, liaison des identités, MFA locale
-et gestion des sessions actives depuis le profil.
-La plateforme expérimentale 0.2.0-EXP dispose de l'installation, de l'identité,
-de l'administration, de l'isolation applicative des organisations, d'un registre
-de modules avec activation par organisation et d'un module officiel de
-démonstration dont les données sont isolées et conservées.
+La version produit reste **0.2.0-EXP** : Redis/cache/files (3.3) et le Job Engine
+(3.4) ne sont pas inclus dans cette livraison. La [livraison 3.1/3.2](PHASE_3.md)
+ajoute OIDC, liaison d'identités, MFA TOTP et récupération, métadonnées de sessions,
+authentification BFF ↔ Core et API d'intégration avec scopes et révocation.
+
 Les conditions de publication et de production restent distinctes.
 
 Le [guide de Phase 2](PHASE_2.md) décrit le Module Manager, le Capability

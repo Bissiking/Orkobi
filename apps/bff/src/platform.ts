@@ -15,7 +15,7 @@ import type { BffConfig } from './config.js';
 export const BFF_PLATFORM_CONFIG = Symbol('BFF_PLATFORM_CONFIG');
 const moduleId = '[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+';
 const pathPattern = new RegExp(
-  `^(?:status|session|setup|login|logout|profile|sessions(?:/revoke)?|capabilities|modules(?:/(?:${moduleId})(?:/(?:activate|deactivate|data(?:/[a-z][a-z0-9_]*(?:/[a-f0-9-]{36}(?:/delete)?)?)?))?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:select|members|roles|audit))?)?|admin/(?:users(?:/[a-f0-9-]{36})?|organizations(?:/[a-f0-9-]{36}(?:/(?:members|roles))?)?|modules(?:/${moduleId})?|audit))$`,
+  `^(?:status|session|setup|login|logout|profile(?:/password)?|mfa/(?:status|enroll|confirm|disable|login)|oidc(?:/(?:status|start|callback|unlink))?|sessions(?:/revoke)?|capabilities|modules(?:/(?:${moduleId})(?:/(?:activate|deactivate|data(?:/[a-z][a-z0-9_]*(?:/[a-f0-9-]{36}(?:/delete)?)?)?))?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:select|members|roles|audit|integrations))?)?|admin/(?:users(?:/[a-f0-9-]{36}(?:/password)?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:members|roles))?)?|modules(?:/${moduleId})?|integration-tokens(?:/[a-f0-9-]{36}/revoke)?|integrations|audit))$`,
   'u',
 );
 
@@ -41,12 +41,21 @@ export class BffPlatformController {
   private async forward(method: 'GET' | 'POST', request: Request, response: Response) {
     const path = request.path.slice('/api/platform/'.length);
     if (!pathPattern.test(path)) throw new NotFoundException();
-    const headers: Record<string, string> = { accept: 'application/json' };
+    const headers: Record<string, string> = {
+      accept: 'application/json',
+      ...(this.config.internalToken ? { 'x-orkobi-internal': this.config.internalToken } : {}),
+    };
+    if (typeof request.headers['user-agent'] === 'string')
+      headers['user-agent'] = request.headers['user-agent'].slice(0, 200);
     // Liste fermée : aucun Authorization, cookie tiers, Host ou X-Forwarded-* utilisateur.
     const sessionCookies = (request.headers.cookie ?? '')
       .split(';')
       .map((cookie) => cookie.trim())
-      .filter((cookie) => /^(?:orkobi\.local|__Host-orkobi)=[a-f0-9]{64}$/u.test(cookie));
+      .filter((cookie) =>
+        /^(?:orkobi\.local|__Host-orkobi|orkobi\.oidc|__Host-orkobi-oidc)=[a-f0-9]{64}$/u.test(
+          cookie,
+        ),
+      );
     if (sessionCookies.length) headers.cookie = sessionCookies.join('; ');
     if (method === 'POST') {
       headers['content-type'] = 'application/json';
@@ -59,7 +68,11 @@ export class BffPlatformController {
         method,
         headers,
         ...(method === 'POST' ? { body: JSON.stringify(request.body) } : {}),
-        signal: AbortSignal.timeout(this.config.coreTimeoutMs),
+        signal: AbortSignal.timeout(
+          path.startsWith('oidc/')
+            ? Math.max(20000, this.config.coreTimeoutMs)
+            : this.config.coreTimeoutMs,
+        ),
         redirect: 'error',
       });
       if (upstream.headers.get('content-type')?.split(';')[0] !== 'application/json')
@@ -89,7 +102,9 @@ export class BffPlatformController {
       }
       const cookies = upstream.headers
         .getSetCookie()
-        .filter((cookie) => /^(?:orkobi\.local|__Host-orkobi)=/u.test(cookie));
+        .filter((cookie) =>
+          /^(?:orkobi\.local|__Host-orkobi|orkobi\.oidc|__Host-orkobi-oidc)=/u.test(cookie),
+        );
       if (cookies.length) response.setHeader('set-cookie', cookies);
       response.status(upstream.status).json(payload);
     } catch (error) {

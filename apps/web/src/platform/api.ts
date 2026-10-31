@@ -22,7 +22,7 @@ export async function platformRequest<T>(
           }),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(path.startsWith('oidc/') ? 30000 : 12000),
   });
   const value: unknown = await response.json();
   if (!response.ok) {

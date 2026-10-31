@@ -36,7 +36,7 @@ test('configuration : valeurs par défaut locales, explicites et immuables', () 
       host: '0.0.0.0',
       port: 4201,
       openApiEnabled: true,
-      platform: { setupToken: '', secureCookies: true },
+      platform: { setupToken: '', secureCookies: true, internalToken: '', oidc: null },
     },
   );
 });

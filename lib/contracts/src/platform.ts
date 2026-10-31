@@ -73,10 +73,40 @@ export interface SessionSummary {
   id: string;
   createdAt: string;
   expiresAt: string;
+  lastSeenAt: string;
+  userAgent: string | null;
   current: boolean;
 }
 export interface InstallationStatus {
   initialized: boolean;
   databaseReady: boolean;
   modulesReady: boolean;
+}
+/** Catalogue fermé des scopes accordables à un jeton d'intégration. */
+export const integrationScopes = ['organizations:read', 'modules:read', 'audit:read'] as const;
+export type IntegrationScope = (typeof integrationScopes)[number];
+export interface IntegrationTokenSummary {
+  id: string;
+  name: string;
+  organizationId: string | null;
+  organizationName: string | null;
+  scopes: IntegrationScope[];
+  createdAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+}
+export interface LinkedIdentity {
+  issuer: string;
+  subject: string;
+  createdAt: string;
+}
+export interface MfaStatus {
+  enabled: boolean;
+  pending: boolean;
+  recoveryCodesRemaining: number;
+}
+export interface OidcStatus {
+  enabled: boolean;
+  label: string | null;
 }

@@ -8,6 +8,36 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 3.1/3.2 — Identité avancée et API Access Manager — 2026-10-31
+
+- `apps/core/src/platform/identity.ts`, `totp.ts`, `oidc.ts`, `access.ts`,
+  `service.ts` et `controller.ts` : MFA TOTP avec protection anti-rejeu, challenges
+  expirants et limités, codes de récupération à usage unique, changements et resets
+  de mots de passe, révocation des sessions, OIDC avec state navigateur, nonce,
+  PKCE S256, validation JWT/JWKS et liaison d'identités sans création implicite.
+- `lib/database` : migrations append-only 0005, 0006 et 0007, dépôt MFA/OIDC,
+  métadonnées de sessions, paramètres et jetons d'intégration hashés. Aucun SQL
+  ni checksum des migrations 0001–0004 modifié.
+- `apps/core/src/platform/integration.ts`, `apps/bff/src/integration.ts` : API
+  Bearer en lecture séparée des sessions, arrêt global désactivé par défaut,
+  restrictions d'organisation, scopes fermés, expiration, révocation, audit et
+  dernière utilisation. Authentification interne optionnelle par `INTERNAL_TOKEN`,
+  fourni exclusivement par la configuration serveur du BFF.
+- `lib/contracts`, configuration et DI : types MFA/OIDC/intégrations, sessions
+  enrichies, capability OIDC configurable et capability des intégrations.
+- `apps/web/src/platform/advanced*`, `pages.tsx`, `App.tsx` : connexion MFA/OIDC,
+  callback, sécurité du profil, récupération, identités liées, resets administrateur,
+  réglages d'intégration par organisation et administration des jetons, en FR/EN.
+- `.env.example`, `compose.yaml`, scripts d'installation et de recette : variables
+  OIDC et secret interne ; préparation des secrets manquants sans remplacement ;
+  nouvelle suite d'intégration ajoutée dans l'ordre explicite des tests.
+- Vérifications : `pnpm check`, `pnpm infra:test`, vecteurs RFC et JWT signés,
+  fournisseur OIDC HTTP synthétique, restrictions et révocations réelles sur
+  PostgreSQL ; recette Chromium desktop/mobile et affichage unique des jetons.
+- Limites : 3.3/3.4 exclus, version maintenue à 0.2.0-EXP, fournisseur externe réel
+  à valider au déploiement ; secret TOTP sans chiffrement applicatif. Parcours,
+  configuration et preuves détaillés dans [PHASE_3.md](DOCS/PHASE_3.md).
+
 ### Phase 2 — Module Manager, capabilities et premier module officiel
 
 - `lib/contracts/src/modules.ts` : contrats du manifeste standard de module

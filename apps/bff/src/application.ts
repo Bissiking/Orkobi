@@ -21,6 +21,7 @@ import { probeCore, platformIsAvailable } from './core-client.js';
 import { JsonLogger } from './logger.js';
 import { BffExceptionFilter } from './errors.js';
 import { BffPlatformController, BFF_PLATFORM_CONFIG } from './platform.js';
+import { BffIntegrationController } from './integration.js';
 
 const CONFIG = Symbol('BFF_CONFIG');
 const WEB_ROOT = Symbol('WEB_ROOT');
@@ -90,7 +91,7 @@ export async function createBffApplication(
   webRoot = fileURLToPath(new URL('../../web/dist/', import.meta.url)),
 ) {
   @Module({
-    controllers: [ApiController, BffPlatformController, WebController],
+    controllers: [ApiController, BffPlatformController, BffIntegrationController, WebController],
     providers: [
       { provide: CONFIG, useValue: config },
       { provide: BFF_PLATFORM_CONFIG, useValue: config },

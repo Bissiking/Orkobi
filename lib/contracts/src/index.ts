@@ -1,7 +1,12 @@
 // lib/contracts/src/index.ts
 export { isBffBootstrap, isCoreHealth } from './http.js';
 export type { BffBootstrap, CoreAvailability, CoreHealth } from './http.js';
-export { organizationPermissions, modulePermissions, builtinAdminPermissions } from './platform.js';
+export {
+  organizationPermissions,
+  modulePermissions,
+  builtinAdminPermissions,
+  integrationScopes,
+} from './platform.js';
 export type {
   PlatformUser,
   PlatformOrganization,
@@ -13,6 +18,11 @@ export type {
   AuditEntry,
   SessionSummary,
   InstallationStatus,
+  IntegrationScope,
+  IntegrationTokenSummary,
+  LinkedIdentity,
+  MfaStatus,
+  OidcStatus,
 } from './platform.js';
 export {
   isModuleManifest,

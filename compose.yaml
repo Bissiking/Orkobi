@@ -51,6 +51,11 @@ services:
       CORE_OPENAPI_ENABLED: 'false'
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       SESSION_SECURE: ${SESSION_SECURE:-false}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
       DB_ENABLED: 'true'
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-orkobi}
@@ -75,6 +80,7 @@ services:
       BFF_PORT: 3000
       CORE_URL: http://core:3001
       CORE_TIMEOUT_MS: 4000
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
     ports:
       - '127.0.0.1:${BFF_PUBLISHED_PORT:-3000}:3000'
@@ -97,7 +103,7 @@ services:
       [
         sh,
         -c,
-        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs',
+        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs',
       ]
     environment:
       DB_HOST: postgres

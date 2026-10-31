@@ -11,7 +11,11 @@ export async function platformIsAvailable(
     const response = await fetch(new URL('/platform/status', config.coreUrl), {
       redirect: 'error',
       signal: AbortSignal.timeout(config.coreTimeoutMs),
-      headers: { accept: 'application/json', 'x-request-id': correlationId },
+      headers: {
+        accept: 'application/json',
+        'x-request-id': correlationId,
+        ...(config.internalToken ? { 'x-orkobi-internal': config.internalToken } : {}),
+      },
     });
     if (
       !response.ok ||
@@ -61,7 +65,11 @@ export async function probeCore(
     const response = await fetch(new URL(path, config.coreUrl), {
       signal,
       redirect: 'manual',
-      headers: { accept: 'application/json', 'x-request-id': correlationId },
+      headers: {
+        accept: 'application/json',
+        'x-request-id': correlationId,
+        ...(config.internalToken ? { 'x-orkobi-internal': config.internalToken } : {}),
+      },
     });
     if (
       response.status !== 200 ||

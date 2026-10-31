@@ -5,7 +5,7 @@ import { URL } from 'node:url';
 
 const template = await readFile(new URL('../.env.example', import.meta.url), 'utf8');
 const configured = template.replace(
-  /^(POSTGRES_PASSWORD|MIGRATION_DB_PASSWORD|DB_PASSWORD|SETUP_TOKEN)=$/gmu,
+  /^(POSTGRES_PASSWORD|MIGRATION_DB_PASSWORD|DB_PASSWORD|SETUP_TOKEN|INTERNAL_TOKEN)=$/gmu,
   (line) => `${line}${randomBytes(32).toString('hex')}`,
 );
 try {

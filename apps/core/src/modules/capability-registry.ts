@@ -1,4 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { PLATFORM_CONFIG, localPlatformConfig } from '../platform/config.js';
+import type { PlatformConfig } from '../platform/config.js';
 import type {
   CapabilityKey,
   CapabilityStatus,
@@ -53,8 +55,14 @@ const catalogue: readonly CatalogueEntry[] = Object.freeze([
   }),
   Object.freeze({
     key: 'core.identity.oidc',
-    description: 'Connexions OIDC externes (modèle préparé, aucun fournisseur actif).',
-    state: 'unavailable',
+    description: 'Authentification OIDC externe, disponible lorsqu’un fournisseur est configuré.',
+    state: 'database',
+  }),
+  Object.freeze({
+    key: 'core.integrations',
+    description:
+      'API d’intégration en lecture, avec jetons et scopes ; activation administrateur requise.',
+    state: 'database',
   }),
   Object.freeze({
     key: 'core.events',
@@ -65,7 +73,12 @@ const catalogue: readonly CatalogueEntry[] = Object.freeze([
 
 @Injectable()
 export class CapabilityRegistry implements CoreCapabilityService {
-  constructor(@Inject(CoreDatabase) private readonly database: CoreDatabase) {}
+  constructor(
+    @Inject(CoreDatabase) private readonly database: CoreDatabase,
+    @Optional()
+    @Inject(PLATFORM_CONFIG)
+    private readonly config: PlatformConfig = localPlatformConfig,
+  ) {}
 
   async status(): Promise<{ capabilities: CapabilityStatus[] }> {
     const ready = await this.database.isReady();
@@ -74,7 +87,7 @@ export class CapabilityRegistry implements CoreCapabilityService {
         key: entry.key,
         description: entry.description,
         availability:
-          entry.state === 'unavailable'
+          entry.state === 'unavailable' || (entry.key === 'core.identity.oidc' && !this.config.oidc)
             ? 'unavailable'
             : entry.state === 'limited'
               ? ready
@@ -90,7 +103,12 @@ export class CapabilityRegistry implements CoreCapabilityService {
   /** Une exigence obligatoire est satisfaite par « available » ou « limited ». */
   async availability(key: CapabilityKey): Promise<CapabilityStatus['availability']> {
     const entry = catalogue.find((item) => item.key === key);
-    if (!entry || entry.state === 'unavailable') return 'unavailable';
+    if (
+      !entry ||
+      entry.state === 'unavailable' ||
+      (key === 'core.identity.oidc' && !this.config.oidc)
+    )
+      return 'unavailable';
     const ready = await this.database.isReady();
     if (!ready) return 'unavailable';
     return entry.state === 'limited' ? 'limited' : 'available';

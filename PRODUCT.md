@@ -40,7 +40,10 @@ appartenances, permissions, rôles et audit persistants sur PostgreSQL. La créa
 des comptes et organisations est réservée à l'administration plateforme ; les
 droits des organisations peuvent être délégués, conformément au choix utilisateur.
 Les écrans affichent uniquement les données réellement chargées et autorisées.
-Le catalogue de modules reste une présentation, sans installation ni activation.
+Le catalogue permet l'activation des modules officiels par organisation.
+Les sous-sections 3.1/3.2 ajoutent MFA TOTP, OIDC, récupération, sessions enrichies
+et API d'intégration désactivables avec jetons et scopes. Les tâches et services
+optionnels 3.3/3.4 restent hors de cette livraison.
 Les exemples des captures de recette sont des données synthétiques de test.
 
 ## Brand Commitments

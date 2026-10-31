@@ -6,6 +6,7 @@ export interface BffConfig {
   readonly coreUrl: string;
   readonly coreTimeoutMs: number;
   readonly publicOrigin?: string;
+  readonly internalToken?: string;
 }
 export class BffConfigurationError extends Error {}
 
@@ -22,6 +23,8 @@ export function loadBffConfig(env: NodeJS.ProcessEnv = process.env): BffConfig {
   }
   const port = integer(env.BFF_PORT ?? '3000', 'BFF_PORT', 1, 65535);
   const coreTimeoutMs = integer(env.CORE_TIMEOUT_MS ?? '2000', 'CORE_TIMEOUT_MS', 100, 10000);
+  if (env.INTERNAL_TOKEN && !/^[a-f0-9]{64}$/u.test(env.INTERNAL_TOKEN))
+    throw new BffConfigurationError('INTERNAL_TOKEN doit contenir 64 caractères hexadécimaux.');
   let upstream: URL;
   try {
     upstream = new URL(env.CORE_URL ?? 'http://127.0.0.1:3001');
@@ -56,6 +59,7 @@ export function loadBffConfig(env: NodeJS.ProcessEnv = process.env): BffConfig {
     port,
     coreUrl: upstream.origin,
     coreTimeoutMs,
+    ...(env.INTERNAL_TOKEN ? { internalToken: env.INTERNAL_TOKEN } : {}),
     ...(publicOrigin ? { publicOrigin } : {}),
   });
 }

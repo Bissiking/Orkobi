@@ -1,0 +1,16 @@
+.recovery-codes ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-sm, 8px);
+  padding-inline-start: 20px;
+}
+.identity-issuer {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.account-security {
+  margin-top: 24px;
+}
+.account-security > .platform-panel + .platform-panel {
+  margin-top: 0;
+}

@@ -1,3 +1,11 @@
+import {
+  AccountSecurity,
+  AdvancedLoginPage,
+  IntegrationsAdmin,
+  OrganizationIntegrations,
+  PasswordResetForm,
+} from './advanced';
+import { useAdvancedCopy } from './advanced-copy';
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowRight, Building2, ShieldCheck, UserRound, LogOut } from 'lucide-react';
@@ -49,6 +57,7 @@ export function PlatformGate({ children }: { children: ReactNode }) {
         </Link>
       </section>
     );
+  if (location.pathname === '/oidc/callback') return children;
   if (!status.initialized && location.pathname !== '/setup')
     return <Navigate to="/setup" replace />;
   if (status.initialized && location.pathname === '/setup')
@@ -89,47 +98,7 @@ export function InstallationPage() {
   );
 }
 export function LoginPage() {
-  const t = usePlatformCopy(),
-    { post, refresh } = usePlatform(),
-    navigate = useNavigate(),
-    location = useLocation();
-  return (
-    <section className="access-layout">
-      <div className="access-intro">
-        <Building2 size={32} />
-        <h1>{t.loginTitle}</h1>
-        <p>{t.loginText}</p>
-        <p className="access-assurance">{t.securityNote}</p>
-      </div>
-      <div className="platform-panel">
-        {location.state?.installed && (
-          <p className="form-success" role="status">
-            {t.setupDone}
-          </p>
-        )}
-        <TaskForm
-          submit={t.signIn}
-          onSave={async (data) => {
-            await post('login', Object.fromEntries(data));
-            await refresh();
-            navigate('/');
-          }}
-        >
-          <Field label={t.email} name="email" type="email" />
-          <label className="platform-field">
-            <span>{t.password}</span>
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              maxLength={128}
-            />
-          </label>
-        </TaskForm>
-      </div>
-    </section>
-  );
+  return <AdvancedLoginPage />;
 }
 export function WorkspacePage() {
   const t = usePlatformCopy(),
@@ -325,6 +294,12 @@ function OrganizationDetail({ org }: { org: PlatformOrganization }) {
             </dl>
           )}
         </section>
+      )}
+      {tab === 'settings' && (
+        <OrganizationIntegrations
+          orgId={org.id}
+          canWrite={permissions.includes('organization:write')}
+        />
       )}
       {tab === 'members' && permissions.includes('members:read') && (
         <MembershipPanel
@@ -565,6 +540,7 @@ function RolePanel({
   );
 }
 export function ProfilePage() {
+  const a = useAdvancedCopy();
   const t = usePlatformCopy(),
     { session, post, refresh } = usePlatform(),
     [revision, setRevision] = useState(0),
@@ -603,6 +579,12 @@ export function ProfilePage() {
                 <p>
                   {t.expires} : {new Date(item.expiresAt).toLocaleString()}
                 </p>
+                <p>
+                  {a.lastSeen} : {new Date(item.lastSeenAt).toLocaleString()}
+                </p>
+                <p>
+                  {a.device} : {item.userAgent ?? a.unknownDevice}
+                </p>
               </div>
               <TaskForm
                 submit={t.revoke}
@@ -618,6 +600,7 @@ export function ProfilePage() {
           ))}
         </section>
       </div>
+      <AccountSecurity onUpdate={() => setRevision((n) => n + 1)} />
     </>
   );
 }
@@ -699,6 +682,7 @@ export function OrganizationSelector() {
   );
 }
 export function AdministrationPage() {
+  const a = useAdvancedCopy();
   const t = usePlatformCopy(),
     { session } = usePlatform(),
     [params, setParams] = useSearchParams(),
@@ -708,19 +692,20 @@ export function AdministrationPage() {
     <>
       <PlatformHeading title={t.administration} description={t.adminHelp} />
       <nav className="platform-tabs" aria-label={t.administration}>
-        {(['users', 'organizations', 'audit'] as const).map((key) => (
+        {(['users', 'organizations', 'integrations', 'audit'] as const).map((key) => (
           <button
             key={key}
             aria-current={tab === key ? 'page' : undefined}
             className={tab === key ? 'active' : ''}
             onClick={() => setParams({ tab: key })}
           >
-            {t[key]}
+            {key === 'integrations' ? a.integrations : t[key]}
           </button>
         ))}
       </nav>
       {tab === 'users' && <UsersAdmin />}
       {tab === 'organizations' && <OrganizationsAdmin />}
+      {tab === 'integrations' && <IntegrationsAdmin />}
       {tab === 'audit' && <AuditPanel path="admin/audit" />}
       <p className="list-note">
         {t.limit} · {t.version} {__APP_VERSION__}
@@ -818,6 +803,7 @@ function UsersAdmin() {
           </>
         )}
       </TaskForm>
+      {selected && <PasswordResetForm key={selected.id} userId={selected.id} />}
     </section>
   );
 }
@@ -927,10 +913,26 @@ function OrganizationsAdmin() {
   );
 }
 function AuditPanel({ path }: { path: string }) {
+  const a = useAdvancedCopy();
   const t = usePlatformCopy(),
     [revision, setRevision] = useState(0),
     audit = usePlatformResource<AuditEntry[]>(path, revision);
   const events: Record<string, string> = {
+    'identity.password_changed': a.password,
+    'identity.password_reset': a.resetPassword,
+    'identity.mfa_enrollment_started': a.enroll,
+    'identity.mfa_enabled': `${a.mfa} · ${a.enabled}`,
+    'identity.mfa_disabled': a.disableMfa,
+    'identity.mfa_verified': `${a.mfa} · ${a.confirm}`,
+    'identity.mfa_failed': `${a.mfa} · ${t.invalid_argument}`,
+    'identity.oidc_linked': a.oidcLink,
+    'identity.oidc_unlinked': a.unlink,
+    'integration.settings_updated': a.globalSwitch,
+    'integration.organization_updated': a.orgSwitch,
+    'integration.token_created': a.createToken,
+    'integration.token_revoked': `${a.token} · ${a.revoked}`,
+    'integration.call': a.integrations,
+    'integration.denied': `${a.integrations} · ${t.forbidden}`,
     'instance.initialized': t.setup,
     'identity.login': t.signIn,
     'identity.login_failed': `${t.signIn} · ${t.invalid_argument}`,

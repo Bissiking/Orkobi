@@ -3,6 +3,9 @@ import type { PoolClient } from 'pg';
 import { platformMigration } from './platform-migration.js';
 import { modulesMigration } from './modules-migration.js';
 import { moduleDemoMigration } from './module-demo-migration.js';
+import { identityAdvancedMigration } from './identity-advanced-migration.js';
+import { apiAccessMigration } from './api-access-migration.js';
+import { identityHardeningMigration } from './identity-hardening-migration.js';
 
 export interface Migration {
   readonly id: string;
@@ -20,6 +23,9 @@ export const migrations: readonly Migration[] = Object.freeze([
   Object.freeze(platformMigration),
   Object.freeze(modulesMigration),
   Object.freeze(moduleDemoMigration),
+  Object.freeze(identityAdvancedMigration),
+  Object.freeze(apiAccessMigration),
+  Object.freeze(identityHardeningMigration),
 ]);
 
 /** Sous-ensemble des migrations appartenant à un module officiel. */

@@ -4,6 +4,8 @@ import type { PostgreSqlConfig } from '@orkobi/database';
 import { CoreDatabase, DATABASE_CONFIG } from '../database.service.js';
 import { PlatformController } from '../platform/controller.js';
 import { PlatformService } from '../platform/service.js';
+import { AdvancedIdentityService } from '../platform/identity.js';
+import { IntegrationAccessService, IntegrationController } from '../platform/integration.js';
 import { PLATFORM_CONFIG, localPlatformConfig } from '../platform/config.js';
 import type { PlatformConfig } from '../platform/config.js';
 import { CapabilityRegistry } from '../modules/capability-registry.js';
@@ -36,10 +38,12 @@ export class CoreServicesModule {
   ): DynamicModule {
     return {
       module: CoreServicesModule,
-      controllers: [PlatformController],
+      controllers: [PlatformController, IntegrationController],
       providers: [
         CoreDatabase,
         PlatformService,
+        AdvancedIdentityService,
+        IntegrationAccessService,
         PersistentCoreServices,
         CapabilityRegistry,
         ModuleManager,

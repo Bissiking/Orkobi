@@ -1,3 +1,4 @@
+import { OidcCallbackPage } from './platform/advanced';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
 import {
@@ -155,7 +156,7 @@ export default function App() {
         ? p.profile
         : location.pathname === '/setup'
           ? p.setup
-          : location.pathname === '/login'
+          : location.pathname === '/login' || location.pathname === '/oidc/callback'
             ? p.signIn
             : location.pathname.startsWith('/organizations/')
               ? p.organizations
@@ -257,6 +258,7 @@ export default function App() {
               <Route path="/" element={<WorkspacePage />} />
               <Route path="/setup" element={<InstallationPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/oidc/callback" element={<OidcCallbackPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin" element={<AdministrationPage />} />
               <Route path="/organizations" element={<ManagedOrganizationsPage />} />

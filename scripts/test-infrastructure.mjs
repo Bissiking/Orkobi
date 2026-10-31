@@ -18,7 +18,7 @@ await writeFile(
   [
     `DB_NAME=orkobi_verify_${id}`,
     'BFF_PUBLISHED_PORT=0',
-    ...['POSTGRES_PASSWORD', 'MIGRATION_DB_PASSWORD', 'DB_PASSWORD'].map(
+    ...['POSTGRES_PASSWORD', 'MIGRATION_DB_PASSWORD', 'DB_PASSWORD', 'INTERNAL_TOKEN'].map(
       (key) => `${key}=${randomBytes(32).toString('hex')}`,
     ),
   ].join('\n'),

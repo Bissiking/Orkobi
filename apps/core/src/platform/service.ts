@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID, createHash, timingSafeEqual } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -23,6 +23,8 @@ import { CapabilityRegistry } from '../modules/capability-registry.js';
 import { ModuleManager } from '../modules/manager.js';
 import { ModuleDataService } from '../modules/data.js';
 import { hashPassword, verifyPassword, dummyPasswordHash } from './password.js';
+import { AdvancedIdentityService } from './identity.js';
+import { IntegrationAccessService } from './integration.js';
 import { PLATFORM_CONFIG } from './config.js';
 import type { PlatformConfig } from './config.js';
 
@@ -30,14 +32,19 @@ type Body = Record<string, unknown>;
 export interface PlatformRequest {
   token: string;
   csrf: string;
+  /** Agent utilisateur capturé à la création de la session (affichage des sessions). */
+  userAgent?: string | null;
+  oidcState?: string;
   body: unknown;
 }
 export interface PlatformResult {
   data: unknown;
   token?: string;
   clearCookie?: boolean;
+  oidcState?: string | null;
 }
-export const tokenHash = (value: string) => createHash('sha256').update(value).digest('hex');
+export { tokenHash, equal } from './access.js';
+import { tokenHash, equal, authenticateSession } from './access.js';
 const moduleIdSource = '[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+';
 const anonymous: PlatformSession = {
   user: null,
@@ -45,11 +52,6 @@ const anonymous: PlatformSession = {
   activeOrganizationId: null,
   organizations: [],
 };
-function equal(left: string, right: string) {
-  const a = Buffer.from(left),
-    b = Buffer.from(right);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 function object(value: unknown): Body {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException();
   return value as Body;
@@ -108,6 +110,8 @@ export class PlatformService {
     @Inject(ModuleManager) private readonly moduleManager: ModuleManager,
     @Inject(ModuleDataService) private readonly moduleData: ModuleDataService,
     @Inject(CapabilityRegistry) private readonly capabilities: CapabilityRegistry,
+    @Inject(AdvancedIdentityService) private readonly identity: AdvancedIdentityService,
+    @Inject(IntegrationAccessService) private readonly integrations: IntegrationAccessService,
   ) {}
 
   private async derive<T>(operation: () => Promise<T>): Promise<T> {
@@ -120,14 +124,7 @@ export class PlatformService {
     }
   }
   private async authenticate(repo: PlatformTransaction, request: PlatformRequest, write: boolean) {
-    if (!/^[a-f0-9]{64}$/u.test(request.token)) throw new UnauthorizedException();
-    const session = await repo.session(tokenHash(request.token));
-    if (!session) throw new UnauthorizedException();
-    const user = await repo.user(session.userId);
-    if (!user?.active) throw new UnauthorizedException();
-    if (write && !equal(request.csrf, session.csrfToken)) throw new ForbiddenException();
-    await repo.touchSession(tokenHash(request.token));
-    return { user, session };
+    return authenticateSession(repo, request, write);
   }
   private async snapshot(
     repo: PlatformTransaction,
@@ -163,6 +160,8 @@ export class PlatformService {
     path: string,
     request: PlatformRequest,
   ): Promise<PlatformResult> {
+    const advanced = await this.identity.execute(method, path, request);
+    if (advanced) return advanced;
     if (method === 'GET' && path === 'status') {
       if (!(await this.database.isReady()))
         return { data: { initialized: false, databaseReady: false, modulesReady: false } };
@@ -213,27 +212,8 @@ export class PlatformService {
             await repo.audit(randomUUID(), null, 'identity.login_failed');
             return { data: { authenticated: false } };
           }
-          const token = randomBytes(32).toString('hex'),
-            csrf = randomBytes(32).toString('hex'),
-            id = randomUUID();
-          await repo.createSession(tokenHash(token), id, current.id, csrf);
-          // Une nouvelle connexion remplace le jeton déjà présenté par ce navigateur.
-          if (/^[a-f0-9]{64}$/u.test(request.token)) {
-            const previous = await repo.session(tokenHash(request.token));
-            if (previous) await repo.revokeSession(previous.userId, previous.id);
-          }
-          await repo.audit(randomUUID(), current.id, 'identity.login');
-          const { passwordHash: _passwordHash, ...user } = current;
-          void _passwordHash;
-          return {
-            token,
-            data: await this.snapshot(repo, user, {
-              id,
-              userId: current.id,
-              csrfToken: csrf,
-              activeOrganizationId: null,
-            }),
-          };
+          const { id, name, email, active, platformAdmin } = current;
+          return this.identity.login(repo, { id, name, email, active, platformAdmin }, request);
         });
       }
       return await repository.transaction(async (repo) => {
@@ -326,6 +306,18 @@ export class PlatformService {
         }
         if (path.startsWith('admin/')) {
           if (!user.platformAdmin) throw new ForbiddenException();
+          const managed = await this.integrations.administration(repo, user, method, path, body);
+          if (managed) return managed;
+          const resetMatch = /^admin\/users\/([a-f0-9-]{36})\/password$/u.exec(path);
+          if (method === 'POST' && resetMatch) {
+            const targetId = uuid(resetMatch[1]);
+            if (!(await repo.user(targetId))) throw new NotFoundException();
+            await repo.setPassword(targetId, text(body.preparedHash, 256));
+            await repo.revokeSession(targetId);
+            await repo.deleteUserMfaChallenges(targetId);
+            await repo.audit(randomUUID(), user.id, 'identity.password_reset', null, targetId);
+            return { data: { success: true } };
+          }
           if (method === 'GET' && path === 'admin/users') return { data: await repo.users() };
           if (method === 'GET' && path === 'admin/organizations')
             return { data: await repo.organizations() };
@@ -421,6 +413,27 @@ export class PlatformService {
         }
         if (method === 'GET' && path === 'organizations')
           return { data: await repo.accessibleOrganizations(user.id) };
+        const integrationOrg = /^organizations\/([^/]+)\/integrations$/u.exec(path);
+        if (integrationOrg) {
+          const orgId = uuid(integrationOrg[1]);
+          await this.authorizeOrganization(
+            repo,
+            user,
+            orgId,
+            method === 'POST' ? 'organization:write' : 'organization:read',
+          );
+          if (method === 'POST') {
+            await repo.setOrganizationIntegrations(orgId, boolean(body.enabled));
+            await repo.audit(
+              randomUUID(),
+              user.id,
+              'integration.organization_updated',
+              orgId,
+              orgId,
+            );
+          }
+          return { data: { enabled: await repo.integrationAllowed(orgId) } };
+        }
         const match = /^organizations\/([^/]+)(?:\/(select|members|roles|audit))?$/u.exec(path);
         if (match) {
           const orgId = uuid(match[1]),

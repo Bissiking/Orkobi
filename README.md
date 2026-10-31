@@ -13,6 +13,11 @@ administration, registre de modules avec activation par organisation, catalogue
 de capabilities et premier module officiel `orkobi.demo` (notes isolées par
 organisation). Les modules métier externes restent à construire (Phase 4).
 
+La livraison [Phase 3.1/3.2](DOCS/PHASE_3.md) ajoute OIDC, MFA TOTP et récupération,
+sessions enrichies, authentification BFF ↔ Core et API d'intégration avec scopes,
+expiration et révocation. Les sous-sections 3.3/3.4 restent en attente ; la version
+produit est maintenue à 0.2.0-EXP.
+
 ## Démarrage
 
 Prérequis : Node.js >= 22.22.2 et pnpm 12.16.1, indiqué dans `packageManager`.

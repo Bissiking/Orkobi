@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { Pool, PoolClient } from 'pg';
 import type {
   PlatformUser,
@@ -8,6 +9,8 @@ import type {
   AuditEntry,
   SessionSummary,
   ModuleManifest,
+  LinkedIdentity,
+  IntegrationTokenSummary,
 } from '@orkobi/contracts';
 import type { OrganizationContext } from '@orkobi/contracts';
 import { moduleTransaction } from './adapter.js';
@@ -32,6 +35,31 @@ export interface StoredModule {
   name: string;
   manifest: ModuleManifest;
   enabled: boolean;
+}
+export interface StoredMfaFactor {
+  secret: string;
+  confirmedAt: string | null;
+}
+export interface StoredMfaChallenge {
+  userId: string;
+  expiresAt: string;
+}
+export interface StoredOidcPending {
+  nonce: string;
+  codeVerifier: string;
+  linkUserId: string | null;
+  createdAt: string;
+}
+export interface StoredIntegrationToken {
+  id: string;
+  name: string;
+  organizationId: string | null;
+  scopes: string[];
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
 }
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
@@ -122,11 +150,17 @@ export class PlatformTransaction {
     );
     return result.rows[0]!.attempts <= 10;
   }
-  async createSession(hash: string, id: string, userId: string, csrf: string) {
+  async createSession(
+    hash: string,
+    id: string,
+    userId: string,
+    csrf: string,
+    userAgent: string | null = null,
+  ) {
     await this.client.query(
-      `INSERT INTO orkobi_core.sessions (token_hash,id,user_id,csrf_token,expires_at)
-      VALUES ($1,$2,$3,$4,now()+interval '8 hours')`,
-      [hash, id, userId, csrf],
+      `INSERT INTO orkobi_core.sessions (token_hash,id,user_id,csrf_token,user_agent,expires_at)
+      VALUES ($1,$2,$3,$4,$5,now()+interval '8 hours')`,
+      [hash, id, userId, csrf, userAgent],
     );
   }
   async session(hash: string): Promise<StoredSession | undefined> {
@@ -157,14 +191,282 @@ export class PlatformTransaction {
     );
     return result.rowCount ?? 0;
   }
+  /** Conserve la session courante ; utilisé après un changement de mot de passe. */
+  async revokeOtherSessions(userId: string, keepId: string) {
+    const result = await this.client.query(
+      'UPDATE orkobi_core.sessions SET revoked=true WHERE user_id=$1 AND id<>$2',
+      [userId, keepId],
+    );
+    return result.rowCount ?? 0;
+  }
   async sessions(userId: string, current: string): Promise<SessionSummary[]> {
     return (
       await this.client.query<SessionSummary>(
-        `SELECT id, created_at::text AS "createdAt", expires_at::text AS "expiresAt", (id=$2) AS current
+        `SELECT id, created_at::text AS "createdAt", expires_at::text AS "expiresAt",
+      last_seen_at::text AS "lastSeenAt", user_agent AS "userAgent", (id=$2) AS current
       FROM orkobi_core.sessions WHERE user_id=$1 AND NOT revoked AND expires_at>now() AND last_seen_at>now()-interval '30 minutes' ORDER BY created_at DESC LIMIT 100`,
         [userId, current],
       )
     ).rows;
+  }
+  async setPassword(userId: string, hash: string) {
+    await this.client.query('UPDATE orkobi_core.users SET password_hash=$2 WHERE id=$1', [
+      userId,
+      hash,
+    ]);
+  }
+
+  async mfaFactor(userId: string): Promise<StoredMfaFactor | undefined> {
+    return (
+      await this.client.query<StoredMfaFactor>(
+        'SELECT secret, confirmed_at::text AS "confirmedAt" FROM orkobi_core.mfa_factors WHERE user_id=$1 FOR SHARE',
+        [userId],
+      )
+    ).rows[0];
+  }
+  /** Enregistre un secret en attente de confirmation ; une confirmation réinitialise l'état. */
+  async saveMfaFactor(userId: string, secret: string) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.mfa_factors (user_id,secret) VALUES ($1,$2)
+      ON CONFLICT (user_id) DO UPDATE SET secret=EXCLUDED.secret, confirmed_at=NULL, last_used_step=NULL, created_at=now()`,
+      [userId, secret],
+    );
+  }
+  async confirmMfaFactor(userId: string): Promise<boolean> {
+    const result = await this.client.query(
+      'UPDATE orkobi_core.mfa_factors SET confirmed_at=now() WHERE user_id=$1 AND confirmed_at IS NULL',
+      [userId],
+    );
+    return result.rowCount === 1;
+  }
+  async deleteMfaFactor(userId: string) {
+    await this.client.query('DELETE FROM orkobi_core.mfa_factors WHERE user_id=$1', [userId]);
+    await this.client.query('DELETE FROM orkobi_core.mfa_recovery_codes WHERE user_id=$1', [
+      userId,
+    ]);
+  }
+  async recoveryCodesRemaining(userId: string): Promise<number> {
+    return (
+      await this.client.query<{ count: number }>(
+        'SELECT count(*)::integer AS count FROM orkobi_core.mfa_recovery_codes WHERE user_id=$1 AND used_at IS NULL',
+        [userId],
+      )
+    ).rows[0]!.count;
+  }
+  async replaceRecoveryCodes(userId: string, entries: { id: string; hash: string }[]) {
+    await this.client.query('DELETE FROM orkobi_core.mfa_recovery_codes WHERE user_id=$1', [
+      userId,
+    ]);
+    for (const entry of entries)
+      await this.client.query(
+        'INSERT INTO orkobi_core.mfa_recovery_codes (id,user_id,code_hash) VALUES ($1,$2,$3)',
+        [entry.id, userId, entry.hash],
+      );
+  }
+  async consumeRecoveryCode(userId: string, hash: string): Promise<boolean> {
+    const result = await this.client.query(
+      `UPDATE orkobi_core.mfa_recovery_codes SET used_at=now()
+      WHERE user_id=$1 AND code_hash=$2 AND used_at IS NULL`,
+      [userId, hash],
+    );
+    return result.rowCount === 1;
+  }
+  async createMfaChallenge(hash: string, userId: string) {
+    await this.client.query('DELETE FROM orkobi_core.mfa_challenges WHERE expires_at < now()');
+    await this.client.query(
+      `INSERT INTO orkobi_core.mfa_challenges (challenge_hash,user_id,expires_at)
+      VALUES ($1,$2,now()+interval '5 minutes')`,
+      [hash, userId],
+    );
+  }
+  async mfaChallenge(hash: string): Promise<StoredMfaChallenge | undefined> {
+    return (
+      await this.client.query<StoredMfaChallenge>(
+        `SELECT user_id AS "userId", expires_at::text AS "expiresAt"
+      FROM orkobi_core.mfa_challenges WHERE challenge_hash=$1 AND expires_at>now() FOR UPDATE`,
+        [hash],
+      )
+    ).rows[0];
+  }
+  async deleteMfaChallenge(hash: string) {
+    await this.client.query('DELETE FROM orkobi_core.mfa_challenges WHERE challenge_hash=$1', [
+      hash,
+    ]);
+  }
+  async deleteUserMfaChallenges(userId: string) {
+    await this.client.query('DELETE FROM orkobi_core.mfa_challenges WHERE user_id=$1', [userId]);
+  }
+  async consumeMfaStep(userId: string, step: number): Promise<boolean> {
+    return (
+      (
+        await this.client.query(
+          'UPDATE orkobi_core.mfa_factors SET last_used_step=$2 WHERE user_id=$1 AND (last_used_step IS NULL OR last_used_step<$2)',
+          [userId, step],
+        )
+      ).rowCount === 1
+    );
+  }
+
+  async createOidcPending(
+    hash: string,
+    nonce: string,
+    codeVerifier: string,
+    linkUserId: string | null,
+  ) {
+    await this.client.query(
+      "DELETE FROM orkobi_core.oidc_pending WHERE created_at < now()-interval '15 minutes'",
+    );
+    await this.client.query(
+      `INSERT INTO orkobi_core.oidc_pending (state_hash,nonce,code_verifier,link_user_id)
+      VALUES ($1,$2,$3,$4)`,
+      [hash, nonce, codeVerifier, linkUserId],
+    );
+  }
+  async oidcPending(hash: string): Promise<StoredOidcPending | undefined> {
+    return (
+      await this.client.query<StoredOidcPending>(
+        `SELECT nonce, code_verifier AS "codeVerifier", link_user_id AS "linkUserId", created_at::text AS "createdAt"
+      FROM orkobi_core.oidc_pending WHERE state_hash=$1 AND created_at>now()-interval '10 minutes'`,
+        [hash],
+      )
+    ).rows[0];
+  }
+  async deleteOidcPending(hash: string) {
+    await this.client.query('DELETE FROM orkobi_core.oidc_pending WHERE state_hash=$1', [hash]);
+  }
+  async oidcIdentity(
+    issuer: string,
+    subject: string,
+  ): Promise<{ userId: string; createdAt: string } | undefined> {
+    return (
+      await this.client.query<{ userId: string; createdAt: string }>(
+        `SELECT user_id AS "userId", created_at::text AS "createdAt" FROM orkobi_core.oidc_identities
+      WHERE issuer=$1 AND subject=$2 FOR SHARE`,
+        [issuer, subject],
+      )
+    ).rows[0];
+  }
+  async oidcIdentities(userId: string): Promise<LinkedIdentity[]> {
+    return (
+      await this.client.query<LinkedIdentity>(
+        `SELECT issuer, subject, created_at::text AS "createdAt" FROM orkobi_core.oidc_identities
+      WHERE user_id=$1 ORDER BY created_at, issuer LIMIT 50`,
+        [userId],
+      )
+    ).rows;
+  }
+  async linkOidc(userId: string, issuer: string, subject: string) {
+    await this.client.query(
+      'INSERT INTO orkobi_core.oidc_identities (id,user_id,issuer,subject) VALUES ($1,$2,$3,$4)',
+      [randomUUID(), userId, issuer, subject],
+    );
+  }
+  async unlinkOidc(userId: string, issuer: string, subject: string): Promise<number> {
+    const result = await this.client.query(
+      'DELETE FROM orkobi_core.oidc_identities WHERE user_id=$1 AND issuer=$2 AND subject=$3',
+      [userId, issuer, subject],
+    );
+    return result.rowCount ?? 0;
+  }
+
+  async integrationsEnabled(): Promise<boolean> {
+    return (
+      await this.client.query<{ value: boolean }>(
+        `SELECT coalesce((SELECT value FROM orkobi_core.platform_settings WHERE key='integrations_enabled'), false) AS value`,
+      )
+    ).rows[0]!.value;
+  }
+  async setIntegrationsEnabled(enabled: boolean) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.platform_settings (key,value) VALUES ('integrations_enabled',$1)
+      ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`,
+      [enabled],
+    );
+  }
+  async integrationAllowed(organizationId: string): Promise<boolean> {
+    return (
+      (
+        await this.client.query<{ allowed: boolean }>(
+          'SELECT active AND integrations_enabled AS allowed FROM orkobi_core.organizations WHERE id=$1',
+          [organizationId],
+        )
+      ).rows[0]?.allowed === true
+    );
+  }
+  async setOrganizationIntegrations(organizationId: string, enabled: boolean) {
+    await this.client.query(
+      'UPDATE orkobi_core.organizations SET integrations_enabled=$2 WHERE id=$1',
+      [organizationId, enabled],
+    );
+  }
+  async createIntegrationToken(token: {
+    id: string;
+    name: string;
+    hash: string;
+    organizationId: string | null;
+    scopes: string[];
+    createdBy: string;
+    expiresAt: string | null;
+  }) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.integration_tokens
+      (id,name,token_hash,organization_id,scopes,created_by,expires_at) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [
+        token.id,
+        token.name,
+        token.hash,
+        token.organizationId,
+        token.scopes,
+        token.createdBy,
+        token.expiresAt,
+      ],
+    );
+  }
+  async integrationTokens(): Promise<IntegrationTokenSummary[]> {
+    return (
+      await this.client.query<IntegrationTokenSummary>(
+        `SELECT t.id, t.name, t.organization_id AS "organizationId", o.name AS "organizationName",
+      t.scopes, t.created_at::text AS "createdAt", t.expires_at::text AS "expiresAt",
+      t.revoked_at::text AS "revokedAt", t.last_used_at::text AS "lastUsedAt"
+      FROM orkobi_core.integration_tokens t LEFT JOIN orkobi_core.organizations o ON o.id=t.organization_id
+      ORDER BY t.created_at DESC, t.id LIMIT 200`,
+      )
+    ).rows;
+  }
+  async integrationToken(id: string): Promise<StoredIntegrationToken | undefined> {
+    return (
+      await this.client.query<StoredIntegrationToken>(
+        `SELECT id, name, organization_id AS "organizationId", scopes, created_by AS "createdBy",
+      created_at::text AS "createdAt", expires_at::text AS "expiresAt", revoked_at::text AS "revokedAt",
+      last_used_at::text AS "lastUsedAt"
+      FROM orkobi_core.integration_tokens WHERE id=$1 FOR SHARE`,
+        [id],
+      )
+    ).rows[0];
+  }
+  async integrationTokenByHash(hash: string): Promise<StoredIntegrationToken | undefined> {
+    return (
+      await this.client.query<StoredIntegrationToken>(
+        `SELECT id, name, organization_id AS "organizationId", scopes, created_by AS "createdBy",
+      created_at::text AS "createdAt", expires_at::text AS "expiresAt", revoked_at::text AS "revokedAt",
+      last_used_at::text AS "lastUsedAt"
+      FROM orkobi_core.integration_tokens WHERE token_hash=$1 FOR SHARE`,
+        [hash],
+      )
+    ).rows[0];
+  }
+  async revokeIntegrationToken(id: string): Promise<number> {
+    const result = await this.client.query(
+      'UPDATE orkobi_core.integration_tokens SET revoked_at=now() WHERE id=$1 AND revoked_at IS NULL',
+      [id],
+    );
+    return result.rowCount ?? 0;
+  }
+  async touchIntegrationToken(id: string) {
+    await this.client.query(
+      'UPDATE orkobi_core.integration_tokens SET last_used_at=now() WHERE id=$1',
+      [id],
+    );
   }
   async organizations(): Promise<PlatformOrganization[]> {
     return (

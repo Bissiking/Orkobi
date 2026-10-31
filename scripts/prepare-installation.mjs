@@ -14,13 +14,19 @@ try {
   process.exit(1);
 }
 const env = parseEnv(content);
-if (!env.SETUP_TOKEN) {
+let changed = false;
+for (const key of ['SETUP_TOKEN', 'INTERNAL_TOKEN']) {
+  if (env[key]) continue;
   const value = randomBytes(32).toString('hex');
-  content = /^SETUP_TOKEN=.*$/mu.test(content)
-    ? content.replace(/^SETUP_TOKEN=.*$/mu, `SETUP_TOKEN=${value}`)
-    : `${content}\nSETUP_TOKEN=${value}\n`;
+  const pattern = new RegExp(`^${key}=.*$`, 'mu');
+  content = pattern.test(content)
+    ? content.replace(pattern, `${key}=${value}`)
+    : `${content}\n${key}=${value}\n`;
+  changed = true;
+}
+if (changed) {
   await writeFile(file, content, { mode: 0o600 });
 }
 process.stdout.write(
-  'Jeton d’installation disponible dans .env (SETUP_TOKEN). Aucun secret existant remplacé.\n',
+  'Jetons d’installation et BFF ↔ Core disponibles dans .env. Aucun secret existant remplacé.\n',
 );
