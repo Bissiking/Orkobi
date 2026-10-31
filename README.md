@@ -1,15 +1,17 @@
 <!-- README.md -->
 
-# Orkobi — 0.1.0-EXP
+# Orkobi — 0.2.0-EXP
 
 **Orkobi s'adapte à vous.**
 
 Fondations d'un ERP open source, modulaire et multi-organisation, indépendant de
-LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK et un premier
-Core NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
-0.1 à 0.4 et la Phase 1 sont livrées : PostgreSQL, migrations, installation,
-authentification locale, sessions, organisations, rôles et administration.
-Les modules métier et l'activation d'extensions restent à construire.
+LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK, un Core
+NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
+0.1 à 0.4, la Phase 1 et la Phase 2 sont livrées : PostgreSQL, migrations,
+installation, authentification locale, sessions, organisations, rôles,
+administration, registre de modules avec activation par organisation, catalogue
+de capabilities et premier module officiel `orkobi.demo` (notes isolées par
+organisation). Les modules métier externes restent à construire (Phase 4).
 
 ## Démarrage
 

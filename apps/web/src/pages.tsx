@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
 import { usePlatform } from './platform/context';
+import { ModulesSection } from './platform/pages';
 import type { TranslationKey } from './i18n';
 
 interface PlannedModule {
@@ -238,6 +239,7 @@ export function ModulesPage() {
   return (
     <>
       <PageHeading title={t.catalogueTitle} description={t.catalogueDescription} />
+      <ModulesSection />
       <div className="catalogue-tools">
         <div className="filter-group" role="group" aria-label={t.filter}>
           {(['all', 'business', 'association'] as const).map((value) => (
@@ -408,6 +410,13 @@ export function StatusPage() {
             <p>{t.databaseDescription}</p>
           </div>
           {state(platform.status?.databaseReady === true)}
+        </div>
+        <div className="service-row">
+          <div>
+            <h2>{t.modulesServiceName}</h2>
+            <p>{t.modulesServiceDescription}</p>
+          </div>
+          {state(platform.status?.modulesReady === true)}
         </div>
         <div className="checked-at">
           {loading

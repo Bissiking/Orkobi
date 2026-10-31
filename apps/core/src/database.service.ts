@@ -1,7 +1,7 @@
 import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import { PostgreSqlDatabase } from '@orkobi/database';
-import type { PostgreSqlConfig } from '@orkobi/database';
+import type { ModuleDataOwner, PostgreSqlAdapter, PostgreSqlConfig } from '@orkobi/database';
 
 export const DATABASE_CONFIG = Symbol('DATABASE_CONFIG');
 
@@ -21,6 +21,13 @@ export class CoreDatabase implements OnApplicationShutdown {
     if (!this.#database || !(await this.#database.isReady()))
       throw new ServiceUnavailableException();
     return this.#database.platform;
+  }
+
+  /** Adaptateur Data Access borné aux tables détenues par le module appelant. */
+  async dataAdapter(owner: ModuleDataOwner): Promise<PostgreSqlAdapter> {
+    if (!this.#database || !(await this.#database.isReady()))
+      throw new ServiceUnavailableException();
+    return this.#database.moduleAdapter(owner);
   }
 
   async onApplicationShutdown(): Promise<void> {

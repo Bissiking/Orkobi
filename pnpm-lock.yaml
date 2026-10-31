@@ -233,6 +233,9 @@ importers:
       '@orkobi/database':
         specifier: workspace:*
         version: link:../../lib/database
+      '@orkobi/module-demo':
+        specifier: workspace:*
+        version: link:../../modules/demo
       '@orkobi/sdk-core':
         specifier: workspace:*
         version: link:../../sdk/core
@@ -328,6 +331,12 @@ importers:
       '@orkobi/identity':
         specifier: workspace:*
         version: link:../identity
+
+  modules/demo:
+    dependencies:
+      '@orkobi/contracts':
+        specifier: workspace:*
+        version: link:../../lib/contracts
 
   sdk/core:
     dependencies:

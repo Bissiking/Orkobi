@@ -8,6 +8,7 @@ import { AppModule } from './app.module.js';
 import type { CoreConfig } from './config.js';
 import { CoreExceptionFilter } from './errors.js';
 import { JsonLogger } from './logger.js';
+import { coreVersion } from './version.js';
 
 export async function createApplication(config: CoreConfig, logger = new JsonLogger()) {
   const app = await NestFactory.create<NestExpressApplication>(
@@ -51,7 +52,7 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
         .setDescription(
           'Fondations techniques ; vitalité HTTP et disponibilité PostgreSQL, sans authentification métier.',
         )
-        .setVersion('0.1.0-EXP')
+        .setVersion(coreVersion)
         .build(),
     );
     SwaggerModule.setup('internal/docs', app, document, {

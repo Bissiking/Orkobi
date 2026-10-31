@@ -6,6 +6,9 @@ import { PlatformController } from '../platform/controller.js';
 import { PlatformService } from '../platform/service.js';
 import { PLATFORM_CONFIG, localPlatformConfig } from '../platform/config.js';
 import type { PlatformConfig } from '../platform/config.js';
+import { CapabilityRegistry } from '../modules/capability-registry.js';
+import { ModuleManager } from '../modules/manager.js';
+import { ModuleDataService } from '../modules/data.js';
 import { PersistentCoreServices } from './persistent-services.js';
 import {
   CORE_CAPABILITIES,
@@ -38,12 +41,16 @@ export class CoreServicesModule {
         CoreDatabase,
         PlatformService,
         PersistentCoreServices,
+        CapabilityRegistry,
+        ModuleManager,
+        ModuleDataService,
         { provide: DATABASE_CONFIG, useValue: database },
         { provide: PLATFORM_CONFIG, useValue: platform },
         ...[CORE_IDENTITY, CORE_ORGANIZATIONS, CORE_PERMISSIONS].map((provide) => ({
           provide,
           useExisting: PersistentCoreServices,
         })),
+        { provide: CORE_CAPABILITIES, useExisting: CapabilityRegistry },
       ],
       exports: [CoreDatabase],
     };

@@ -6,6 +6,66 @@ Chaque intervention doit ajouter une entrée datée avec les fichiers concernés
 les raisons des changements, les validations exécutées et les limites restantes.
 Les modifications en cours restent dans « Non publié » jusqu'à une version décidée.
 
+## Non publié — 0.2.0-EXP — 2026-10-31
+
+### Phase 2 — Module Manager, capabilities et premier module officiel
+
+- `lib/contracts/src/modules.ts` : contrats du manifeste standard de module
+  (identité, plage de compatibilité Core, dépendances, capabilities, permissions,
+  entités de données), validateur `isModuleManifest`, `ModuleSummary`,
+  `RegisteredModule`, `CapabilityStatus`, `ModuleEntry` et motifs associés.
+  `platform.ts` : permissions `modules:read`/`modules:write`, catalogue
+  `modulePermissions` (`demo:read`/`demo:write`), `builtinAdminPermissions` et
+  `InstallationStatus.modulesReady`. `http.ts` : `features.modules` variable.
+- `lib/database` : migrations additive `0003_modules` (registre
+  `orkobi_core.modules`, activations par organisation, contrainte de permissions
+  étendue, rôles builtin) et `0004_module_demo` (schéma `orkobi_demo`, table
+  `orkobi_demo.notes`, grant et permissions démo sur les rôles admin).
+  Méthodes de registre et d'activation dans `platform.ts` ; `adapter.ts` :
+  `PostgreSqlModuleAdapter` avec `validateModuleStatement` (instruction unique,
+  tables détenues uniquement, schémas `orkobi_*` non-dtenus refusés,
+  `organization_id` exigé, index de paramètres), `SET LOCAL lock_timeout` et
+  contexte d'organisation via `set_config`. Migrations marquées par leur module
+  propriétaire (`migrationsForModule`).
+- `modules/demo` : premier module officiel `orkobi.demo` (notes de démonstration,
+  permissions `demo:read`/`demo:write`, capabilities `core.identity`,
+  `core.permissions`, `core.modules`, `core.data.sql` obligatoires et `core.audit`
+  facultative, plage `>=0.2.0-EXP <0.3.0`).
+- `apps/core` : version produit `0.2.0-EXP` ; `modules/range.ts` (SemVer minimal),
+  `modules/capability-registry.ts` (catalogue honnête : available/limited/
+  unavailable), `modules/manager.ts` (synchronisation des manifestes officiels,
+  compatibilité, dépendances, activation plateforme et par organisation, audit),
+  `modules/data.ts` (accès générique borné aux entités déclarées, validation des
+  champs, audit par entité). Routes `capabilities`, `modules`,
+  `modules/:id/activate|deactivate`, données de module et `admin/modules`.
+  `modulesReady` dans le status, permissions builtin étendues à la création
+  d'organisation.
+- `apps/bff` : `features.modules: available` lorsque la base et le registre sont
+  prêts ; relais des routes modules et capabilities, contrôle d'origine inchangé.
+- `apps/web` : page `/modules` enrichie du registre réel et de l'activation par
+  organisation, nouvelle page `/modules/demo` (CRUD de notes avec confirmation),
+  permissions de module dans l'édition des rôles, audit et état des services
+  complétés, copie FR/EN.
+- `tests/modules.test.mjs` : plages de version, manifeste démo et
+  `validateModuleStatement` (refus multi-instructions, tables étrangères, schémas
+  non détenus, `organization_id` manquant, index de paramètres hors bornes, absence
+  de fuite SQL dans le message public). Correction : le motif `$n` de l'adapter
+  exigeait le flag `g` pour `matchAll`.
+- `tests/modules.integration.mjs` : scénario complet sur PostgreSQL réel
+  (capabilities, registre, activation plateforme puis organisation, CRUD de notes
+  validé, isolation inter-organisations, refus membre, conservation des données
+  après désactivation, blocage de désactivation plateforme, audit). Ajouté au
+  service Compose `test-db`.
+- `tests/platform.integration.mjs` : `modulesReady` attendu dans le status ;
+  `tests/core.test.mjs` : version OpenAPI `0.2.0-EXP`. Bump de version `0.2.0-EXP`
+  sur les treize manifests privés.
+- Validations : `pnpm check` (format, lint, build, tests unitaires),
+  `pnpm infra:test` (migrations 0001–0004, HTTP, panne SQL, redémarrage,
+  persistance) et parcours modules en conditions réelles.
+- Limites assumées : isolation applicative sans RLS (`core.data.sql` en
+  `limited`), modules tiers non supportés (manifestes embarqués uniquement),
+  `core.events` et `core.identity.oidc` indisponibles.
+
 ## Non publié — 0.1.0-EXP — 2026-10-29
 
 ### Corrections d'exploitation — 2026-10-30

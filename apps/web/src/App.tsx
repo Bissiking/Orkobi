@@ -24,6 +24,7 @@ import {
   OrganizationDetailPage,
   ProfilePage,
   AdministrationPage,
+  DemoNotesPage,
   AccountControls,
   OrganizationSelector,
 } from './platform/pages';
@@ -137,6 +138,8 @@ function ConnectionNotice() {
 }
 export default function App() {
   const { messages: t, locale, setLocale, setTheme } = usePreferences();
+  const { session } = usePlatform();
+  const moduleContext = `${session.user?.id ?? ''}:${session.activeOrganizationId ?? ''}`;
   const p = usePlatformCopy();
   const location = useLocation();
   const drawer = useRef<HTMLDialogElement>(null);
@@ -156,7 +159,9 @@ export default function App() {
             ? p.signIn
             : location.pathname.startsWith('/organizations/')
               ? p.organizations
-              : t.notFoundTitle;
+              : location.pathname === '/modules/demo'
+                ? p.demoTitle
+                : t.notFoundTitle;
   useEffect(() => {
     document.title = `${pageTitle} · Orkobi`;
     if (previousPath.current !== location.pathname) {
@@ -256,7 +261,8 @@ export default function App() {
               <Route path="/admin" element={<AdministrationPage />} />
               <Route path="/organizations" element={<ManagedOrganizationsPage />} />
               <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
-              <Route path="/modules" element={<ModulesPage />} />
+              <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
+              <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/system" element={<StatusPage />} />
               <Route path="*" element={<NotFoundPage />} />

@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { platformMigration } from './platform-migration.js';
+import { modulesMigration } from './modules-migration.js';
+import { moduleDemoMigration } from './module-demo-migration.js';
 
 export interface Migration {
   readonly id: string;
   readonly sql: string;
+  /** Identifiant du module propriétaire, pour les migrations propres aux modules. */
+  readonly module?: string;
 }
 
 /** Migrations append-only ; ne jamais modifier une migration déjà appliquée. */
@@ -14,7 +18,14 @@ export const migrations: readonly Migration[] = Object.freeze([
     sql: 'CREATE SCHEMA orkobi_core;',
   }),
   Object.freeze(platformMigration),
+  Object.freeze(modulesMigration),
+  Object.freeze(moduleDemoMigration),
 ]);
+
+/** Sous-ensemble des migrations appartenant à un module officiel. */
+export function migrationsForModule(moduleId: string): readonly Migration[] {
+  return migrations.filter((migration) => migration.module === moduleId);
+}
 
 export function checksum(migration: Migration): string {
   return createHash('sha256').update(migration.sql).digest('hex');

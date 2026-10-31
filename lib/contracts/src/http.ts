@@ -18,7 +18,7 @@ export interface BffBootstrap {
   readonly features: {
     readonly identity: 'available' | 'unavailable';
     readonly organizations: 'available' | 'unavailable';
-    readonly modules: 'unavailable';
+    readonly modules: 'available' | 'unavailable';
   };
   readonly checkedAt: string;
 }
@@ -49,7 +49,7 @@ export function isBffBootstrap(value: unknown): value is BffBootstrap {
     record(features) &&
     (features.identity === 'unavailable' || features.identity === 'available') &&
     (features.organizations === 'unavailable' || features.organizations === 'available') &&
-    features.modules === 'unavailable' &&
+    (features.modules === 'unavailable' || features.modules === 'available') &&
     typeof checkedAt === 'string' &&
     Number.isFinite(Date.parse(checkedAt))
   );

@@ -6,13 +6,17 @@ import type {
   OrganizationMembership,
   AccessibleOrganization,
   AuditEntry,
-  OrganizationPermission,
   SessionSummary,
+  ModuleManifest,
 } from '@orkobi/contracts';
+import type { OrganizationContext } from '@orkobi/contracts';
+import { moduleTransaction } from './adapter.js';
+import type { ModuleDataOwner } from './adapter.js';
 
 const userColumns = 'id, email, name, active, platform_admin AS "platformAdmin"';
 const orgColumns = 'id, name, kind, active, locale, timezone';
 const roleColumns = 'id, organization_id AS "organizationId", name, permissions, builtin';
+const moduleColumns = 'id, version, name, manifest, enabled';
 export interface CredentialUser extends PlatformUser {
   passwordHash: string;
 }
@@ -22,9 +26,20 @@ export interface StoredSession {
   csrfToken: string;
   activeOrganizationId: string | null;
 }
+export interface StoredModule {
+  id: string;
+  version: string;
+  name: string;
+  manifest: ModuleManifest;
+  enabled: boolean;
+}
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
 export class PlatformTransaction {
+  /** Réutilise la transaction d'autorisation et d'audit, sans nouvelle connexion. */
+  moduleData(owner: ModuleDataOwner, context: OrganizationContext) {
+    return moduleTransaction(this.client, owner, context);
+  }
   constructor(private readonly client: PoolClient) {}
 
   async lockAdministration() {
@@ -209,7 +224,7 @@ export class PlatformTransaction {
     id: string,
     orgId: string,
     name: string,
-    permissions: readonly OrganizationPermission[],
+    permissions: readonly string[],
     builtin: string | null = null,
   ) {
     await this.client.query(
@@ -253,6 +268,59 @@ export class PlatformTransaction {
       `INSERT INTO orkobi_core.memberships (organization_id,user_id,role_id,active) VALUES ($1,$2,$3,$4)
       ON CONFLICT (organization_id,user_id) DO UPDATE SET role_id=EXCLUDED.role_id,active=EXCLUDED.active`,
       [orgId, userId, roleId, active],
+    );
+  }
+  async modules(): Promise<StoredModule[]> {
+    return (
+      await this.client.query<StoredModule>(
+        `SELECT ${moduleColumns} FROM orkobi_core.modules ORDER BY id`,
+      )
+    ).rows;
+  }
+  async module(id: string): Promise<StoredModule | undefined> {
+    return (
+      await this.client.query<StoredModule>(
+        `SELECT ${moduleColumns} FROM orkobi_core.modules WHERE id=$1 FOR SHARE`,
+        [id],
+      )
+    ).rows[0];
+  }
+  /** Upsert du manifeste ; l'état d'activation plateforme existant est conservé. */
+  async registerModule(id: string, version: string, name: string, manifest: ModuleManifest) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.modules (id,version,name,manifest) VALUES ($1,$2,$3,$4)
+      ON CONFLICT (id) DO UPDATE SET version=EXCLUDED.version,name=EXCLUDED.name,manifest=EXCLUDED.manifest,updated_at=now()
+      WHERE (modules.version,modules.name,modules.manifest) IS DISTINCT FROM (EXCLUDED.version,EXCLUDED.name,EXCLUDED.manifest)`,
+      [id, version, name, manifest],
+    );
+  }
+  async setModuleEnabled(id: string, enabled: boolean) {
+    await this.client.query(
+      'UPDATE orkobi_core.modules SET enabled=$2, updated_at=now() WHERE id=$1',
+      [id, enabled],
+    );
+  }
+  async organizationModules(orgId: string): Promise<{ moduleId: string; enabled: boolean }[]> {
+    return (
+      await this.client.query<{ moduleId: string; enabled: boolean }>(
+        `SELECT module_id AS "moduleId", enabled FROM orkobi_core.organization_modules WHERE organization_id=$1`,
+        [orgId],
+      )
+    ).rows;
+  }
+  async organizationModuleCount(moduleId: string): Promise<number> {
+    return (
+      await this.client.query<{ count: number }>(
+        'SELECT count(*)::integer AS count FROM orkobi_core.organization_modules WHERE module_id=$1 AND enabled',
+        [moduleId],
+      )
+    ).rows[0]!.count;
+  }
+  async setOrganizationModule(orgId: string, moduleId: string, enabled: boolean) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.organization_modules (organization_id,module_id,enabled) VALUES ($1,$2,$3)
+      ON CONFLICT (organization_id,module_id) DO UPDATE SET enabled=EXCLUDED.enabled,enabled_at=now()`,
+      [orgId, moduleId, enabled],
     );
   }
   async audit(

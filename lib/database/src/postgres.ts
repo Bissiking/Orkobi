@@ -2,6 +2,9 @@ import pg from 'pg';
 import type { PostgreSqlConfig } from './config.js';
 import { applyMigrations, schemaIsCurrent } from './migrations.js';
 import { PlatformRepository } from './platform.js';
+import { PostgreSqlModuleAdapter } from './adapter.js';
+import type { ModuleDataOwner } from './adapter.js';
+import type { PostgreSqlAdapter } from './index.js';
 
 /** Infrastructure interne, sans accès SQL public ni promesse d'isolation métier. */
 export class PostgreSqlDatabase {
@@ -45,6 +48,11 @@ export class PostgreSqlDatabase {
     } finally {
       client.release();
     }
+  }
+
+  /** Accès SQL borné aux tables déclarées du module, isolé par organisation. */
+  moduleAdapter(owner: ModuleDataOwner): PostgreSqlAdapter {
+    return new PostgreSqlModuleAdapter(this.#pool, owner);
   }
 
   close(): Promise<void> {

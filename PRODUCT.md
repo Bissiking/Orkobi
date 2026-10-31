@@ -9,7 +9,7 @@ web
 ## Stack
 
 React avec Vite et TypeScript ; BFF NestJS séparé du Core NestJS, conformément
-à la roadmap technique 0.3. Monorepo pnpm privé, version 0.1.0-EXP conservée.
+à la roadmap technique 0.3. Monorepo pnpm privé, version 0.2.0-EXP.
 
 ## Users
 
@@ -17,6 +17,8 @@ Entreprises, associations et autres organisations, d'après la roadmap.
 La Phase 1 sert les administrateurs plateforme, les administrateurs
 d'organisation et leurs membres. La personne qui prépare l'instance crée le
 premier compte ; elle crée ensuite les organisations et peut déléguer leur gestion.
+La Phase 2 active des modules par organisation, avec un module de démonstration
+(notes partagées) pour valider le cycle modulaire.
 
 ## Product Purpose
 

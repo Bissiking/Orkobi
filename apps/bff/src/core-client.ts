@@ -41,7 +41,9 @@ export async function platformIsAvailable(
       'initialized' in value &&
       value.initialized === true &&
       'databaseReady' in value &&
-      value.databaseReady === true
+      value.databaseReady === true &&
+      'modulesReady' in value &&
+      value.modulesReady === true
     );
   } catch {
     return false;

@@ -2,7 +2,7 @@
 
 > Document de référence proposé · statut : brouillon à valider · version du document : 1.0
 >
-> Version applicative actuelle déclarée : `0.1.0-EXP`. Ce document décrit une **cible** ; aucune branche, automatisation ou fonctionnalité de mise à jour n'est présumée implémentée.
+> Version applicative actuelle déclarée : `0.2.0-EXP`. Ce document décrit une **cible** ; aucune branche, automatisation ou fonctionnalité de mise à jour n'est présumée implémentée.
 
 > Mise au point du 29 octobre 2026 : ce document conserve la proposition générale
 > de distribution. Les règles opérationnelles issues de l'examen du dépôt sont
@@ -254,7 +254,7 @@ Conventional Commits recommandé : `feat:`, `fix:`, `docs:`, `refactor:`, `perf:
 
 ## 15. Politique initiale proposée pour Orkobi
 
-- Version actuelle inchangée : **`0.1.0-EXP`**.
+- Version actuelle inchangée : **`0.2.0-EXP`**.
 - Branches durables : **`main`, `develop`, `matheo` et `devops`**.
 - Canaux accessibles au départ : **DEV interne** ; BETA puis STABLE lors de leur première publication validée.
 - CANARY : configuré mais désactivé.

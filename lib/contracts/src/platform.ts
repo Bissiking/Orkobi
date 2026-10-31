@@ -6,8 +6,20 @@ export const organizationPermissions = [
   'members:write',
   'roles:write',
   'audit:read',
+  'modules:read',
+  'modules:write',
 ] as const;
 export type OrganizationPermission = (typeof organizationPermissions)[number];
+
+/** Catalogue officiel des permissions portées par les modules officiels. */
+export const modulePermissions = ['demo:read', 'demo:write'] as const;
+export type ModulePermission = (typeof modulePermissions)[number];
+
+/** Rôle administrateur prédéfini : permissions plateforme et permissions des modules officiels. */
+export const builtinAdminPermissions: readonly string[] = [
+  ...organizationPermissions,
+  ...modulePermissions,
+];
 export interface PlatformUser {
   id: string;
   email: string;
@@ -27,7 +39,8 @@ export interface OrganizationRole {
   id: string;
   organizationId: string;
   name: string;
-  permissions: OrganizationPermission[];
+  /** Inclut les permissions plateforme et, lorsque le module est accordé, les permissions de module. */
+  permissions: string[];
   builtin: 'admin' | 'member' | null;
 }
 export interface OrganizationMembership {
@@ -38,7 +51,7 @@ export interface OrganizationMembership {
   roleId: string;
 }
 export interface AccessibleOrganization extends PlatformOrganization {
-  permissions: OrganizationPermission[];
+  permissions: string[];
 }
 export interface PlatformSession {
   user: PlatformUser | null;
@@ -65,4 +78,5 @@ export interface SessionSummary {
 export interface InstallationStatus {
   initialized: boolean;
   databaseReady: boolean;
+  modulesReady: boolean;
 }

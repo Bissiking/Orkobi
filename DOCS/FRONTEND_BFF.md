@@ -2,11 +2,13 @@
 
 > Ce guide conserve la description du shell livré en 0.3. La
 > [Phase 1](PHASE_1.md) ajoute les parcours authentifiés, la délégation et
-> l'administration ; elle prévaut pour les routes et contrats actuels.
-> Le bootstrap est désormais de schéma 2 et le BFF ne relaie les cookies
-> Orkobi/CSRF que pour la liste fermée de routes `/api/platform/*`.
+> l'administration ; la [Phase 2](PHASE_2.md) ajoute le registre de modules,
+> l'activation par organisation et la page de démonstration. Ils prévalent pour
+> les routes et contrats actuels. Le bootstrap est de schéma 2 et le BFF ne
+> relaie les cookies Orkobi/CSRF que pour la liste fermée de routes
+> `/api/platform/*`, y compris les routes modules et capabilities.
 
-Livraison locale du 29 octobre 2026, version produit **0.1.0-EXP conservée**.
+Livraison locale du 31 octobre 2026, version produit **0.2.0-EXP**.
 La 0.3 désigne la section de la phase 0, pas une publication produit 0.3.0.
 
 ## Applications et démarrage
@@ -89,20 +91,22 @@ pas ; il retourne donc HTTP 200 avec un état Core explicite :
 ```json
 {
   "schemaVersion": 2,
-  "product": { "name": "Orkobi", "version": "0.1.0-EXP" },
+  "product": { "name": "Orkobi", "version": "0.2.0-EXP" },
   "core": { "status": "ok" },
   "features": {
     "identity": "unavailable",
     "organizations": "unavailable",
     "modules": "unavailable"
   },
-  "checkedAt": "2026-10-29T09:00:00.000Z"
+  "checkedAt": "2026-10-31T09:00:00.000Z"
 }
 ```
 
 La date de cet exemple est illustrative. En cas d'échec, `core` vaut
 `{ status: 'unavailable', reason }`, avec `timeout`, `unreachable` ou
-`invalid_response`. Le frontend distingue l'indisponibilité du Core de celle
+`invalid_response`. Les trois features passent à `available` lorsque la base et
+le registre de modules sont prêts (`initialized`, `databaseReady` et
+`modulesReady` tous vrais dans le status du Core). Le frontend distingue l'indisponibilité du Core de celle
 du BFF, affiche la récupération possible et conserve les pages de découverte.
 Un schéma BFF incohérent est rejeté, sans afficher un faux état disponible.
 Le futur contrat métier demandera une évolution explicite de ce schéma.
@@ -128,19 +132,22 @@ contrôle PostgreSQL et les migrations. Cette sonde renvoie 200 avec
 
 ## Routes et interactions
 
-| Route               | Comportement actuel                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `/`                 | Accueil centré sur les organisations et les futurs modules                                             |
-| `/organizations`    | État de préparation, présentation des usages entreprise/association, création explicitement désactivée |
-| `/modules`          | Catalogue de six modules prévus, recherche, filtres d'audience et remise à zéro                        |
-| `/settings`         | Thème clair/sombre/système, langue FR/EN, enregistrement local automatique                             |
-| `/system`           | État réel BFF/Core, vérification manuelle et reprise après panne                                       |
-| Autre route de page | Écran 404 localisé avec retour à l'accueil                                                             |
+| Route               | Comportement actuel                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `/`                 | Accueil centré sur les organisations et les accès modules                                                 |
+| `/organizations`    | État de préparation, présentation des usages entreprise/association, création explicitement désactivée    |
+| `/modules`          | Catalogue de présentation, registre réel des modules, activation par organisation (droit `modules:write`) |
+| `/modules/demo`     | Notes de démonstration du module `orkobi.demo` (`demo:read`/`demo:write`) pour l'organisation active      |
+| `/settings`         | Thème clair/sombre/système, langue FR/EN, enregistrement local automatique                                |
+| `/system`           | État réel BFF/Core/registre, vérification manuelle et reprise après panne                                 |
+| Autre route de page | Écran 404 localisé avec retour à l'accueil                                                                |
 
 Les filtres `audience=business|association` et `q=...` restent dans l'URL ;
 rechargement, lien direct et retour navigateur conservent le contexte.
-Le catalogue est une présentation issue de la roadmap, sans registre de modules
-installés, activation, données utilisateur ou métriques inventées.
+Le catalogue de présentation reste distinct du registre réel : sans session ou
+organisation active, seule la présentation s'affiche ; le registre, l'activation
+et les données de module exigent les permissions correspondantes et sont relais
+vers le Core (voir [PHASE_2.md](PHASE_2.md)).
 
 La navigation mobile utilise un `<dialog>` natif : focus contraint au tiroir,
 fermeture par Échap et restitution du focus. Un lien d'évitement, un focus visible,

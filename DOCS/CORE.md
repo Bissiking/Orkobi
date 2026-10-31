@@ -1,14 +1,15 @@
-# Core HTTP — 0.1.0-EXP
+# Core HTTP — 0.2.0-EXP
 
 > Ce guide décrit les fondations 0.2 et leur évolution SQL 0.4. La
-> [Phase 1](PHASE_1.md) fournit désormais installation, authentification,
-> sessions, organisations, permissions, audit et services SDK persistants.
-> Elle fait référence pour ces nouveaux contrats et leurs conditions.
+> [Phase 1](PHASE_1.md) fournit installation, authentification, sessions,
+> organisations, permissions, audit et services SDK persistants. La
+> [Phase 2](PHASE_2.md) ajoute le Module Manager, le Capability Registry, le
+> Data Access Manager et le module officiel `orkobi.demo`. Ces deux guides font
+> référence pour leurs contrats et conditions respectifs.
 
-Livraison locale du 29 octobre 2026 : première application NestJS dans `apps/core`,
-au-dessus des contrats ESM existants. Ce lot complète l'initialisation 0.1 de la
-phase 0. La revue et les contrats applicatifs décrits ci-dessous terminent
-l'étape technique 0.2 ; la version produit 0.1.0-EXP reste ouverte.
+Livraison locale du 31 octobre 2026 : version produit 0.2.0-EXP. Ce document
+décrit le Core NestJS de `apps/core` au-dessus des contrats ESM existants ; la
+version produit reste ouverte et non publiée.
 
 ## Exécution
 

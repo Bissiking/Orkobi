@@ -3,7 +3,7 @@
 # Orkobi — Roadmap de développement
 
 **Slogan :** Orkobi s'adapte à vous.  
-**Version cible :** 0.1.0-EXP  
+**Version cible :** 0.2.0-EXP<br>
 **Statut :** Développement initial  
 **Architecture :** ERP modulaire, multi-organisation  
 **Projet :** Indépendant de LUMA
@@ -147,47 +147,56 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ---
 
-# Phase 2 — Orkobi Core 0.2.0
+# Phase 2 — Orkobi Core 0.2.0-EXP
 
 **Objectif :** poser les bases du fonctionnement modulaire.
 
 ## 2.1 — Module Manager
 
-- [ ] Définir le manifeste standard des modules.
-- [ ] Créer un registre central des modules.
-- [ ] Déclarer les dépendances entre modules.
-- [ ] Gérer les versions compatibles.
-- [ ] Gérer activation et désactivation.
-- [ ] Permettre l'activation par organisation.
-- [ ] Bloquer la désactivation en cas de dépendance critique.
-- [ ] Conserver les données lors d'une désactivation.
+- [x] Définir le manifeste standard des modules.
+- [x] Créer un registre central des modules.
+- [x] Déclarer les dépendances entre modules.
+- [x] Gérer les versions compatibles.
+- [x] Gérer activation et désactivation.
+- [x] Permettre l'activation par organisation.
+- [x] Bloquer la désactivation en cas de dépendance critique.
+- [x] Conserver les données lors d'une désactivation.
 
 ## 2.2 — Capability Registry
 
-- [ ] Créer le catalogue officiel des capabilities.
-- [ ] Distinguer capabilities, exigences et permissions.
-- [ ] Définir les capacités obligatoires et facultatives.
-- [ ] Détecter les capacités disponibles.
-- [ ] Gérer les fonctionnalités limitées.
-- [ ] Documenter les contrats du Core.
+- [x] Créer le catalogue officiel des capabilities.
+- [x] Distinguer capabilities, exigences et permissions.
+- [x] Définir les capacités obligatoires et facultatives.
+- [x] Détecter les capacités disponibles.
+- [x] Gérer les fonctionnalités limitées.
+- [x] Documenter les contrats du Core.
 
 ## 2.3 — Data Access Manager
 
-- [ ] Créer les abstractions d'accès SQL du SDK.
-- [ ] Contrôler les accès aux données par organisation.
-- [ ] Définir la propriété des ressources par module.
-- [ ] Préparer la déclaration des tables.
-- [ ] Préparer les migrations propres aux modules.
-- [ ] Refuser les opérations non autorisées.
+- [x] Créer les abstractions d'accès SQL du SDK.
+- [x] Contrôler les accès aux données par organisation.
+- [x] Définir la propriété des ressources par module.
+- [x] Préparer la déclaration des tables.
+- [x] Préparer les migrations propres aux modules.
+- [x] Refuser les opérations non autorisées.
 
 ## 2.4 — Premier module officiel
 
-- [ ] Créer un module de démonstration.
-- [ ] Déclarer son manifeste.
-- [ ] Déclarer ses permissions.
-- [ ] Créer ses ressources via le Core.
-- [ ] Intégrer ses pages au frontend.
-- [ ] Tester activation, désactivation et conservation des données.
+- [x] Créer un module de démonstration.
+- [x] Déclarer son manifeste.
+- [x] Déclarer ses permissions.
+- [x] Créer ses ressources via le Core.
+- [x] Intégrer ses pages au frontend.
+- [x] Tester activation, désactivation et conservation des données.
+
+### Critères de validation V0.2.0-EXP
+
+- [x] Manifeste démo valide et synchronisé au démarrage des opérations modules.
+- [x] Activation plateforme puis activation par organisation avec contrôle des dépendances.
+- [x] Données de module isolées par organisation et conservées après désactivation.
+- [x] Audit des opérations de module.
+- [x] Interface modules et notes de démonstration fonctionnelles.
+- [x] Tests unitaires et d'intégration réussis.
 
 ---
 
@@ -332,12 +341,18 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phase 0 et Phase 1 terminées ; poursuivre le Module Manager 2.1.**
+**Phases 0, 1 et 2 terminées ; poursuivre l'authentification avancée 3.1.**
 
-Prochain objectif concret : manifeste, registre des modules et activation par organisation.
-La plateforme expérimentale 0.1.0-EXP dispose de l'installation, de l'identité,
-de l'administration et d'une isolation applicative des organisations testée.
+Prochain objectif concret : fournisseurs OIDC, liaison des identités, MFA locale
+et gestion des sessions actives depuis le profil.
+La plateforme expérimentale 0.2.0-EXP dispose de l'installation, de l'identité,
+de l'administration, de l'isolation applicative des organisations, d'un registre
+de modules avec activation par organisation et d'un module officiel de
+démonstration dont les données sont isolées et conservées.
 Les conditions de publication et de production restent distinctes.
+
+Le [guide de Phase 2](PHASE_2.md) décrit le Module Manager, le Capability
+Registry, le Data Access Manager et le module `orkobi.demo`, avec leurs tests.
 
 Les preuves et limites du Core figurent dans [CORE.md](CORE.md) et la
 [revue 0.1/0.2](REVIEW_PHASE_0.md). Le [guide frontend/BFF](FRONTEND_BFF.md)

@@ -4,7 +4,7 @@
   "name": "@orkobi/sdk-core",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "version": "0.1.0-EXP",
+  "version": "0.2.0-EXP",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"

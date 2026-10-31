@@ -45,18 +45,18 @@ les migrations et `pnpm dev`. Vite relaie `/api` au BFF avec l'origine du naviga
 
 ## Parcours disponibles
 
-| Page                 | Fonction                                                                       |
-| -------------------- | ------------------------------------------------------------------------------ |
-| `/setup`             | Installation initiale, puis fermeture définitive après succès                  |
-| `/login`             | Connexion locale                                                               |
-| `/`                  | Organisations accessibles, profil et accès administratif selon les droits      |
-| `/organizations`     | Choix d'une organisation accessible                                            |
-| `/organizations/:id` | Paramètres, membres, rôles et audit autorisés dans cette organisation          |
-| `/admin`             | Comptes, organisations et audit global, réservé aux administrateurs plateforme |
-| `/profile`           | Nom affiché, identité du compte et révocation des sessions                     |
-| `/system`            | Vitalité BFF/Core, état SQL et version                                         |
-| `/settings`          | Préférences locales FR/EN et clair/sombre/système                              |
-| `/modules`           | Catalogue de présentation ; aucun module installé ou activable                 |
+| Page                 | Fonction                                                                         |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `/setup`             | Installation initiale, puis fermeture définitive après succès                    |
+| `/login`             | Connexion locale                                                                 |
+| `/`                  | Organisations accessibles, profil et accès administratif selon les droits        |
+| `/organizations`     | Choix d'une organisation accessible                                              |
+| `/organizations/:id` | Paramètres, membres, rôles et audit autorisés dans cette organisation            |
+| `/admin`             | Comptes, organisations et audit global, réservé aux administrateurs plateforme   |
+| `/profile`           | Nom affiché, identité du compte et révocation des sessions                       |
+| `/system`            | Vitalité BFF/Core, état SQL et version                                           |
+| `/settings`          | Préférences locales FR/EN et clair/sombre/système                                |
+| `/modules`           | Catalogue de présentation ; le registre réel et l'activation arrivent en Phase 2 |
 
 Les routes d'organisation utilisent des paramètres d'URL explicites et revérifient
 les droits côté Core. La sélection active est conservée dans la session serveur ;
@@ -179,7 +179,8 @@ Il retourne des erreurs publiques normalisées, sans exception SQL brute.
 Le bootstrap BFF passe explicitement au **schéma 2**. Identité et organisations
 sont annoncées disponibles uniquement si le Core répond, la base est prête et
 l'instance est initialisée. Une disponibilité ne représente aucune autorisation.
-Les modules restent indisponibles. Les sondes de vitalité gardent leur contrat.
+La disponibilité des modules suit la même règle depuis la Phase 2, avec
+`modulesReady` en plus. Les sondes de vitalité gardent leur contrat.
 
 Tout SQL de production reste dans `lib/database`. `PlatformRepository` fournit
 des opérations internes paramétrées, sans SQL dans le SDK ou le navigateur.
@@ -191,9 +192,9 @@ SQL du Core est une frontière de confiance et aucune RLS PostgreSQL n'est annon
 Les services SDK d'identité, d'organisation et de permissions sont raccordés à
 la persistance. Ils relisent utilisateur, organisation, appartenance et rôle à
 chaque appel. La factory interne exige toujours un contexte préalablement établi
-et autorisé par le Core. Le registre de capabilities reste indisponible (Phase 2).
-L'adaptateur SQL métier générique et l'isolation d'exécution des plugins ne sont
-pas implémentés par cette phase.
+et autorisé par le Core. Le registre de capabilities et l'accès SQL des modules
+arrivent en [Phase 2](PHASE_2.md). L'isolation d'exécution des plugins n'est
+pas implémentée.
 
 ## Audit et limites
 
@@ -208,9 +209,10 @@ un journal cryptographique externe infalsifiable.
 
 Les listes sont bornées à 200 entrées (sessions à 100), sans pagination dans cette
 première interface. MFA, récupération/réinitialisation de mot de passe, inscription
-publique, invitations par e-mail, OIDC actif, purge planifiée, modules métier et
-APIs d'intégration sont hors de ce lot. Ne pas utiliser cette version expérimentale
-comme une promesse de toutes les fonctions d'un ERP ou d'une sécurité de production.
+publique, invitations par e-mail, OIDC actif, purge planifiée, modules métier
+externes et APIs d'intégration sont hors de ce lot. Ne pas utiliser cette version
+expérimentale comme une promesse de toutes les fonctions d'un ERP ou d'une
+sécurité de production.
 
 ## Vérifications
 

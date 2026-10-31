@@ -1,7 +1,7 @@
 name: orkobi
 
 x-app: &app
-  image: orkobi-local:0.1.0-exp
+  image: orkobi-local:0.2.0-exp
   build: .
   init: true
 
@@ -92,13 +92,12 @@ services:
   test-db:
     <<: *app
     profiles: [test]
+    # node --test trie les fichiers : l'ordre database → platform → modules est explicite.
     command:
       [
-        node,
-        --test,
-        --test-concurrency=1,
-        tests/database.integration.mjs,
-        tests/platform.integration.mjs,
+        sh,
+        -c,
+        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs',
       ]
     environment:
       DB_HOST: postgres

@@ -43,16 +43,19 @@ la traduction des erreurs d'infrastructure incombera à l'implémentation du Cor
 | Exigence   | `{ key, required }`                             | Besoin obligatoire ou facultatif d'un module          |
 | Permission | `ressource:action`, par exemple `contacts:read` | Droit soumis à une autorisation dans une organisation |
 
-Ces noms sont des conventions initiales. Les types vérifient la présence du
-séparateur ; une validation runtime complète et le catalogue restent à construire.
-Déclarer une permission ne l'accorde pas. La disponibilité d'une capability ne
-confère aucun droit. Une exigence obligatoire absente devra empêcher l'activation
-future du module, une exigence facultative pourra réduire ses fonctionnalités.
+Ces noms sont des conventions devenus contrats en Phase 2. La validation runtime
+du manifeste (`isModuleManifest`) vérifie identité, dépendances, capabilities,
+permissions et entités. Déclarer une permission ne l'accorde pas. La disponibilité
+d'une capability ne confère aucun droit. Le Capability Registry du Core refuse
+l'activation d'un module dont une exigence obligatoire est `unavailable` ;
+une exigence facultative peut réduire ses fonctionnalités.
 
-`sdk.permissions.can()` aide à adapter l'interface. Le Core devra revérifier les
+`sdk.permissions.can()` aide à adapter l'interface. Le Core revérifie les
 droits lors de chaque opération pour gérer changements de rôle et révocations.
 La façade actuelle propose des lectures d'identité, de permissions et de
-capabilities ; elle n'expose aucun service SQL ou système et aucun chargeur de module.
+capabilities ; elle n'expose aucun chargeur de module. L'accès SQL des modules
+passe par le Data Access Manager du Core (`lib/database`), borné aux tables
+détenues et à l'organisation (voir [PHASE_2.md](PHASE_2.md)).
 
 ## Raccord applicatif du Core
 
@@ -61,10 +64,10 @@ capabilities ; elle n'expose aucun service SQL ou système et aucun chargeur de 
 `CoreCapabilityService`, avec des jetons d'injection NestJS séparés du SDK public.
 Le module autonome `CoreServicesModule` conserve des fournisseurs `unavailable`.
 Dans l'application, `CoreServicesModule.register()` raccorde depuis la Phase 1
-les fournisseurs persistants d'identité, d'organisation et de permissions.
-Ils vérifient le compte, l'organisation, l'appartenance et le rôle actuels à
-chaque appel ; sans SQL prêt ils renvoient `unavailable`. Le catalogue de
-capabilities demeure indisponible.
+les fournisseurs persistants d'identité, d'organisation et de permissions, et
+depuis la Phase 2 le registre de capabilities. Ils vérifient le compte,
+l'organisation, l'appartenance et le rôle actuels à chaque appel ; sans SQL
+prêt ils renvoient `unavailable`.
 
 `CoreSdkFactory.forAuthorizedContext(context)` adapte ces interfaces vers `CoreSdk`.
 La façade et sa copie explicite du contexte sont gelées. Chaque appel transmet
@@ -74,8 +77,9 @@ elle ne vérifie ni session ni appartenance. Le futur point d'entrée du Core de
 établir et autoriser le contexte, et les implémentations persistantes contrôlent
 son état et ses droits courants. Aucun endpoint de création de façade n'est exposé.
 
-Ces contrats préparent les services métier ; ils ne fournissent pas encore de
-registre de capabilities ou d'accès aux données. Voir [CORE.md](CORE.md).
+Ces contrats préparent les services métier. Le registre de capabilities et le
+raccord des modules sont décrits en [Phase 2](PHASE_2.md) ; voir aussi
+[CORE.md](CORE.md).
 
 ## Organisation et compatibilité
 

@@ -20,7 +20,11 @@ export function PlatformProvider({ children }: { children: ReactNode }) {
     const current = ++revision.current;
     try {
       const next = await platformRequest<InstallationStatus>('status');
-      if (typeof next?.initialized !== 'boolean' || typeof next.databaseReady !== 'boolean')
+      if (
+        typeof next?.initialized !== 'boolean' ||
+        typeof next.databaseReady !== 'boolean' ||
+        typeof next.modulesReady !== 'boolean'
+      )
         throw new Error();
       const auth =
         next.initialized && next.databaseReady

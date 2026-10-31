@@ -1,7 +1,7 @@
 # Orkobi — Stratégie Git et règles de versioning
 
 Règles préparées le 29 octobre 2026 après examen du dépôt.
-Version conservée : **`0.1.0-EXP`**. Ce document définit la procédure ; il ne
+Version conservée : **`0.2.0-EXP`**. Ce document définit la procédure ; il ne
 constitue ni une publication ni la preuve d'une protection GitHub active.
 Le [diagnostic d'initialisation](GIT_BOOTSTRAP.md) distingue les actions locales
 réalisées et les actions distantes en attente.
@@ -101,10 +101,11 @@ Le monorepo utilise initialement une **version fixe commune** pour douze manifes
 - `sdk/{core,types}/package.json` ;
 - `tests/types/package.json`.
 
-Tous déclarent `0.1.0-EXP`. Le SDK n'est pas encore publié indépendamment.
+Tous déclarent `0.2.0-EXP`. Le SDK n'est pas encore publié indépendamment.
 Les applications BFF et frontend rejoignent cette règle depuis le lot 0.3.
-Les futurs modules/plugins pourront avoir leurs versions propres et devront déclarer
-la compatibilité Core/SDK ; leur numéro ne sera pas changé automatiquement avec le Core.
+Le module officiel `orkobi.demo` a sa propre version de manifeste (`0.1.0`),
+déclarant la compatibilité Core ; son numéro ne suit pas automatiquement le Core.
+Les futurs modules/plugins suivront la même règle.
 
 Représentations actuellement maintenues explicitement :
 

@@ -9,8 +9,10 @@ permissions, orchestration et accès aux ressources. Son socle HTTP NestJS exist
 dans `apps/core`, sans dépendance NestJS dans les contrats. Il fournit la vitalité,
 la readiness SQL, les erreurs, la corrélation, les en-têtes de sécurité et OpenAPI.
 La [Phase 1](PHASE_1.md) ajoute installation, identité locale, sessions,
-organisations, rôles, permissions et audit. Identité, organisation et permissions
-sont raccordées au SDK ; les capabilities et modules métier restent indisponibles.
+organisations, rôles, permissions et audit. La [Phase 2](PHASE_2.md) ajoute le
+Module Manager, le Capability Registry, le Data Access Manager et le module
+officiel `orkobi.demo`. Identité, organisation, permissions et capabilities sont
+raccordées au SDK ; les modules métier externes restent indisponibles.
 Le [guide Core](CORE.md) décrit ses points d'entrée et ses limites.
 
 **`lib/`** regroupe les mécanismes internes. Le package `contracts` n'accède à
@@ -27,8 +29,11 @@ enregistre les fournisseurs persistants de Phase 1. Le Core doit authentifier et
 autoriser le contexte avant de créer une façade, puis les services revérifient
 les droits à chaque opération. La factory n'authentifie personne.
 
-Les **modules** porteront les fonctionnalités métier. Aucun chargeur dynamique,
-registre de capabilities ou Store n'est construit par ce bootstrap.
+Les **modules** portent les fonctionnalités métier. Depuis la Phase 2, le Core
+synchronise ses manifestes officiels dans un registre, contrôle compatibilité,
+dépendances et capabilities, et borne l'accès aux données de module par
+organisation. Aucun chargeur dynamique de modules tiers ni Store n'est construit
+par ce bootstrap.
 
 ## Frontend et BFF
 

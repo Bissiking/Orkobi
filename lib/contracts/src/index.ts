@@ -1,7 +1,7 @@
 // lib/contracts/src/index.ts
 export { isBffBootstrap, isCoreHealth } from './http.js';
 export type { BffBootstrap, CoreAvailability, CoreHealth } from './http.js';
-export { organizationPermissions } from './platform.js';
+export { organizationPermissions, modulePermissions, builtinAdminPermissions } from './platform.js';
 export type {
   PlatformUser,
   PlatformOrganization,
@@ -14,6 +14,27 @@ export type {
   SessionSummary,
   InstallationStatus,
 } from './platform.js';
+export {
+  isModuleManifest,
+  moduleIdPattern,
+  moduleVersionPattern,
+  moduleTablePattern,
+  permissionKeyPattern,
+  capabilityKeyPattern,
+  entityNamePattern,
+} from './modules.js';
+export type {
+  ModuleManifest,
+  ModuleSummary,
+  RegisteredModule,
+  ModuleEntry,
+  ModuleEntityDeclaration,
+  ModuleFieldDeclaration,
+  ModuleCapabilityRequirement,
+  ModulePermissionDeclaration,
+  CapabilityStatus,
+  CapabilityAvailability,
+} from './modules.js';
 
 declare const identifierBrand: unique symbol;
 

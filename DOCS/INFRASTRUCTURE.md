@@ -1,9 +1,11 @@
 # Infrastructure — étape technique 0.4
 
-La version produit reste **0.1.0-EXP**. Ce lot fournit PostgreSQL, les migrations,
+La version produit est **0.2.0-EXP**. Ce lot fournit PostgreSQL, les migrations,
 la pile Docker Compose locale et des contrôles de disponibilité. L'assistant,
-les comptes et l'isolation applicative des organisations sont maintenant ajoutés
-par la [Phase 1](PHASE_1.md). Les modules métier restent à construire.
+les comptes et l'isolation applicative des organisations sont ajoutés par la
+[Phase 1](PHASE_1.md) ; le registre de modules, ses migrations propres
+(`0003_modules`, `0004_module_demo`) et le module de démonstration sont ajoutés
+par la [Phase 2](PHASE_2.md). Les modules métier externes restent à construire.
 
 ## Installer et démarrer
 
@@ -113,9 +115,11 @@ BFF Compose et le BFF de développement sur le même port.
 
 `lib/database/src/migrations.ts` contient la liste ordonnée des migrations SQL
 internes, distincte de la version produit. La première crée seulement le schéma
-`orkobi_core` ; elle ne crée pas de faux utilisateur ou d'organisation.
-Le registre `orkobi_infrastructure.schema_migrations` conserve l'identifiant,
-l'empreinte SHA-256 du SQL et la date d'application.
+`orkobi_core` ; elle ne crée pas de faux utilisateur ou d'organisation. Les
+migrations d'un module officiel portent leur identifiant de module et créent
+leurs tables dans un schéma `orkobi_` dédié (voir `migrationsForModule` et la
+[Phase 2](PHASE_2.md)). Le registre `orkobi_infrastructure.schema_migrations`
+conserve l'identifiant, l'empreinte SHA-256 du SQL et la date d'application.
 
 - Ajouter une migration avec un nouvel identifiant croissant `NNNN_nom`.
 - Ne jamais modifier ou retirer une migration appliquée. Une empreinte modifiée,

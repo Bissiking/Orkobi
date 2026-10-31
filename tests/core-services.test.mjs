@@ -29,16 +29,20 @@ test('services Core : injection Nest et indisponibilité explicite sans SQL', as
     app.get(CORE_IDENTITY).currentUser(context),
     app.get(CORE_ORGANIZATIONS).currentOrganization(context),
     app.get(CORE_PERMISSIONS).can(context, 'contacts:read'),
-    app.get(CORE_CAPABILITIES).has(context, 'core.identity'),
     sdk.identity.currentUser(),
     sdk.identity.currentOrganization(),
     sdk.permissions.can('contacts:read'),
-    sdk.capabilities.has('core.identity'),
   ])) {
     assert.equal(result.ok, false);
     assert.equal(result.error.code, 'unavailable');
     assert.equal(result.error.correlationId, unavailable.error.correlationId);
   }
+  // Le registre de capabilities répond sans SQL : la capability est absente, le service non.
+  for (const result of await Promise.all([
+    app.get(CORE_CAPABILITIES).has(context, 'core.identity'),
+    sdk.capabilities.has('core.identity'),
+  ]))
+    assert.deepEqual(result, { ok: true, value: false });
   const withoutCorrelation = app.get(CoreSdkFactory).forAuthorizedContext({
     userId: 'user-a',
     organizationId: 'org-a',

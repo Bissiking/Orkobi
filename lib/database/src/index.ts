@@ -9,7 +9,12 @@ export type {
   PlatformTransaction,
   CredentialUser,
   StoredSession,
+  StoredModule,
 } from './platform.js';
+export { PostgreSqlModuleAdapter, ModuleDataError, validateModuleStatement } from './adapter.js';
+export type { ModuleDataOwner } from './adapter.js';
+export { migrations, migrationsForModule, checksum } from './migrations.js';
+export type { Migration } from './migrations.js';
 
 export type SqlParameter = string | number | boolean | bigint | Date | Uint8Array | null;
 
@@ -34,7 +39,7 @@ export interface DatabaseTransaction {
   execute<Row extends object>(statement: SqlStatement): Promise<QueryResult<Row>>;
 }
 
-/** L'adaptateur futur doit appliquer l'isolation, commit et rollback réels. */
+/** Exécute les opérations dans une transaction réelle, avec commit ou rollback. */
 export interface DatabaseAdapter {
   transaction<Value>(
     context: OrganizationContext,
@@ -43,7 +48,7 @@ export interface DatabaseAdapter {
   ): Promise<Value>;
 }
 
-/** Point d'extension, sans connexion ni pilote PostgreSQL à ce stade. */
+/** Adaptateur PostgreSQL ; le Core fournit une façade bornée par module. */
 export interface PostgreSqlAdapter extends DatabaseAdapter {
   readonly dialect: 'postgresql';
 }

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowRight, Building2, ShieldCheck, UserRound, LogOut } from 'lucide-react';
-import { organizationPermissions } from '@orkobi/contracts';
+import { modulePermissions, organizationPermissions } from '@orkobi/contracts';
 import type {
   AuditEntry,
+  ModuleEntry,
+  ModuleSummary,
   OrganizationRole,
   OrganizationMembership,
   PlatformOrganization,
@@ -13,6 +15,7 @@ import type {
 import { usePlatform } from './context';
 import { Field, PlatformHeading, TaskForm, ResourceNotice } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
+import { PlatformApiError } from './api';
 import type { ReactNode } from 'react';
 import type { PlatformCopy } from './copy';
 
@@ -455,6 +458,10 @@ const permissionLabels = {
   'members:write': 'membersWrite',
   'roles:write': 'rolesWrite',
   'audit:read': 'auditRead',
+  'modules:read': 'modulesRead',
+  'modules:write': 'modulesWrite',
+  'demo:read': 'demoRead',
+  'demo:write': 'demoWrite',
 } as const;
 function RolePanel({
   base,
@@ -483,7 +490,14 @@ function RolePanel({
               <h3>
                 {roleName(role, t)} {role.builtin && <small>{t.builtin}</small>}
               </h3>
-              <p>{role.permissions.map((key) => t[permissionLabels[key]]).join(' · ') || '—'}</p>
+              <p>
+                {role.permissions
+                  .map(
+                    (key) =>
+                      t[permissionLabels[key as keyof typeof permissionLabels] ?? 'auditRead'],
+                  )
+                  .join(' · ') || '—'}
+              </p>
             </div>
             {!role.builtin && permissions.includes('roles:write') && (
               <button className="text-button" onClick={() => setSelected(role)}>
@@ -527,6 +541,19 @@ function RolePanel({
                     defaultChecked={
                       selected?.permissions.includes(key) ?? key === 'organization:read'
                     }
+                  />
+                  {t[permissionLabels[key]]}
+                </label>
+              ))}
+            {modulePermissions
+              .filter((key) => permissions.includes(key))
+              .map((key) => (
+                <label className="checkbox-label" key={key}>
+                  <input
+                    type="checkbox"
+                    name="permissions"
+                    value={key}
+                    defaultChecked={selected?.permissions.includes(key) ?? false}
                   />
                   {t[permissionLabels[key]]}
                 </label>
@@ -918,6 +945,13 @@ function AuditPanel({ path }: { path: string }) {
     'organization.selected': t.selected,
     'organization.role_saved': t.roles,
     'organization.membership_saved': t.delegate,
+    'module.enabled': t.moduleEnabledLabel,
+    'module.disabled': t.moduleDisabledLabel,
+    'module.organization_activated': t.moduleOrgActivatedLabel,
+    'module.organization_deactivated': t.moduleOrgDeactivatedLabel,
+    'module.orkobi.demo.notes.created': t.noteCreatedLabel,
+    'module.orkobi.demo.notes.updated': t.noteUpdatedLabel,
+    'module.orkobi.demo.notes.deleted': t.noteDeletedLabel,
   };
   return (
     <section className="platform-panel">
@@ -951,5 +985,232 @@ function AuditPanel({ path }: { path: string }) {
         </table>
       </div>
     </section>
+  );
+}
+
+export function ModulesSection() {
+  const t = usePlatformCopy(),
+    { session, post } = usePlatform(),
+    [revision, setRevision] = useState(0);
+  const modules = usePlatformResource<{ modules: ModuleSummary[] }>(
+    session.user && session.activeOrganizationId ? 'modules' : null,
+    revision,
+  );
+  const permissions =
+    session.organizations.find((org) => org.id === session.activeOrganizationId)?.permissions ?? [];
+  return (
+    <section className="platform-panel" aria-busy={modules.loading}>
+      <h2>{t.modulesTitle}</h2>
+      <p>{t.modulesHelp}</p>
+      {!session.user && <p>{t.modulesSignIn}</p>}
+      {session.user && !session.activeOrganizationId && <p>{t.selectOrganizationModules}</p>}
+      <ResourceNotice
+        loading={modules.loading}
+        error={modules.error}
+        onRetry={() => setRevision((value) => value + 1)}
+      />
+      {modules.data && (
+        <div className="role-list">
+          {modules.data.modules.map((module) => (
+            <div className="role-row" key={module.id}>
+              <div>
+                <h3>
+                  {module.name} <small>v{module.version}</small>{' '}
+                  <span className="small-label">
+                    {module.active
+                      ? t.moduleActive
+                      : module.enabled
+                        ? t.moduleInactive
+                        : t.moduleUnavailable}
+                  </span>
+                </h3>
+                <p>{module.description}</p>
+                {module.missingCapabilities.length > 0 && (
+                  <p className="form-error">
+                    {t.moduleUnavailable} : {module.missingCapabilities.join(', ')}
+                  </p>
+                )}
+                {module.unsatisfiedDependencies.length > 0 && (
+                  <p>{module.unsatisfiedDependencies.join(', ')}</p>
+                )}
+              </div>
+              <div className="row-actions">
+                {module.active && module.id === 'orkobi.demo' && (
+                  <Link className="text-link" to="/modules/demo">
+                    {t.openModule}
+                  </Link>
+                )}
+                {permissions.includes('modules:write') && module.enabled && (
+                  <TaskForm
+                    submit={module.active ? t.deactivate : t.activate}
+                    onSave={async () => {
+                      await post(
+                        `modules/${module.id}/${module.active ? 'deactivate' : 'activate'}`,
+                        {},
+                      );
+                      setRevision((value) => value + 1);
+                    }}
+                  >
+                    <span className="sr-only">{module.name}</span>
+                  </TaskForm>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+export function DemoNotesPage() {
+  const t = usePlatformCopy(),
+    { session, post } = usePlatform(),
+    [revision, setRevision] = useState(0),
+    [selected, setSelected] = useState<ModuleEntry | null>(null),
+    [deleting, setDeleting] = useState<string | null>(null),
+    [deleteError, setDeleteError] = useState<false | string>(false);
+  const permissions =
+    session.organizations.find((org) => org.id === session.activeOrganizationId)?.permissions ?? [];
+  const canRead = permissions.includes('demo:read');
+  const canWrite = permissions.includes('demo:write');
+  const modules = usePlatformResource<{ modules: ModuleSummary[] }>(
+    session.activeOrganizationId ? 'modules' : null,
+    revision,
+  );
+  const summary = modules.data?.modules.find((module) => module.id === 'orkobi.demo');
+  const notes = usePlatformResource<{ entries: ModuleEntry[] }>(
+    summary?.active && canRead ? 'modules/orkobi.demo/data/notes' : null,
+    revision,
+  );
+  const update = () => setRevision((value) => value + 1);
+  const deleteNote = async (note: ModuleEntry) => {
+    if (deleting || !window.confirm(t.confirmDeleteNote)) return;
+    setDeleting(note.id);
+    setDeleteError(false);
+    try {
+      await post(`modules/orkobi.demo/data/notes/${note.id}/delete`, {});
+      if (selected?.id === note.id) setSelected(null);
+      update();
+    } catch (error) {
+      setDeleteError(error instanceof PlatformApiError ? error.code : 'unknown');
+    } finally {
+      setDeleting(null);
+    }
+  };
+  return (
+    <>
+      <Link className="text-link" to="/modules">
+        {t.modulesTitle}
+      </Link>
+      <PlatformHeading title={t.demoTitle} description={t.demoHelp} />
+      {!session.activeOrganizationId ? (
+        <p role="alert">{t.selectOrganizationModules}</p>
+      ) : !summary && (modules.loading || modules.error) ? (
+        <ResourceNotice loading={modules.loading} error={modules.error} onRetry={update} />
+      ) : !summary?.active ? (
+        <section className="platform-panel">
+          <p role="alert">{t.demoInactive}</p>
+          <Link className="button secondary" to="/modules">
+            {t.modulesTitle}
+          </Link>
+        </section>
+      ) : (
+        <>
+          <ResourceNotice loading={notes.loading} error={notes.error} onRetry={update} />
+          {deleteError && (
+            <p className="form-error" role="alert">
+              {deleteError in t ? t[deleteError as keyof typeof t] : t.unknown}
+            </p>
+          )}
+          {!canRead && <p role="alert">{t.forbidden}</p>}
+          {notes.data?.entries.length === 0 && <p>{t.demoNoteEmpty}</p>}
+          {notes.data && notes.data.entries.length > 0 && (
+            <div className="table-scroll" role="region" aria-label={t.demoTitle} tabIndex={0}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t.demoNoteTitle}</th>
+                    <th>{t.created}</th>
+                    <th>{t.noteUpdated}</th>
+                    {canWrite && (
+                      <th>
+                        <span className="sr-only">{t.edit}</span>
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {notes.data.entries.map((note) => (
+                    <tr key={note.id}>
+                      <td>{note.values.title}</td>
+                      <td>{new Date(note.createdAt).toLocaleString()}</td>
+                      <td>{new Date(note.updatedAt).toLocaleString()}</td>
+                      {canWrite && (
+                        <td>
+                          <button
+                            className="text-button"
+                            disabled={deleting !== null}
+                            onClick={() => setSelected(note)}
+                          >
+                            {t.edit}
+                          </button>{' '}
+                          <button
+                            className="text-button"
+                            disabled={deleting !== null}
+                            onClick={() => void deleteNote(note)}
+                          >
+                            {deleting === note.id ? t.saving : t.deleteNote}
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p>{t.notesLimit}</p>
+          {canWrite && (
+            <TaskForm
+              key={selected?.id ?? 'new'}
+              title={selected ? t.editNote : t.createNote}
+              reset={!selected}
+              onSave={async (data) => {
+                const values = { title: data.get('title'), content: data.get('content') };
+                await post(
+                  selected
+                    ? `modules/orkobi.demo/data/notes/${selected.id}`
+                    : 'modules/orkobi.demo/data/notes',
+                  values,
+                );
+                setSelected(null);
+                update();
+              }}
+            >
+              <Field
+                label={t.demoNoteTitle}
+                name="title"
+                {...(selected ? { value: selected.values.title } : {})}
+              />
+              <label className="platform-field">
+                <span>{t.demoNoteContent}</span>
+                <textarea
+                  name="content"
+                  maxLength={4000}
+                  rows={4}
+                  defaultValue={selected?.values.content ?? ''}
+                />
+                <small>{t.demoNoteContentHelp}</small>
+              </label>
+              {selected && (
+                <button type="button" className="text-button" onClick={() => setSelected(null)}>
+                  {t.cancel}
+                </button>
+              )}
+            </TaskForm>
+          )}
+        </>
+      )}
+    </>
   );
 }

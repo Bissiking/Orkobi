@@ -10,7 +10,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { organizationPermissions } from '@orkobi/contracts';
+import { builtinAdminPermissions, organizationPermissions } from '@orkobi/contracts';
 import type {
   OrganizationPermission,
   PlatformSession,
@@ -19,6 +19,9 @@ import type {
 } from '@orkobi/contracts';
 import type { PlatformTransaction, StoredSession } from '@orkobi/database';
 import { CoreDatabase } from '../database.service.js';
+import { CapabilityRegistry } from '../modules/capability-registry.js';
+import { ModuleManager } from '../modules/manager.js';
+import { ModuleDataService } from '../modules/data.js';
 import { hashPassword, verifyPassword, dummyPasswordHash } from './password.js';
 import { PLATFORM_CONFIG } from './config.js';
 import type { PlatformConfig } from './config.js';
@@ -35,6 +38,7 @@ export interface PlatformResult {
   clearCookie?: boolean;
 }
 export const tokenHash = (value: string) => createHash('sha256').update(value).digest('hex');
+const moduleIdSource = '[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+';
 const anonymous: PlatformSession = {
   user: null,
   csrfToken: null,
@@ -101,6 +105,9 @@ export class PlatformService {
   constructor(
     @Inject(CoreDatabase) private readonly database: CoreDatabase,
     @Inject(PLATFORM_CONFIG) private readonly config: PlatformConfig,
+    @Inject(ModuleManager) private readonly moduleManager: ModuleManager,
+    @Inject(ModuleDataService) private readonly moduleData: ModuleDataService,
+    @Inject(CapabilityRegistry) private readonly capabilities: CapabilityRegistry,
   ) {}
 
   private async derive<T>(operation: () => Promise<T>): Promise<T> {
@@ -158,12 +165,13 @@ export class PlatformService {
   ): Promise<PlatformResult> {
     if (method === 'GET' && path === 'status') {
       if (!(await this.database.isReady()))
-        return { data: { initialized: false, databaseReady: false } };
+        return { data: { initialized: false, databaseReady: false, modulesReady: false } };
       const repository = await this.database.repository();
       return {
         data: {
           initialized: await repository.transaction((repo) => repo.initialized()),
           databaseReady: true,
+          modulesReady: true,
         },
       };
     }
@@ -261,12 +269,79 @@ export class PlatformService {
           await repo.audit(randomUUID(), user.id, 'identity.profile_updated', null, user.id);
           return { data: { success: true } };
         }
+        if (method === 'GET' && path === 'capabilities')
+          return { data: await this.capabilities.status() };
+        if (method === 'GET' && path === 'modules') {
+          const orgId = session.activeOrganizationId;
+          if (!orgId) throw new BadRequestException();
+          await this.authorizeOrganization(repo, user, orgId, 'modules:read');
+          return { data: await this.moduleManager.listForOrganization(repo, orgId) };
+        }
+        const activationMatch = new RegExp(
+          `^modules/(${moduleIdSource})/(activate|deactivate)$`,
+        ).exec(path);
+        if (method === 'POST' && activationMatch) {
+          const orgId = session.activeOrganizationId;
+          if (!orgId) throw new BadRequestException();
+          await this.authorizeOrganization(repo, user, orgId, 'modules:write');
+          await this.moduleManager.setOrganizationActive(
+            repo,
+            user.id,
+            orgId,
+            activationMatch[1]!,
+            activationMatch[2] === 'activate',
+          );
+          return { data: { success: true } };
+        }
+        const dataMatch = new RegExp(
+          `^modules/(${moduleIdSource})/data/([a-z][a-z0-9_]*)(?:/([a-f0-9-]{36})(/delete)?)?$`,
+        ).exec(path);
+        if (dataMatch) {
+          const orgId = session.activeOrganizationId;
+          if (!orgId) throw new BadRequestException();
+          const [, moduleId, entity, entryId, remove] = dataMatch;
+          if (method === 'GET' && !entryId)
+            return { data: await this.moduleData.list(repo, orgId, user.id, moduleId!, entity!) };
+          if (method === 'POST') {
+            if (remove) {
+              await this.moduleData.remove(repo, orgId, user.id, moduleId!, entity!, entryId!);
+              return { data: { success: true } };
+            }
+            if (entryId)
+              return {
+                data: await this.moduleData.update(
+                  repo,
+                  orgId,
+                  user.id,
+                  moduleId!,
+                  entity!,
+                  entryId!,
+                  body,
+                ),
+              };
+            return {
+              data: await this.moduleData.create(repo, orgId, user.id, moduleId!, entity!, body),
+            };
+          }
+        }
         if (path.startsWith('admin/')) {
           if (!user.platformAdmin) throw new ForbiddenException();
           if (method === 'GET' && path === 'admin/users') return { data: await repo.users() };
           if (method === 'GET' && path === 'admin/organizations')
             return { data: await repo.organizations() };
           if (method === 'GET' && path === 'admin/audit') return { data: await repo.audits(null) };
+          if (method === 'GET' && path === 'admin/modules')
+            return { data: await this.moduleManager.listForAdministration(repo) };
+          const adminModuleMatch = new RegExp(`^admin/modules/(${moduleIdSource})$`).exec(path);
+          if (method === 'POST' && adminModuleMatch) {
+            await this.moduleManager.setPlatformEnabled(
+              repo,
+              user.id,
+              adminModuleMatch[1]!,
+              boolean(body.enabled),
+            );
+            return { data: { success: true } };
+          }
           // La dérivation a lieu avant la transaction dans createUser(), voir le contrôleur.
           if (method === 'POST' && path === 'admin/users') {
             const hash = text(body.preparedHash, 256);
@@ -312,10 +387,16 @@ export class PlatformService {
               adminRole,
               org.id,
               'Administrateur',
-              [...organizationPermissions],
+              [...builtinAdminPermissions],
               'admin',
             );
-            await repo.saveRole(randomUUID(), org.id, 'Membre', ['organization:read'], 'member');
+            await repo.saveRole(
+              randomUUID(),
+              org.id,
+              'Membre',
+              ['organization:read', 'modules:read'],
+              'member',
+            );
             await repo.saveMember(org.id, ownerId, adminRole, true);
             await repo.audit(randomUUID(), user.id, 'organization.created', org.id, org.id);
             return { data: org };
@@ -428,7 +509,7 @@ export class PlatformService {
     actor: PlatformUser,
     orgId: string,
     body: Body,
-    permissions: readonly OrganizationPermission[],
+    permissions: readonly string[],
   ): Promise<PlatformResult> {
     const target = await repo.userByEmail(email(body.email));
     if (!target?.active) throw new BadRequestException();

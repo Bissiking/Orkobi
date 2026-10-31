@@ -58,7 +58,7 @@ class ApiController {
       features: {
         identity: available ? 'available' : 'unavailable',
         organizations: available ? 'available' : 'unavailable',
-        modules: 'unavailable',
+        modules: available ? 'available' : 'unavailable',
       },
       checkedAt: new Date().toISOString(),
     };

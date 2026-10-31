@@ -93,6 +93,7 @@ test(
         assert.deepEqual((await admin.call('status')).data, {
           initialized: false,
           databaseReady: true,
+          modulesReady: true,
         });
         await admin.call(
           'setup',
@@ -436,6 +437,14 @@ test(
           ).rows[0].count,
           1,
         );
+        // La suite Phase 2 s'exécute ensuite sur cette même instance : l'état final est remis connu.
+        if (!(await admin.call('session')).data.user.platformAdmin) {
+          await backup.call(`admin/users/${adminId}`, {
+            name: 'Operator',
+            active: true,
+            platformAdmin: true,
+          });
+        }
       },
     );
   },

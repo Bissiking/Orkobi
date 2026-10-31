@@ -13,8 +13,11 @@ import type { Request, Response } from 'express';
 import type { BffConfig } from './config.js';
 
 export const BFF_PLATFORM_CONFIG = Symbol('BFF_PLATFORM_CONFIG');
-const pathPattern =
-  /^(?:status|session|setup|login|logout|profile|sessions(?:\/revoke)?|organizations(?:\/[a-f0-9-]{36}(?:\/(?:select|members|roles|audit))?)?|admin\/(?:users(?:\/[a-f0-9-]{36})?|organizations(?:\/[a-f0-9-]{36}(?:\/(?:members|roles))?)?|audit))$/u;
+const moduleId = '[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+';
+const pathPattern = new RegExp(
+  `^(?:status|session|setup|login|logout|profile|sessions(?:/revoke)?|capabilities|modules(?:/(?:${moduleId})(?:/(?:activate|deactivate|data(?:/[a-z][a-z0-9_]*(?:/[a-f0-9-]{36}(?:/delete)?)?)?))?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:select|members|roles|audit))?)?|admin/(?:users(?:/[a-f0-9-]{36})?|organizations(?:/[a-f0-9-]{36}(?:/(?:members|roles))?)?|modules(?:/${moduleId})?|audit))$`,
+  'u',
+);
 
 @Controller('api/platform')
 export class BffPlatformController {
