@@ -222,6 +222,15 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 - [x] Journaliser les appels sensibles.
 - [x] Sécuriser l'authentification BFF ↔ Core.
 
+## 3.2-BIS — Erreurs et composants partagés
+
+- [x] Unifier les filtres d'erreurs HTTP du Core et du BFF (`publicHttpError`).
+- [x] Capturer les exceptions et rejets non interceptés côté interface.
+- [x] Centraliser le mapping code d'erreur → message affiché.
+- [x] Ajouter une bannière d'erreurs activable en développement.
+- [x] Créer les composants réutilisables `Button`, `Field`, `Notice` (`apps/web/src/ui/`).
+- [x] Migrer les usages de boutons et messages du frontend.
+
 ## 3.3 — Services optionnels
 
 - [ ] Ajouter un adaptateur Redis.

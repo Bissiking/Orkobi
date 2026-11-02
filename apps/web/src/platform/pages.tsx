@@ -23,7 +23,9 @@ import type {
 import { usePlatform } from './context';
 import { Field, PlatformHeading, TaskForm, ResourceNotice } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
-import { PlatformApiError } from './api';
+import { errorCode, errorMessage } from '../errors';
+import { Button } from '../ui/Button';
+import { Notice } from '../ui/Notice';
 import type { ReactNode } from 'react';
 import type { PlatformCopy } from './copy';
 
@@ -49,12 +51,12 @@ export function PlatformGate({ children }: { children: ReactNode }) {
     return (
       <section className="platform-panel">
         <PlatformHeading title="Orkobi" description={t.databaseMissing} />
-        <button className="button secondary" onClick={() => void refresh()}>
+        <Button variant="secondary" onClick={() => void refresh()}>
           {t.retry}
-        </button>
-        <Link className="text-link" to="/system">
+        </Button>
+        <Button variant="text" to="/system">
           {t.status}
-        </Link>
+        </Button>
       </section>
     );
   if (location.pathname === '/oidc/callback') return children;
@@ -146,9 +148,9 @@ function OrganizationList() {
           <h3>{t.noOrganizations}</h3>
           <p>{t.contactAdmin}</p>
           {session.user?.platformAdmin && (
-            <Link className="button primary" to="/admin?tab=organizations">
+            <Button variant="primary" to="/admin?tab=organizations">
               {t.createOrganization}
-            </Link>
+            </Button>
           )}
         </div>
       ) : (
@@ -226,9 +228,9 @@ export function OrganizationDetailPage() {
       <>
         <PlatformHeading title={t.organizations} />
         <p role="alert">{t.forbidden}</p>
-        <Link to="/organizations" className="text-link">
+        <Button variant="text" to="/organizations">
           {t.back}
-        </Link>
+        </Button>
       </>
     );
   return <OrganizationDetail key={org.id} org={org} />;
@@ -247,9 +249,9 @@ function OrganizationDetail({ org }: { org: PlatformOrganization }) {
   };
   return (
     <>
-      <Link className="text-link" to="/organizations">
+      <Button variant="text" to="/organizations">
         {t.back}
-      </Link>
+      </Button>
       <PlatformHeading title={org.name} description={`${t[org.kind]} · ${org.timezone}`} />
       <nav className="platform-tabs" aria-label={org.name}>
         {(['settings', 'members', 'roles', 'audit'] as const)
@@ -371,9 +373,9 @@ function MembershipPanel({
                 <td>{member.active ? t.active : t.inactive}</td>
                 {canWrite && (
                   <td>
-                    <button className="text-button" onClick={() => setSelected(member)}>
+                    <Button variant="text" onClick={() => setSelected(member)}>
                       {t.edit}
-                    </button>
+                    </Button>
                   </td>
                 )}
               </tr>
@@ -396,9 +398,9 @@ function MembershipPanel({
         >
           <p>{t.memberHelp}</p>
           {selected && (
-            <button type="button" className="text-button" onClick={() => setSelected(null)}>
+            <Button variant="text" type="button" onClick={() => setSelected(null)}>
               {t.cancel}
-            </button>
+            </Button>
           )}
           <Field
             label={t.email}
@@ -475,9 +477,9 @@ function RolePanel({
               </p>
             </div>
             {!role.builtin && permissions.includes('roles:write') && (
-              <button className="text-button" onClick={() => setSelected(role)}>
+              <Button variant="text" onClick={() => setSelected(role)}>
                 {t.edit}
-              </button>
+              </Button>
             )}
           </div>
         ))}
@@ -499,9 +501,9 @@ function RolePanel({
         >
           <Field label={t.roleName} name="name" {...(selected ? { value: selected.name } : {})} />
           {selected && (
-            <button type="button" className="text-button" onClick={() => setSelected(null)}>
+            <Button variant="text" type="button" onClick={() => setSelected(null)}>
               {t.cancel}
-            </button>
+            </Button>
           )}
           <fieldset className="permission-list">
             <legend>{t.permissions}</legend>
@@ -617,8 +619,8 @@ export function AccountControls() {
         <UserRound size={16} />
         <span>{session.user.name}</span>
       </Link>
-      <button
-        className="icon-button"
+      <Button
+        variant="icon"
         disabled={pending}
         aria-label={t.signOut}
         title={t.signOut}
@@ -635,7 +637,7 @@ export function AccountControls() {
         }}
       >
         <LogOut size={17} />
-      </button>
+      </Button>
       {error && <span role="alert">{t.unknown}</span>}
     </div>
   );
@@ -748,9 +750,9 @@ function UsersAdmin() {
                 <td>{user.platformAdmin ? t.platformAdmin : t.user}</td>
                 <td>{user.active ? t.active : t.inactive}</td>
                 <td>
-                  <button className="text-button" onClick={() => setSelected(user)}>
+                  <Button variant="text" onClick={() => setSelected(user)}>
                     {t.edit}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -797,9 +799,9 @@ function UsersAdmin() {
               {t.active}
             </label>
             <p>{t.disabledNotice}</p>
-            <button className="text-button" type="button" onClick={() => setSelected(null)}>
+            <Button variant="text" type="button" onClick={() => setSelected(null)}>
               {t.createUser}
-            </button>
+            </Button>
           </>
         )}
       </TaskForm>
@@ -846,9 +848,9 @@ function OrganizationsAdmin() {
                   <td>{t[org.kind]}</td>
                   <td>{org.active ? t.active : t.inactive}</td>
                   <td>
-                    <button className="text-button" onClick={() => setSelected(org)}>
+                    <Button variant="text" onClick={() => setSelected(org)}>
                       {t.manage}
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -892,9 +894,9 @@ function OrganizationsAdmin() {
                   <input type="checkbox" name="active" defaultChecked={selected.active} />
                   {t.active}
                 </label>
-                <button className="text-button" type="button" onClick={() => setSelected(null)}>
+                <Button variant="text" type="button" onClick={() => setSelected(null)}>
                   {t.createOrganization}
-                </button>
+                </Button>
               </>
             )}
           </TaskForm>
@@ -1038,9 +1040,9 @@ export function ModulesSection() {
               </div>
               <div className="row-actions">
                 {module.active && module.id === 'orkobi.demo' && (
-                  <Link className="text-link" to="/modules/demo">
+                  <Button variant="text" to="/modules/demo">
                     {t.openModule}
-                  </Link>
+                  </Button>
                 )}
                 {permissions.includes('modules:write') && module.enabled && (
                   <TaskForm
@@ -1094,16 +1096,16 @@ export function DemoNotesPage() {
       if (selected?.id === note.id) setSelected(null);
       update();
     } catch (error) {
-      setDeleteError(error instanceof PlatformApiError ? error.code : 'unknown');
+      setDeleteError(errorCode(error));
     } finally {
       setDeleting(null);
     }
   };
   return (
     <>
-      <Link className="text-link" to="/modules">
+      <Button variant="text" to="/modules">
         {t.modulesTitle}
-      </Link>
+      </Button>
       <PlatformHeading title={t.demoTitle} description={t.demoHelp} />
       {!session.activeOrganizationId ? (
         <p role="alert">{t.selectOrganizationModules}</p>
@@ -1112,18 +1114,14 @@ export function DemoNotesPage() {
       ) : !summary?.active ? (
         <section className="platform-panel">
           <p role="alert">{t.demoInactive}</p>
-          <Link className="button secondary" to="/modules">
+          <Button variant="secondary" to="/modules">
             {t.modulesTitle}
-          </Link>
+          </Button>
         </section>
       ) : (
         <>
           <ResourceNotice loading={notes.loading} error={notes.error} onRetry={update} />
-          {deleteError && (
-            <p className="form-error" role="alert">
-              {deleteError in t ? t[deleteError as keyof typeof t] : t.unknown}
-            </p>
-          )}
+          {deleteError && <Notice tone="error">{errorMessage(deleteError, t, 'unknown')}</Notice>}
           {!canRead && <p role="alert">{t.forbidden}</p>}
           {notes.data?.entries.length === 0 && <p>{t.demoNoteEmpty}</p>}
           {notes.data && notes.data.entries.length > 0 && (
@@ -1149,20 +1147,20 @@ export function DemoNotesPage() {
                       <td>{new Date(note.updatedAt).toLocaleString()}</td>
                       {canWrite && (
                         <td>
-                          <button
-                            className="text-button"
+                          <Button
+                            variant="text"
                             disabled={deleting !== null}
                             onClick={() => setSelected(note)}
                           >
                             {t.edit}
-                          </button>{' '}
-                          <button
-                            className="text-button"
+                          </Button>{' '}
+                          <Button
+                            variant="text"
                             disabled={deleting !== null}
                             onClick={() => void deleteNote(note)}
                           >
                             {deleting === note.id ? t.saving : t.deleteNote}
-                          </button>
+                          </Button>
                         </td>
                       )}
                     </tr>
@@ -1205,9 +1203,9 @@ export function DemoNotesPage() {
                 <small>{t.demoNoteContentHelp}</small>
               </label>
               {selected && (
-                <button type="button" className="text-button" onClick={() => setSelected(null)}>
+                <Button variant="text" type="button" onClick={() => setSelected(null)}>
                   {t.cancel}
-                </button>
+                </Button>
               )}
             </TaskForm>
           )}

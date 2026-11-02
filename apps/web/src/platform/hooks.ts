@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { usePreferences } from '../preferences-context';
+import { errorCode } from '../errors';
 import { platformCopy } from './copy';
-import { platformRequest, PlatformApiError } from './api';
+import { platformRequest } from './api';
 export function usePlatformCopy() {
   return platformCopy[usePreferences().locale];
 }
@@ -23,7 +24,7 @@ export function usePlatformResource<T>(path: string | null, revision = 0) {
         if (active) setData(value);
       })
       .catch((failure: unknown) => {
-        if (active) setError(failure instanceof PlatformApiError ? failure.code : 'unknown');
+        if (active) setError(errorCode(failure));
       })
       .finally(() => {
         if (active) setLoading(false);

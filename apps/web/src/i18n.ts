@@ -123,6 +123,8 @@ export const fr = {
   home: 'Revenir à l’accueil',
   appError: 'Cette page n’a pas pu être affichée.',
   reload: 'Recharger l’interface',
+  errorBannerTitle: 'Erreurs non interceptées',
+  errorBannerDismiss: 'Masquer',
 } as const;
 export type TranslationKey = keyof typeof fr;
 export type Messages = { readonly [Key in TranslationKey]: string };
@@ -251,4 +253,6 @@ export const en: Messages = {
   home: 'Back to home',
   appError: 'This page could not be displayed.',
   reload: 'Reload the interface',
+  errorBannerTitle: 'Unhandled errors',
+  errorBannerDismiss: 'Dismiss',
 };

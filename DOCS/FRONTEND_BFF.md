@@ -162,6 +162,46 @@ sont appliquées avant React par un script local externe, compatible avec la CSP
 sans script inline autorisé. Aucune synchronisation de préférences utilisateur
 côté serveur n'existe encore.
 
+## Gestion des erreurs
+
+Côté serveur, la fonction pure `publicHttpError(status, correlationId)` de
+`lib/contracts` est la source unique du mapping statut HTTP → payload public
+`{ error: CoreError }` et du niveau de log. Les filtres Nest du Core et du BFF
+sont des wrappers fins qui l'appellent ; aucun détail interne ni secret n'entre
+dans le payload ou les logs (testé par `tests/errors.test.mjs`).
+
+Côté interface, `apps/web/src/errors.ts` exporte :
+
+- `installGlobalErrorHandlers()` (appelé dans `main.tsx`) capture les exceptions
+  et rejets non interceptés (`window` `error` / `unhandledrejection`) sans
+  supprimer le comportement par défaut du navigateur ;
+- `reportError(scope, error)` : console structurée bornée (nom + message tronqué
+  à 500 caractères), 5 rapports maximum, aucun envoi réseau ;
+- `errorMessage(code, messages, fallback)` et `errorCode(error)` : mapping
+  centralisé code → message, utilisé par `TaskForm`, `ResourceNotice`,
+  `usePlatformResource` et la suppression de note ;
+- `ErrorBoundary.componentDidCatch` alimente le même reporter.
+
+La bannière `ErrorBanner` affiche les derniers rapports en dev
+(`import.meta.env.DEV`) ou si `localStorage['orkobi.debugErrors'] = '1'` ; elle
+est masquée en production par défaut et n'est pas un canal de télémétrie.
+
+## Composants UI
+
+`apps/web/src/ui/` contient des composants sans dépendance platform ni i18n
+(libellés passés en props), extractibles vers le SDK en Phase 4 :
+
+| Composant | API                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| `Button`  | `variant` `plain\|primary\|secondary\|text\|icon`, `to` (rend un `Link`), `type`, `disabled`, `aria-*` |
+| `Field`   | champ de formulaire labellisé (`useId`, aide, limites natives)                                         |
+| `Notice`  | `tone` `error\|success\|info` → classes `form-error`/`form-success` et rôles ARIA `alert`/`status`     |
+
+Les classes CSS existantes (`.button*`, `.text-button`, `.text-link`,
+`.icon-button`) sont conservées : la migration des ~41 usages bruts ne change
+ni le rendu ni les noms accessibles. `TaskForm` et `ResourceNotice` réutilisent
+`Notice` et restent dans `platform/` car ils dépendent de `usePlatformCopy`.
+
 ## Frontières et limites
 
 Le BFF est un point d'entrée technique public, sans authentification à ce stade.

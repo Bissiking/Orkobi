@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { integrationScopes } from '@orkobi/contracts';
 import type {
   IntegrationTokenSummary,
@@ -12,6 +12,8 @@ import { usePlatform } from './context';
 import { Field, PlatformHeading, ResourceNotice, TaskForm } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
 import { useAdvancedCopy } from './advanced-copy';
+import { Button } from '../ui/Button';
+import { Notice } from '../ui/Notice';
 import './advanced.css';
 
 interface LoginResult {
@@ -102,11 +104,7 @@ export function AdvancedLoginPage() {
         <p className="access-assurance">{t.securityNote}</p>
       </div>
       <div className="platform-panel">
-        {location.state?.installed && (
-          <p className="form-success" role="status">
-            {t.setupDone}
-          </p>
-        )}
+        {location.state?.installed && <Notice tone="success">{t.setupDone}</Notice>}
         {challenge ? (
           <TaskForm
             submit={a.confirm}
@@ -120,16 +118,16 @@ export function AdvancedLoginPage() {
             }
           >
             <MfaCode recovery />
-            <button
+            <Button
+              variant="text"
               type="button"
-              className="text-button"
               onClick={() => {
                 sessionStorage.removeItem('orkobi.mfa.challenge');
                 setChallenge(null);
               }}
             >
               {a.cancel}
-            </button>
+            </Button>
           </TaskForm>
         ) : (
           <>
@@ -205,9 +203,9 @@ export function OidcCallbackPage() {
       <PlatformHeading title={a.oidcCallback} />
       <p role={failed ? 'alert' : 'status'}>{failed ? a.callbackFailed : a.callbackHelp}</p>
       {failed && (
-        <Link to="/login" className="text-link">
+        <Button variant="text" to="/login">
           {a.cancel}
-        </Link>
+        </Button>
       )}
     </section>
   );

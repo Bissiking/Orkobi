@@ -1,7 +1,11 @@
-import { useState, useId } from 'react';
+import { useState } from 'react';
 import type { ReactNode, FormEvent } from 'react';
-import { PlatformApiError } from './api';
+import { errorCode, errorMessage } from '../errors';
+import { Button } from '../ui/Button';
+import { Notice } from '../ui/Notice';
 import { usePlatformCopy } from './hooks';
+
+export { Field } from '../ui/Field';
 
 export function PlatformHeading({
   title,
@@ -17,43 +21,6 @@ export function PlatformHeading({
         {description && <p>{description}</p>}
       </div>
     </div>
-  );
-}
-export function Field({
-  label,
-  name,
-  type = 'text',
-  value,
-  help,
-  required = true,
-  readOnly = false,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  value?: string;
-  help?: string;
-  required?: boolean;
-  readOnly?: boolean;
-}) {
-  const id = useId();
-  return (
-    <label className="platform-field">
-      <span id={`${id}-label`}>{label}</span>
-      <input
-        aria-labelledby={`${id}-label`}
-        aria-describedby={help ? `${id}-help` : undefined}
-        name={name}
-        type={type}
-        defaultValue={value}
-        required={required}
-        readOnly={readOnly}
-        maxLength={type === 'password' ? 128 : type === 'email' ? 254 : 120}
-        minLength={type === 'password' ? 15 : undefined}
-        autoComplete={type === 'password' ? 'new-password' : type === 'email' ? 'email' : 'off'}
-      />
-      {help && <small id={`${id}-help`}>{help}</small>}
-    </label>
   );
 }
 export function TaskForm({
@@ -87,8 +54,7 @@ export function TaskForm({
       if (reset) form.reset();
     } catch (error) {
       setSuccess(false);
-      const key = error instanceof PlatformApiError ? error.code : 'unknown';
-      setMessage(key in t ? t[key as keyof typeof t] : t.unknown);
+      setMessage(errorMessage(errorCode(error), t, 'unknown'));
     } finally {
       setPending(false);
     }
@@ -97,15 +63,11 @@ export function TaskForm({
     <form onSubmit={(event) => void handle(event)} className="platform-form" aria-busy={pending}>
       {title && <h2>{title}</h2>}
       <fieldset disabled={pending}>{children}</fieldset>
-      {message && (
-        <p className={success ? 'form-success' : 'form-error'} role={success ? 'status' : 'alert'}>
-          {message}
-        </p>
-      )}
+      {message && <Notice tone={success ? 'success' : 'error'}>{message}</Notice>}
       <div>
-        <button className="button primary" type="submit" disabled={pending}>
+        <Button variant="primary" type="submit" disabled={pending}>
           {pending ? t.saving : (submit ?? t.save)}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -122,11 +84,11 @@ export function ResourceNotice({
   const t = usePlatformCopy();
   if (loading) return <p role="status">{t.loading}</p>;
   return error ? (
-    <div className="form-error" role="alert">
-      <p>{typeof error === 'string' && error in t ? t[error as keyof typeof t] : t.offline}</p>
-      <button className="button secondary" onClick={onRetry}>
+    <Notice tone="error">
+      <p>{typeof error === 'string' ? errorMessage(error, t, 'offline') : t.offline}</p>
+      <Button variant="secondary" onClick={onRetry}>
         {t.retry}
-      </button>
-    </div>
+      </Button>
+    </Notice>
   ) : null;
 }

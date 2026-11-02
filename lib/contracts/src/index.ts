@@ -1,4 +1,7 @@
 // lib/contracts/src/index.ts
+import type { CoreError } from './errors.js';
+export { publicHttpError } from './errors.js';
+export type { CoreError, ErrorCode } from './errors.js';
 export { isBffBootstrap, isCoreHealth } from './http.js';
 export type { BffBootstrap, CoreAvailability, CoreHealth } from './http.js';
 export {
@@ -72,22 +75,6 @@ export type CapabilityKey = `${string}.${string}`;
 export interface OrganizationContext {
   readonly organizationId: OrganizationId;
   readonly userId: UserId;
-  readonly correlationId?: string;
-}
-
-export type ErrorCode =
-  | 'invalid_argument'
-  | 'unauthenticated'
-  | 'forbidden'
-  | 'not_found'
-  | 'conflict'
-  | 'rate_limited'
-  | 'unavailable'
-  | 'internal_error';
-
-export interface CoreError {
-  readonly code: ErrorCode;
-  readonly message: string;
   readonly correlationId?: string;
 }
 

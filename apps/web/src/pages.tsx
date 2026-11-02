@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import {
   ArrowRight,
   Building2,
@@ -24,6 +24,7 @@ import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
 import { usePlatform } from './platform/context';
 import { ModulesSection } from './platform/pages';
+import { Button } from './ui/Button';
 import type { TranslationKey } from './i18n';
 
 interface PlannedModule {
@@ -85,10 +86,10 @@ export function HomePage() {
         title={t.welcomeTitle}
         description={t.welcomeDescription}
         action={
-          <Link className="button primary" to="/modules">
+          <Button variant="primary" to="/modules">
             {t.explore}
             <ArrowRight size={17} />
-          </Link>
+          </Button>
         }
       />
       <div className="welcome-layout">
@@ -106,10 +107,10 @@ export function HomePage() {
             />
             <h2>{t.organizationTitle}</h2>
             <p>{t.organizationDescription}</p>
-            <Link className="button secondary" to="/organizations">
+            <Button variant="secondary" to="/organizations">
               {t.organizationAction}
               <ArrowRight size={16} />
-            </Link>
+            </Button>
           </div>
           <div className="panel-note">
             <CircleHelp size={15} aria-hidden="true" />
@@ -132,10 +133,10 @@ export function HomePage() {
               <p>{t.associationText}</p>
             </div>
           </div>
-          <Link className="text-link" to="/organizations">
+          <Button variant="text" to="/organizations">
             {t.organizationAction}
             <ArrowRight size={16} />
-          </Link>
+          </Button>
         </section>
       </div>
       <section className="modules-section" aria-labelledby="home-modules">
@@ -144,10 +145,10 @@ export function HomePage() {
             <h2 id="home-modules">{t.modulesTitle}</h2>
             <p>{t.modulesDescription}</p>
           </div>
-          <Link className="text-link" to="/modules">
+          <Button variant="text" to="/modules">
             {t.allModules}
             <ArrowRight size={16} />
-          </Link>
+          </Button>
         </div>
         <ul className="module-previews">
           {modules.slice(0, 3).map((module) => (
@@ -163,10 +164,10 @@ export function HomePage() {
           <h2>{t.foundationTitle}</h2>
           <p>{t.foundationText}</p>
         </div>
-        <Link className="text-link" to="/settings">
+        <Button variant="text" to="/settings">
           {t.personalize}
           <ArrowRight size={16} />
-        </Link>
+        </Button>
       </section>
     </>
   );
@@ -180,9 +181,9 @@ export function OrganizationsPage() {
         <Building2 size={43} strokeWidth={1.3} aria-hidden="true" />
         <h2>{t.organizationsEmptyTitle}</h2>
         <p>{t.organizationsEmptyText}</p>
-        <button className="button" disabled aria-describedby="organization-unavailable">
+        <Button disabled aria-describedby="organization-unavailable">
           {t.createOrganization}
-        </button>
+        </Button>
         <small id="organization-unavailable">{t.notAvailable}</small>
       </section>
       <div className="organization-explanations">
@@ -190,19 +191,19 @@ export function OrganizationsPage() {
           <Building2 size={23} aria-hidden="true" />
           <h2>{t.business}</h2>
           <p>{t.businessDetail}</p>
-          <Link className="text-link" to="/modules?audience=business">
+          <Button variant="text" to="/modules?audience=business">
             {t.explore}
             <ArrowRight size={16} />
-          </Link>
+          </Button>
         </section>
         <section>
           <Handshake size={23} aria-hidden="true" />
           <h2>{t.association}</h2>
           <p>{t.associationDetail}</p>
-          <Link className="text-link" to="/modules?audience=association">
+          <Button variant="text" to="/modules?audience=association">
             {t.explore}
             <ArrowRight size={16} />
-          </Link>
+          </Button>
         </section>
       </div>
       <section className="plain-note">
@@ -262,13 +263,9 @@ export function ModulesPage() {
             onChange={(event) => update('q', event.target.value)}
           />
           {query && (
-            <button
-              className="icon-button"
-              aria-label={t.clearSearch}
-              onClick={() => update('q', '')}
-            >
+            <Button variant="icon" aria-label={t.clearSearch} onClick={() => update('q', '')}>
               <X size={16} />
-            </button>
+            </Button>
           )}
         </label>
       </div>
@@ -286,9 +283,9 @@ export function ModulesPage() {
           <Search size={34} aria-hidden="true" />
           <h2>{t.noResultsTitle}</h2>
           <p>{t.noResultsText}</p>
-          <button className="button secondary" onClick={() => setParams({})}>
+          <Button variant="secondary" onClick={() => setParams({})}>
             {t.resetFilters}
-          </button>
+          </Button>
         </section>
       )}
       <p className="catalogue-note">
@@ -372,8 +369,8 @@ export function StatusPage() {
         title={t.systemTitle}
         description={t.systemDescription}
         action={
-          <button
-            className="button secondary"
+          <Button
+            variant="secondary"
             onClick={() => {
               refresh();
               void platform.refresh();
@@ -382,7 +379,7 @@ export function StatusPage() {
           >
             <RefreshCw size={16} className={loading ? 'is-refreshing' : ''} />
             {loading ? t.refreshing : t.refresh}
-          </button>
+          </Button>
         }
       />
       <section className="service-panel" aria-busy={loading}>
@@ -440,10 +437,10 @@ export function NotFoundPage() {
       <span className="not-found-number">404</span>
       <h1>{t.notFoundTitle}</h1>
       <p>{t.notFoundText}</p>
-      <Link className="button primary" to="/">
+      <Button variant="primary" to="/">
         {t.home}
         <ArrowRight size={16} />
-      </Link>
+      </Button>
     </section>
   );
 }

@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { en, fr } from './i18n';
+import { reportError } from './errors';
+import { Button } from './ui/Button';
 
 export default class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -10,15 +12,18 @@ export default class AppErrorBoundary extends Component<
   static getDerivedStateFromError() {
     return { failed: true };
   }
+  componentDidCatch(error: unknown) {
+    reportError('boundary', error);
+  }
   render() {
     if (!this.state.failed) return this.props.children;
     const t = document.documentElement.lang === 'en' ? en : fr;
     return (
       <main className="fatal-error">
         <h1>{t.appError}</h1>
-        <button className="button primary" onClick={() => window.location.reload()}>
+        <Button variant="primary" onClick={() => window.location.reload()}>
           {t.reload}
-        </button>
+        </Button>
       </main>
     );
   }

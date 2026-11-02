@@ -8,6 +8,39 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 3.2-BIS — Erreurs et composants partagés — 2026-11-02
+
+- `lib/contracts/src/errors.ts` : table unifiée des erreurs HTTP publiques
+  (`ErrorCode`, `CoreError`, fonction pure `publicHttpError(status, correlationId)`
+  → payload + niveau de log). Aucune dépendance NestJS ; le BFF gagne les codes
+  405/415/422 qui retombaient en `internal_error`.
+- `apps/core/src/errors.ts`, `apps/bff/src/errors.ts` : les deux filtres Nest sont
+  devenus des wrappers fins autour de `publicHttpError` (signature et classes
+  conservées, guard `headersSent` préservé côté BFF).
+- `apps/web/src/errors.ts` : `installGlobalErrorHandlers()` (captures `error` et
+  `unhandledrejection` sans supprimer le comportement navigateur), `reportError`
+  (console structurée bornée à 500 caractères, aucun envoi réseau, 5 rapports
+  max), `errorMessage`/`errorCode` qui remplacent les mappings code → message
+  dupliqués dans `platform/components.tsx`, `platform/hooks.ts` et
+  `platform/pages.tsx`.
+- `apps/web/src/ErrorBanner.tsx` : bannière des dernières erreurs non interceptées,
+  visible en dev (`import.meta.env.DEV`) ou via `localStorage['orkobi.debugErrors']='1'`,
+  montée dans `main.tsx` ; `ErrorBoundary.componentDidCatch` alimente le même
+  reporter. Clés `errorBannerTitle`/`errorBannerDismiss` en FR/EN.
+- `apps/web/src/ui/Button.tsx`, `ui/Field.tsx`, `ui/Notice.tsx` : composants sans
+  dépendance platform/i18n (variantes `plain|primary|secondary|text|icon`, rendu
+  bouton ou `Link` selon `to` ; `Field` déplacé depuis `platform/components.tsx`
+  avec ré-export ; `Notice` rôles ARIA `alert`/`status`). Migration de ~41 usages
+  de boutons/links bruts dans `App.tsx`, `pages.tsx`, `platform/pages.tsx`,
+  `platform/advanced.tsx` et `platform/components.tsx`.
+- Vérifications : `pnpm check` (format, lint, typecheck, tests), nouveau
+  `tests/errors.test.mjs` (table, niveaux de log, expurgé des secrets, pureté),
+  suites `core`/`bff` inchangées, recette Chromium (rôles et noms accessibles
+  préservés).
+- Limites : les `catch` silencieux délibérés (stockage, bootstrap, dégradation
+  UX) restent muets — ils alimentent déjà l'état d'interface ; la bannière n'est
+  pas un canal de télémétrie.
+
 ### Phase 3.1/3.2 — Identité avancée et API Access Manager — 2026-10-31
 
 - `apps/core/src/platform/identity.ts`, `totp.ts`, `oidc.ts`, `access.ts`,

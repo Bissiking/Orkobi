@@ -921,6 +921,38 @@ legend {
   margin-left: auto;
   color: var(--warning);
 }
+.error-banner {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  max-height: 40dvh;
+  overflow: auto;
+  padding: 12px 16px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-top: 1px solid var(--warning);
+  font-size: 12px;
+}
+.error-banner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.error-banner ul {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: grid;
+  gap: 4px;
+}
+.error-banner code {
+  font-size: 11px;
+}
+.error-banner .text-button {
+  color: var(--warning);
+}
 .not-found,
 .fatal-error {
   display: flex;

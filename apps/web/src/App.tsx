@@ -31,6 +31,7 @@ import {
 } from './platform/pages';
 import { usePlatform } from './platform/context';
 import { usePlatformCopy } from './platform/hooks';
+import { Button } from './ui/Button';
 
 const navigation = [
   { to: '/', label: 'overview', icon: House },
@@ -131,9 +132,9 @@ function ConnectionNotice() {
     <div className="connection-notice" role="status">
       <CircleHelp size={18} aria-hidden="true" />
       <span>{error ? t.connectionError : t.coreError}</span>
-      <button className="text-button" onClick={refresh} disabled={loading}>
+      <Button variant="text" onClick={refresh} disabled={loading}>
         {loading ? t.refreshing : t.retry}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -198,20 +199,22 @@ export default function App() {
         }}
       >
         <div className="drawer-content">
-          <button
-            className="icon-button drawer-close"
+          <Button
+            variant="icon"
+            className="drawer-close"
             onClick={closeDrawer}
             aria-label={t.closeMenu}
           >
             <X size={20} />
-          </button>
+          </Button>
           <Navigation onNavigate={closeDrawer} />
         </div>
       </dialog>
       <div className="app-body">
         <header className="topbar">
-          <button
-            className="icon-button menu-toggle"
+          <Button
+            variant="icon"
+            className="menu-toggle"
             aria-label={t.openMenu}
             aria-expanded={menuOpen}
             onClick={() => {
@@ -220,7 +223,7 @@ export default function App() {
             }}
           >
             <Menu size={21} />
-          </button>
+          </Button>
           <div className="breadcrumbs">
             <span>{t.workspace}</span>
             <ChevronRight size={14} aria-hidden="true" />
@@ -239,8 +242,8 @@ export default function App() {
                 <option value="en">EN</option>
               </select>
             </label>
-            <button
-              className="icon-button"
+            <Button
+              variant="icon"
               aria-label={t.themeToggle}
               title={t.themeToggle}
               onClick={() =>
@@ -248,7 +251,7 @@ export default function App() {
               }
             >
               <SunMoon size={19} />
-            </button>
+            </Button>
           </div>
         </header>
         <main id="main" ref={main} tabIndex={-1} className="main-content">
