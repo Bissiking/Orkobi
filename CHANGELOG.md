@@ -8,6 +8,30 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 3.3/3.4 et revue de la phase — 2026-11-03
+
+- `apps/core/src/{cache,jobs}`, `lib/database/src/{jobs,jobs-migration}.ts` :
+  cache mémoire borné, adaptateur Redis optionnel, planificateur et file PostgreSQL
+  durable. Jobs ponctuels/récurrents, contrôle des droits courants, timeouts,
+  retries bornés, verrous par organisation/module/tâche, historique et suspension.
+- `lib/contracts`, `sdk/{core,types}`, `modules/demo` : déclarations de tâches et
+  handlers typés ; module officiel consommant seulement les exports SDK.
+- `apps/web/src/platform/jobs.tsx`, Core et BFF : écran `/jobs` FR/EN,
+  planification, suivi, annulation, relance et métriques administrateur.
+- `sdk/ui` : extraction de Button/Field/Notice, thèmes et styles natifs ;
+  AppIcon avec sept SVG Papicons et licence/provenance conservées. Le frontend
+  consomme le package SDK ; aucun framework CSS externe ou dépendance native ajouté.
+- Corrections de revue : attribution administrative des rôles avec permissions
+  de module, bouton sans soumission implicite, liens désactivés, règles de champs
+  maintenues dans la plateforme, test de rollback SQL réellement exécuté,
+  nettoyage du Redis de recette et supervision des sources du module démo.
+- Nettoyage : retrait des anciennes copies UI et des pages de préparation
+  HomePage/OrganizationsPage sans route ; suppression des `.DS_Store` locaux.
+- Guides `DOCS/{README,UI_SDK,JOB_ENGINE,REVIEW_PHASE_3}.md`, roadmap, SDK et
+  documentation de livraison synchronisés. Validation et limites détaillées
+  dans le rapport de revue. Version conservée à `0.2.0-EXP` ; aucune publication,
+  modification de l’instance existante ou livraison stable revendiquée.
+
 ### Phase 3.2-BIS — Erreurs et composants partagés — 2026-11-02
 
 - `lib/contracts/src/errors.ts` : table unifiée des erreurs HTTP publiques

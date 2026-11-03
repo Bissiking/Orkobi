@@ -188,19 +188,16 @@ est masquée en production par défaut et n'est pas un canal de télémétrie.
 
 ## Composants UI
 
-`apps/web/src/ui/` contient des composants sans dépendance platform ni i18n
-(libellés passés en props), extractibles vers le SDK en Phase 4 :
+Les primitives sont désormais dans **`@orkobi/sdk-ui`**, consommé par le frontend.
+La source est `sdk/ui/` : Button, Field, Notice, AppIcon, tokens clair/sombre et
+styles CSS natifs. Les anciennes implémentations dans `apps/web/src/ui/` ont été
+retirées. Voir [UI_SDK.md](UI_SDK.md) pour le contrat actuel, la licence Papicons,
+les règles de contribution et les consignes pour les futures IA.
 
-| Composant | API                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------ |
-| `Button`  | `variant` `plain\|primary\|secondary\|text\|icon`, `to` (rend un `Link`), `type`, `disabled`, `aria-*` |
-| `Field`   | champ de formulaire labellisé (`useId`, aide, limites natives)                                         |
-| `Notice`  | `tone` `error\|success\|info` → classes `form-error`/`form-success` et rôles ARIA `alert`/`status`     |
-
-Les classes CSS existantes (`.button*`, `.text-button`, `.text-link`,
-`.icon-button`) sont conservées : la migration des ~41 usages bruts ne change
-ni le rendu ni les noms accessibles. `TaskForm` et `ResourceNotice` réutilisent
-`Notice` et restent dans `platform/` car ils dépendent de `usePlatformCopy`.
+`TaskForm`, `ResourceNotice` et les règles de champs de la plateforme restent dans
+`platform/components.tsx`. La page `/jobs` et ses contrôles sont décrits dans
+[JOB_ENGINE.md](JOB_ENGINE.md). Les limites ci-dessous décrivent le shell initial ;
+les phases 1–3 prévalent pour l’authentification et les permissions actuelles.
 
 ## Frontières et limites
 

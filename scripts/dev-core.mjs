@@ -19,6 +19,7 @@ const sources = [
   'lib/security/src',
   'sdk/core/src',
   'sdk/types/src',
+  'modules/demo/src',
 ];
 const children = new Set();
 let stopping = false;

@@ -40,7 +40,11 @@ export class BffPlatformController {
   }
   private async forward(method: 'GET' | 'POST', request: Request, response: Response) {
     const path = request.path.slice('/api/platform/'.length);
-    if (!pathPattern.test(path)) throw new NotFoundException();
+    if (
+      !pathPattern.test(path) &&
+      !/^(?:jobs(?:\/[a-f0-9-]{36}\/(?:retry|cancel))?|admin\/runtime)$/u.test(path)
+    )
+      throw new NotFoundException();
     const headers: Record<string, string> = {
       accept: 'application/json',
       ...(this.config.internalToken ? { 'x-orkobi-internal': this.config.internalToken } : {}),

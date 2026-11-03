@@ -52,6 +52,9 @@ services:
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       SESSION_SECURE: ${SESSION_SECURE:-false}
       INTERNAL_TOKEN: ${INTERNAL_TOKEN:-}
+      REDIS_URL: ${REDIS_URL:-}
+      JOBS_ENABLED: ${JOBS_ENABLED:-true}
+      JOBS_POLL_MS: ${JOBS_POLL_MS:-1000}
       OIDC_ISSUER: ${OIDC_ISSUER:-}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
       OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
@@ -95,6 +98,28 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  redis:
+    image: redis:8-alpine
+    profiles: [cache, test]
+    command:
+      [
+        redis-server,
+        --save,
+        '',
+        --appendonly,
+        'no',
+        --maxmemory,
+        64mb,
+        --maxmemory-policy,
+        allkeys-lru,
+      ]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
   test-db:
     <<: *app
     profiles: [test]
@@ -103,9 +128,10 @@ services:
       [
         sh,
         -c,
-        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs',
+        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/cache.integration.mjs && node scripts/benchmark-services.mjs && REDIS_URL=redis://redis:6379 node scripts/benchmark-services.mjs',
       ]
     environment:
+      TEST_REDIS_URL: redis://redis:6379
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-orkobi}
       MIGRATION_DB_USER: orkobi_migrator
@@ -114,6 +140,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?Configurer DB_PASSWORD dans .env}
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:

@@ -1,4 +1,5 @@
 import type { CapabilityKey, PermissionKey } from './index.js';
+import type { ModuleTaskDeclaration } from './jobs.js';
 
 /** Manifeste standard des modules. Une déclaration n'accorde aucun droit. */
 export interface ModuleCapabilityRequirement {
@@ -36,6 +37,7 @@ export interface ModuleManifest {
   readonly capabilities: readonly ModuleCapabilityRequirement[];
   readonly permissions: readonly ModulePermissionDeclaration[];
   readonly entities: readonly ModuleEntityDeclaration[];
+  readonly tasks?: readonly ModuleTaskDeclaration[];
 }
 
 export const moduleIdPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/u;
@@ -108,6 +110,28 @@ export function isModuleManifest(value: unknown): value is ModuleManifest {
     return false;
   const permissions = new Set(value.permissions.map((item) => item.key));
   if (permissions.size !== value.permissions.length) return false;
+  if (
+    value.tasks !== undefined &&
+    (!Array.isArray(value.tasks) ||
+      value.tasks.length > 50 ||
+      !value.tasks.every(
+        (task) =>
+          record(task) &&
+          plainString(task.key, 60) &&
+          entityNamePattern.test(task.key) &&
+          plainString(task.description, 300) &&
+          typeof task.permission === 'string' &&
+          permissions.has(task.permission) &&
+          Number.isInteger(task.timeoutMs) &&
+          Number(task.timeoutMs) >= 100 &&
+          Number(task.timeoutMs) <= 300000 &&
+          Number.isInteger(task.maxAttempts) &&
+          Number(task.maxAttempts) >= 1 &&
+          Number(task.maxAttempts) <= 5,
+      ) ||
+      new Set(value.tasks.map((task) => task.key)).size !== value.tasks.length)
+  )
+    return false;
   if (
     !Array.isArray(value.entities) ||
     value.entities.length > 20 ||

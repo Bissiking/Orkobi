@@ -10,7 +10,11 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { builtinAdminPermissions, organizationPermissions } from '@orkobi/contracts';
+import {
+  builtinAdminPermissions,
+  organizationPermissions,
+  isModuleManifest,
+} from '@orkobi/contracts';
 import type {
   OrganizationPermission,
   PlatformSession,
@@ -27,6 +31,8 @@ import { AdvancedIdentityService } from './identity.js';
 import { IntegrationAccessService } from './integration.js';
 import { PLATFORM_CONFIG } from './config.js';
 import type { PlatformConfig } from './config.js';
+import { JobEngine } from '../jobs/service.js';
+import { TechnicalCache } from '../cache/service.js';
 
 type Body = Record<string, unknown>;
 export interface PlatformRequest {
@@ -112,6 +118,8 @@ export class PlatformService {
     @Inject(CapabilityRegistry) private readonly capabilities: CapabilityRegistry,
     @Inject(AdvancedIdentityService) private readonly identity: AdvancedIdentityService,
     @Inject(IntegrationAccessService) private readonly integrations: IntegrationAccessService,
+    @Inject(JobEngine) private readonly jobs: JobEngine,
+    @Inject(TechnicalCache) private readonly cache: TechnicalCache,
   ) {}
 
   private async derive<T>(operation: () => Promise<T>): Promise<T> {
@@ -233,6 +241,29 @@ export class PlatformService {
         if (method === 'GET' && path === 'sessions')
           return { data: await repo.sessions(user.id, session.id) };
         const body = method === 'POST' ? object(request.body) : {};
+        if (path === 'jobs' || /^jobs\/[a-f0-9-]{36}\/(retry|cancel)$/u.test(path)) {
+          const orgId = session.activeOrganizationId;
+          if (!orgId) throw new BadRequestException();
+          await this.authorizeOrganization(
+            repo,
+            user,
+            orgId,
+            method === 'GET' ? 'modules:read' : 'modules:write',
+          );
+          if (method === 'GET' && path === 'jobs') {
+            return {
+              data: { jobs: await repo.jobs(orgId, user.id), enabled: this.jobs.status().enabled },
+            };
+          }
+          if (method === 'POST' && path === 'jobs')
+            return { data: await this.jobs.schedule(repo, orgId, user.id, body) };
+          if (method === 'POST') {
+            const [, id, action] = /^jobs\/([a-f0-9-]{36})\/(retry|cancel)$/u.exec(path)!;
+            await this.jobs.change(repo, orgId, user.id, uuid(id), action as 'retry' | 'cancel');
+            return { data: { success: true } };
+          }
+          throw new NotFoundException();
+        }
         if (method === 'POST' && path === 'logout') {
           await repo.revokeSession(user.id, session.id);
           await repo.audit(randomUUID(), user.id, 'identity.logout');
@@ -306,6 +337,8 @@ export class PlatformService {
         }
         if (path.startsWith('admin/')) {
           if (!user.platformAdmin) throw new ForbiddenException();
+          if (method === 'GET' && path === 'admin/runtime')
+            return { data: { jobs: this.jobs.status(), cache: this.cache.status() } };
           const managed = await this.integrations.administration(repo, user, method, path, body);
           if (managed) return managed;
           const resetMatch = /^admin\/users\/([a-f0-9-]{36})\/password$/u.exec(path);
@@ -403,8 +436,17 @@ export class PlatformService {
           if (method === 'POST' && orgMatch) {
             const orgId = uuid(orgMatch[1]);
             if (!(await repo.organization(orgId))) throw new NotFoundException();
-            if (orgMatch[2])
-              return this.saveMember(repo, user, orgId, body, organizationPermissions);
+            if (orgMatch[2]) {
+              const permissions = [
+                ...organizationPermissions,
+                ...(await repo.modules()).flatMap((module) =>
+                  isModuleManifest(module.manifest)
+                    ? module.manifest.permissions.map((permission) => permission.key)
+                    : [],
+                ),
+              ];
+              return this.saveMember(repo, user, orgId, body, permissions);
+            }
             await repo.updateOrganization(organization(body, orgId, boolean(body.active)));
             await repo.audit(randomUUID(), user.id, 'organization.updated', orgId, orgId);
             return { data: { success: true } };

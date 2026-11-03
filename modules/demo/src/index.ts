@@ -1,4 +1,5 @@
-import type { ModuleManifest } from '@orkobi/contracts';
+import type { ModuleTaskHandler } from '@orkobi/sdk-core';
+import type { ModuleManifest } from '@orkobi/sdk-types';
 
 /** Premier module officiel : démonstration du cycle manifeste → activation → données. */
 export const demoManifest: ModuleManifest = Object.freeze({
@@ -34,6 +35,23 @@ export const demoManifest: ModuleManifest = Object.freeze({
       ]),
     }),
   ]),
+  tasks: Object.freeze([
+    Object.freeze({
+      key: 'verify_notes',
+      description: 'Vérifier la lecture des notes de cette organisation.',
+      permission: 'demo:read',
+      timeoutMs: 10000,
+      maxAttempts: 3,
+    }),
+  ]),
 });
 
 export const demoModuleId = 'orkobi.demo';
+/** Le Core fournit uniquement les opérations autorisées ; aucune connexion SQL du module. */
+export const demoTaskHandlers: Readonly<Record<string, ModuleTaskHandler>> = Object.freeze({
+  verify_notes: async (execution) => {
+    execution.signal.throwIfAborted();
+    await execution.data.list('notes');
+    execution.signal.throwIfAborted();
+  },
+});

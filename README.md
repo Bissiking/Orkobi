@@ -13,10 +13,15 @@ administration, registre de modules avec activation par organisation, catalogue
 de capabilities et premier module officiel `orkobi.demo` (notes isolées par
 organisation). Les modules métier externes restent à construire (Phase 4).
 
-La livraison [Phase 3.1/3.2](DOCS/PHASE_3.md) ajoute OIDC, MFA TOTP et récupération,
-sessions enrichies, authentification BFF ↔ Core et API d'intégration avec scopes,
-expiration et révocation. Les sous-sections 3.3/3.4 restent en attente ; la version
-produit est maintenue à 0.2.0-EXP.
+La [Phase 3](DOCS/PHASE_3.md) ajoute OIDC, MFA TOTP et récupération,
+sessions enrichies, authentification BFF ↔ Core et intégrations avec scopes,
+expiration et révocation. Elle fournit aussi un [Job Engine durable](DOCS/JOB_ENGINE.md),
+un cache mémoire avec Redis optionnel et le [kit UI du SDK](DOCS/UI_SDK.md)
+en CSS natif, avec des icônes Papicons pour les applications. La version reste
+**0.2.0-EXP**, sans publication ni déploiement automatique.
+
+La [documentation](DOCS/README.md) fournit les points d’entrée pour les développeurs
+et les futures IA ; la [revue Phase 3](DOCS/REVIEW_PHASE_3.md) consigne les preuves.
 
 ## Démarrage
 
@@ -38,7 +43,7 @@ pnpm dev
 | `pnpm dev:web`      | Lance uniquement Vite ; Core/BFF doivent être lancés séparément                   |
 | `pnpm start:bff`    | Lance le BFF compilé et sert le frontend compilé                                  |
 | `pnpm start:core`   | Lance le Core déjà compilé et charge le `.env` racine                             |
-| `pnpm build`        | Compile les sept bibliothèques/SDK et les trois applications                      |
+| `pnpm build`        | Compile les bibliothèques, SDK, module démo et trois applications                 |
 | `pnpm format`       | Formate les fichiers avec Prettier                                                |
 | `pnpm format:check` | Vérifie le formatage sans modifier les fichiers                                   |
 | `pnpm lint`         | Exécute ESLint, sans avertissement accepté                                        |

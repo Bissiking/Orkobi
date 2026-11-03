@@ -1,3 +1,4 @@
+import { JobsPage } from './platform/jobs';
 import { OidcCallbackPage } from './platform/advanced';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
@@ -7,6 +8,7 @@ import {
   CircleHelp,
   House,
   LayoutGrid,
+  Clock,
   Menu,
   Settings2,
   ShieldCheck,
@@ -31,12 +33,13 @@ import {
 } from './platform/pages';
 import { usePlatform } from './platform/context';
 import { usePlatformCopy } from './platform/hooks';
-import { Button } from './ui/Button';
+import { Button } from '@orkobi/sdk-ui';
 
 const navigation = [
   { to: '/', label: 'overview', icon: House },
   { to: '/organizations', label: 'organizations', icon: Building2 },
   { to: '/modules', label: 'modules', icon: LayoutGrid },
+  { to: '/jobs', label: 'jobs', icon: Clock },
 ] as const;
 const secondary = [
   { to: '/system', label: 'system', icon: ShieldCheck },
@@ -268,6 +271,7 @@ export default function App() {
               <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
               <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
               <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
+              <Route path="/jobs" element={<JobsPage key={moduleContext} />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/system" element={<StatusPage />} />
               <Route path="*" element={<NotFoundPage />} />

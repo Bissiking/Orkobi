@@ -46,3 +46,6 @@ export interface ModuleRequirements {
   readonly capabilities: readonly CapabilityRequirement[];
   readonly permissions: readonly PermissionDeclaration[];
 }
+export type { ModuleTaskDeclaration, JobStatus, JobSummary, ScheduleJob } from '@orkobi/contracts';
+
+export type { ModuleManifest, ModuleEntry } from '@orkobi/contracts';

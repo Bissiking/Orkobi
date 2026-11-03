@@ -2,6 +2,7 @@ import pg from 'pg';
 import type { PostgreSqlConfig } from './config.js';
 import { applyMigrations, schemaIsCurrent } from './migrations.js';
 import { PlatformRepository } from './platform.js';
+import { JobRepository } from './jobs.js';
 import { PostgreSqlModuleAdapter } from './adapter.js';
 import type { ModuleDataOwner } from './adapter.js';
 import type { PostgreSqlAdapter } from './index.js';
@@ -10,6 +11,8 @@ import type { PostgreSqlAdapter } from './index.js';
 export class PostgreSqlDatabase {
   readonly #pool: pg.Pool;
   readonly platform: PlatformRepository;
+  readonly jobs: JobRepository;
+  readonly #jobPool: pg.Pool;
 
   constructor(config: PostgreSqlConfig) {
     this.#pool = new pg.Pool({
@@ -26,6 +29,16 @@ export class PostgreSqlDatabase {
     // Une déconnexion d'un client inactif ne doit pas arrêter le processus HTTP.
     this.#pool.on('error', () => {});
     this.platform = new PlatformRepository(this.#pool);
+    this.#jobPool = new pg.Pool({
+      ...config,
+      max: 2,
+      connectionTimeoutMillis: 2000,
+      statement_timeout: 2000,
+      application_name: 'orkobi-jobs',
+      ssl: false,
+    });
+    this.#jobPool.on('error', () => {});
+    this.jobs = new JobRepository(this.#jobPool);
   }
 
   async isReady(): Promise<boolean> {
@@ -55,7 +68,7 @@ export class PostgreSqlDatabase {
     return new PostgreSqlModuleAdapter(this.#pool, owner);
   }
 
-  close(): Promise<void> {
-    return this.#pool.end();
+  async close(): Promise<void> {
+    await Promise.all([this.#pool.end(), this.#jobPool.end()]);
   }
 }

@@ -2,6 +2,10 @@ import { DatabaseConfigurationError, loadDatabaseConfig } from '@orkobi/database
 import type { PostgreSqlConfig } from '@orkobi/database';
 import type { PlatformConfig } from './platform/config.js';
 import type { OidcProviderConfig } from './platform/oidc.js';
+import { loadJobConfig } from './jobs/config.js';
+import type { JobConfig } from './jobs/config.js';
+import { loadCacheConfig } from './cache/service.js';
+import type { CacheConfig } from './cache/service.js';
 
 export interface CoreConfig {
   readonly environment: 'development' | 'test' | 'production';
@@ -10,6 +14,8 @@ export interface CoreConfig {
   readonly openApiEnabled: boolean;
   readonly database?: PostgreSqlConfig;
   readonly platform?: PlatformConfig;
+  readonly jobs?: JobConfig;
+  readonly cache?: CacheConfig;
 }
 
 export class ConfigurationError extends Error {}
@@ -101,6 +107,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
     throw new ConfigurationError('INTERNAL_TOKEN doit contenir 64 caractères hexadécimaux.');
   }
   const oidc = loadOidcConfig(env);
+  let jobs: JobConfig | undefined, cache: CacheConfig | undefined;
+  try {
+    if (env.JOBS_ENABLED !== undefined || env.JOBS_POLL_MS !== undefined) jobs = loadJobConfig(env);
+    if (env.REDIS_URL) cache = loadCacheConfig(env);
+  } catch (error) {
+    throw new ConfigurationError(
+      error instanceof Error ? error.message : 'Configuration des services invalide.',
+    );
+  }
   try {
     database = loadDatabaseConfig(env);
   } catch (error) {
@@ -125,6 +140,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
     host,
     port: Number(port),
     openApiEnabled: openApi === 'true',
+    ...(jobs ? { jobs } : {}),
+    ...(cache ? { cache } : {}),
     ...(database ? { database } : {}),
     ...(platform ? { platform } : {}),
   });

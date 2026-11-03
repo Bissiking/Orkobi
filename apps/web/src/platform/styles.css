@@ -35,15 +35,6 @@
 .platform-form h2 {
   margin-bottom: 0;
 }
-.platform-field {
-  display: grid;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 650;
-  min-width: 0;
-}
-.platform-field input,
-.platform-field select,
 .organization-selector select {
   width: 100%;
   min-width: 0;
@@ -54,11 +45,6 @@
   border-radius: 6px;
   padding: 10px 12px;
 }
-.platform-field small {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--muted);
-}
 .platform-form p {
   font-size: 13px;
 }
@@ -66,17 +52,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-}
-.form-error {
-  color: var(--warning) !important;
-  background: var(--warning-soft);
-  padding: 12px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-.form-success {
-  color: var(--success) !important;
-  font-size: 13px;
 }
 .access-layout {
   display: grid;
@@ -423,4 +398,10 @@
   .platform-details {
     grid-template-columns: 1fr;
   }
+}
+
+.job-module {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
 }

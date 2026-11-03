@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import type { ReactNode, FormEvent } from 'react';
 import { errorCode, errorMessage } from '../errors';
-import { Button } from '../ui/Button';
-import { Notice } from '../ui/Notice';
+import { Button } from '@orkobi/sdk-ui';
+import { Field as UiField } from '@orkobi/sdk-ui';
+import type { FieldProps } from '@orkobi/sdk-ui';
+import { Notice } from '@orkobi/sdk-ui';
 import { usePlatformCopy } from './hooks';
 
-export { Field } from '../ui/Field';
+/** Règles des formulaires plateforme ; le SDK UI reste indépendant du métier. */
+export function Field(props: FieldProps) {
+  return (
+    <UiField
+      maxLength={props.type === 'password' ? 128 : props.type === 'email' ? 254 : 120}
+      minLength={props.type === 'password' ? 15 : undefined}
+      autoComplete={
+        props.type === 'password' ? 'new-password' : props.type === 'email' ? 'email' : 'off'
+      }
+      {...props}
+    />
+  );
+}
 
 export function PlatformHeading({
   title,

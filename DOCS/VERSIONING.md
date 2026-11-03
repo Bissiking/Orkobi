@@ -98,7 +98,7 @@ Le monorepo utilise initialement une **version fixe commune** pour douze manifes
 - `package.json` (source produit) ;
 - `apps/{core,bff,web}/package.json` ;
 - `lib/{contracts,database,events,identity,security}/package.json` ;
-- `sdk/{core,types}/package.json` ;
+- `sdk/{core,types,ui}/package.json` ;
 - `tests/types/package.json`.
 
 Tous déclarent `0.2.0-EXP`. Le SDK n'est pas encore publié indépendamment.

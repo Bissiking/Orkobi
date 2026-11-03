@@ -1,4 +1,5 @@
 export const fr = {
+  jobs: 'Tâches planifiées',
   overview: 'Vue d’ensemble',
   organizations: 'Organisations',
   modules: 'Modules',
@@ -130,6 +131,7 @@ export type TranslationKey = keyof typeof fr;
 export type Messages = { readonly [Key in TranslationKey]: string };
 export type Locale = 'fr' | 'en';
 export const en: Messages = {
+  jobs: 'Scheduled tasks',
   overview: 'Overview',
   organizations: 'Organizations',
   modules: 'Modules',

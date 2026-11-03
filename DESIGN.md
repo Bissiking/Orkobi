@@ -239,3 +239,13 @@ La page des services distingue vérification, disponibilité et indisponibilité
 - **Don’t** figer une couleur claire dans un composant qui doit suivre le thème sombre.
 - **Don’t** remplacer les contrôles natifs accessibles par des imitations purement visuelles.
 - **Don’t** faire des petites tailles de métadonnées une règle pour le texte courant des futurs écrans.
+
+## Implémentation partagée (Phase 3)
+
+Les tokens clair/sombre et primitives CSS sont désormais dans `sdk/ui/src/styles.css`,
+consommés via `@orkobi/sdk-ui/styles.css`. Les layouts restent dans `apps/web`.
+`@orkobi/sdk-ui` expose Button, Field, Notice et AppIcon ; aucun framework CSS externe.
+Les icônes d’applications et du module démo utilisent une sélection SVG Papicons
+sous licence MIT, avec `currentColor`. Les icônes de navigation et d’actions existantes
+restent dans Lucide. Le [guide UI SDK](DOCS/UI_SDK.md) porte les contrats et la provenance.
+Le système visuel existant et ses tailles de champs 13/14 px sont conservés.

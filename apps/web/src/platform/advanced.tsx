@@ -12,8 +12,8 @@ import { usePlatform } from './context';
 import { Field, PlatformHeading, ResourceNotice, TaskForm } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
 import { useAdvancedCopy } from './advanced-copy';
-import { Button } from '../ui/Button';
-import { Notice } from '../ui/Notice';
+import { Button } from '@orkobi/sdk-ui';
+import { Notice } from '@orkobi/sdk-ui';
 import './advanced.css';
 
 interface LoginResult {

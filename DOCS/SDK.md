@@ -1,10 +1,10 @@
 <!-- DOCS/SDK.md -->
 
-# Conventions SDK — 0.1.0-EXP
+# Conventions SDK — 0.2.0-EXP
 
 Le SDK est expérimental, privé et susceptible d'évoluer. Il est indépendant de
-NestJS et de PostgreSQL. Aucune API distante ni instance fonctionnelle du Core
-n'est fournie par cette version.
+NestJS et de PostgreSQL. Le SDK ne fournit pas de client HTTP distant. Le Core applicatif fonctionne
+avec PostgreSQL ; ses points d’entrée autorisés créent les contextes.
 
 ## Surface publique
 
@@ -94,3 +94,19 @@ artefacts actuels, sans fournir un second build CommonJS.
 
 Le SDK ne protège pas l'hôte contre du code tiers. Une frontière d'exécution
 réelle sera nécessaire avant de promettre l'isolation des plugins externes.
+
+## UI et tâches des modules (Phase 3)
+
+`@orkobi/sdk-ui` expose `Button`, `Field`, `Notice`, `AppIcon` et une seule feuille
+CSS native. Il est consommé par l’application ; le [guide UI](UI_SDK.md) décrit les
+règles pour les développeurs, plugins et IA, les thèmes et les icônes Papicons.
+Aucun framework CSS externe n’est utilisé.
+
+`@orkobi/sdk-types` exporte aussi `ModuleManifest`, `ModuleEntry`,
+`ModuleTaskDeclaration`, `ScheduleJob`, `JobSummary` et les états de tâche.
+`@orkobi/sdk-core` expose `ModuleTaskHandler`, `ModuleTaskExecution`, `TaskSignal`
+et le contrat futur `ModuleJobService`. Le [Job Engine](JOB_ENGINE.md) exécute
+les handlers officiels avec accès aux données borné. La façade de planification
+pour les plugins tiers reste à raccorder en Phase 4 ; ne pas lui inventer une
+instance dans un plugin. Les modules officiels démontrent le contrat public,
+sans dépendre des bibliothèques internes ou de NestJS.

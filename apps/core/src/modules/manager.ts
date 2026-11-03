@@ -133,6 +133,7 @@ export class ModuleManager {
       }
     }
     await repo.setModuleEnabled(moduleId, enabled);
+    if (!enabled) await repo.suspendModuleJobs(moduleId);
     await repo.audit(
       randomUUID(),
       actorId,
@@ -180,6 +181,7 @@ export class ModuleManager {
       }
     }
     await repo.setOrganizationModule(organizationId, moduleId, active);
+    if (!active) await repo.suspendModuleJobs(moduleId, organizationId);
     await repo.audit(
       randomUUID(),
       actorId,

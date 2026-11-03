@@ -69,6 +69,18 @@ const catalogue: readonly CatalogueEntry[] = Object.freeze([
     description: 'Bus d’événements métier entre modules (contrats publiés, bus non implémenté).',
     state: 'unavailable',
   }),
+  Object.freeze({
+    key: 'core.jobs',
+    description:
+      'File PostgreSQL durable, tâches ponctuelles et récurrentes des modules officiels.',
+    state: 'database',
+  }),
+  Object.freeze({
+    key: 'core.cache',
+    description:
+      'Cache technique mémoire borné, Redis optionnel ; jamais une autorité de sécurité.',
+    state: 'limited',
+  }),
 ]);
 
 @Injectable()

@@ -24,8 +24,8 @@ import { usePlatform } from './context';
 import { Field, PlatformHeading, TaskForm, ResourceNotice } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
 import { errorCode, errorMessage } from '../errors';
-import { Button } from '../ui/Button';
-import { Notice } from '../ui/Notice';
+import { Button, AppIcon } from '@orkobi/sdk-ui';
+import { Notice } from '@orkobi/sdk-ui';
 import type { ReactNode } from 'react';
 import type { PlatformCopy } from './copy';
 
@@ -1019,7 +1019,7 @@ export function ModulesSection() {
             <div className="role-row" key={module.id}>
               <div>
                 <h3>
-                  {module.name} <small>v{module.version}</small>{' '}
+                  <AppIcon name="notes" size={20} /> {module.name} <small>v{module.version}</small>{' '}
                   <span className="small-label">
                     {module.active
                       ? t.moduleActive

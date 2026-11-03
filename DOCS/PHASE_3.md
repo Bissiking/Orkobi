@@ -1,8 +1,12 @@
-# Phase 3 — authentification avancée et API Access Manager
+# Phase 3 — identité, intégrations, services et tâches
 
-Cette livraison termine **3.1 et 3.2**. Les services optionnels (3.3) et le Job
-Engine (3.4) restent à faire. Le produit conserve **0.2.0-EXP** jusqu'à la fin de
-la Phase 3 ; cette étape ne constitue pas une publication stable.
+La Phase 3 comprend désormais 3.1, 3.2, 3.2-BIS, 3.3 et 3.4. Le produit reste
+**0.2.0-EXP** : cette livraison locale ne constitue pas une publication stable.
+
+- [Services optionnels et Job Engine](JOB_ENGINE.md) : cache mémoire/Redis,
+  file PostgreSQL durable, tâches des modules et exploitation.
+- [Kit UI du SDK](UI_SDK.md) : composants, CSS natif, thèmes, Papicons et règles IA.
+- [Revue de la phase](REVIEW_PHASE_3.md) : corrections, tests et limites.
 
 ## Mise à niveau
 
@@ -11,7 +15,8 @@ Les migrations append-only `0005_identity_advanced`, `0006_api_access` et
 empreintes. Elles ajoutent les facteurs MFA, codes et challenges, états OIDC,
 métadonnées de sessions, jetons d'intégration et réglages d'accès. La dernière
 migration ajoute le compteur anti-rejeu TOTP et les droits SQL de suppression
-nécessaires aux parcours d'identité.
+nécessaires aux parcours d'identité. `0008_jobs` ajoute la file durable et
+l’historique d’exécution sans modifier 0001–0007.
 
 Sauvegarder une instance utilisée avant sa mise à niveau. `pnpm setup:prepare`
 complète les secrets `SETUP_TOKEN` et `INTERNAL_TOKEN` manquants dans `.env` sans
@@ -143,5 +148,6 @@ La recette Chromium couvre les écrans FR/EN sur desktop et viewport mobile avec
 des réponses synthétiques. La validation d'un fournisseur externe réel et d'un
 appareil mobile physique reste propre au déploiement. Le secret TOTP est conservé
 en base sans chiffrement applicatif ; les accès SQL, disques et sauvegardes doivent
-être protégés. Les jetons et codes de récupération sont hashés. Ni Redis, ni jobs,
-ni connecteur d'écriture métier ne sont ajoutés dans cette livraison.
+être protégés. Les jetons et codes de récupération sont hashés. Redis optionnel et les jobs
+sont décrits dans le guide 3.3/3.4 ; aucun connecteur d’écriture métier externe
+n’est ajouté.

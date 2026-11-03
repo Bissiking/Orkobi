@@ -20,6 +20,12 @@ import {
 } from './contracts.js';
 import { CoreSdkFactory } from './sdk-factory.js';
 import { UnavailableCoreServices } from './unavailable-services.js';
+import { JobEngine } from '../jobs/service.js';
+import { JobRegistry } from '../jobs/registry.js';
+import { JOB_CONFIG, defaultJobConfig } from '../jobs/config.js';
+import type { JobConfig } from '../jobs/config.js';
+import { TechnicalCache, CACHE_CONFIG } from '../cache/service.js';
+import type { CacheConfig } from '../cache/service.js';
 
 const tokens = [CORE_IDENTITY, CORE_ORGANIZATIONS, CORE_PERMISSIONS, CORE_CAPABILITIES];
 
@@ -35,6 +41,8 @@ export class CoreServicesModule {
   static register(
     database?: PostgreSqlConfig,
     platform: PlatformConfig = localPlatformConfig,
+    jobs: JobConfig = defaultJobConfig,
+    cache: CacheConfig = { redisUrl: undefined },
   ): DynamicModule {
     return {
       module: CoreServicesModule,
@@ -48,6 +56,11 @@ export class CoreServicesModule {
         CapabilityRegistry,
         ModuleManager,
         ModuleDataService,
+        JobEngine,
+        JobRegistry,
+        TechnicalCache,
+        { provide: JOB_CONFIG, useValue: jobs },
+        { provide: CACHE_CONFIG, useValue: cache },
         { provide: DATABASE_CONFIG, useValue: database },
         { provide: PLATFORM_CONFIG, useValue: platform },
         ...[CORE_IDENTITY, CORE_ORGANIZATIONS, CORE_PERMISSIONS].map((provide) => ({

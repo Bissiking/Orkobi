@@ -228,26 +228,28 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 - [x] Capturer les exceptions et rejets non interceptés côté interface.
 - [x] Centraliser le mapping code d'erreur → message affiché.
 - [x] Ajouter une bannière d'erreurs activable en développement.
-- [x] Créer les composants réutilisables `Button`, `Field`, `Notice` (`apps/web/src/ui/`).
+- [x] Créer les composants réutilisables `Button`, `Field`, `Notice` (`@orkobi/sdk-ui`, source `sdk/ui/`).
 - [x] Migrer les usages de boutons et messages du frontend.
+- [x] Fournir notre propre kit UI/CSS natif, sans framework CSS externe, intégré au SDK.
+- [x] Documenter les composants, thèmes, icônes Papicons et consignes pour les futurs prompts et IA.
 
 ## 3.3 — Services optionnels
 
-- [ ] Ajouter un adaptateur Redis.
-- [ ] Gérer le cache avec ou sans Redis.
-- [ ] Préparer un système de files de tâches.
-- [ ] Mesurer les performances et identifier les besoins d'optimisation.
+- [x] Ajouter un adaptateur Redis.
+- [x] Gérer le cache avec ou sans Redis.
+- [x] Préparer un système de files de tâches.
+- [x] Mesurer les performances et identifier les besoins d'optimisation.
 
 ## 3.4 — Job Engine
 
-- [ ] Créer le planificateur interne.
-- [ ] Permettre aux modules de déclarer leurs tâches.
-- [ ] Ajouter les tâches ponctuelles et récurrentes.
-- [ ] Contrôler les permissions et l'organisation d'exécution.
-- [ ] Gérer erreurs, retries et timeouts.
-- [ ] Éviter les exécutions concurrentes involontaires.
-- [ ] Journaliser les exécutions.
-- [ ] Suspendre les tâches lors de la désactivation d'un module.
+- [x] Créer le planificateur interne.
+- [x] Permettre aux modules de déclarer leurs tâches.
+- [x] Ajouter les tâches ponctuelles et récurrentes.
+- [x] Contrôler les permissions et l'organisation d'exécution.
+- [x] Gérer erreurs, retries et timeouts.
+- [x] Éviter les exécutions concurrentes involontaires.
+- [x] Journaliser les exécutions.
+- [x] Suspendre les tâches lors de la désactivation d'un module.
 
 ---
 
@@ -350,12 +352,15 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0, 1, 2 et sous-sections 3.1/3.2 terminées ; poursuivre 3.3 puis 3.4.**
+**Phases 0 à 3 implémentées et vérifiées localement ; prochaine étape : Phase 4.**
 
-La version produit reste **0.2.0-EXP** : Redis/cache/files (3.3) et le Job Engine
-(3.4) ne sont pas inclus dans cette livraison. La [livraison 3.1/3.2](PHASE_3.md)
-ajoute OIDC, liaison d'identités, MFA TOTP et récupération, métadonnées de sessions,
-authentification BFF ↔ Core et API d'intégration avec scopes et révocation.
+La version produit reste **0.2.0-EXP**, sans publication stable implicite.
+Le [guide Phase 3](PHASE_3.md) décrit identité et intégrations ; le
+[Job Engine](JOB_ENGINE.md) décrit cache mémoire/Redis et tâches durables.
+Le [kit UI SDK](UI_SDK.md) fixe les règles CSS natives et les icônes Papicons
+pour les futures extensions. Les [preuves de revue](REVIEW_PHASE_3.md) distinguent
+les contrôles unitaires, SQL/Redis réels, navigateur synthétique et les limites
+qui restent propres au déploiement.
 
 Les conditions de publication et de production restent distinctes.
 

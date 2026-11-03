@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePreferences } from './preferences-context';
 import { clearErrorReports, errorBannerEnabled, subscribeErrorReports } from './errors';
 import type { ErrorReport } from './errors';
-import { Button } from './ui/Button';
+import { Button } from '@orkobi/sdk-ui';
 
 export default function ErrorBanner() {
   const { messages: t } = usePreferences();

@@ -2,7 +2,7 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { en, fr } from './i18n';
 import { reportError } from './errors';
-import { Button } from './ui/Button';
+import { Button } from '@orkobi/sdk-ui';
 
 export default class AppErrorBoundary extends Component<
   { children: ReactNode },

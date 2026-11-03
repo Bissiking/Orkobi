@@ -36,10 +36,14 @@ const base = [
 
 function compose(args, capture = false) {
   return new Promise((resolve, reject) => {
-    const child = spawn('docker', [...base, ...args], {
-      cwd: root,
-      stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
-    });
+    const child = spawn(
+      'docker',
+      [...base, ...(args[0] === 'down' ? ['--profile', '*'] : []), ...args],
+      {
+        cwd: root,
+        stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
+      },
+    );
     let output = '';
     child.stdout?.on('data', (chunk) => {
       output += chunk;

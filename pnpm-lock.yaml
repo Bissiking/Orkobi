@@ -242,6 +242,9 @@ importers:
       '@orkobi/sdk-types':
         specifier: workspace:*
         version: link:../../sdk/types
+      '@redis/client':
+        specifier: 6.3.1
+        version: 6.3.1
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
@@ -264,6 +267,9 @@ importers:
       '@orkobi/contracts':
         specifier: workspace:*
         version: link:../../lib/contracts
+      '@orkobi/sdk-ui':
+        specifier: workspace:*
+        version: link:../../sdk/ui
       lucide-react:
         specifier: 1.63.0
         version: 1.63.0(@types/react@19.3.0)(react@19.3.1)
@@ -334,9 +340,12 @@ importers:
 
   modules/demo:
     dependencies:
-      '@orkobi/contracts':
+      '@orkobi/sdk-core':
         specifier: workspace:*
-        version: link:../../lib/contracts
+        version: link:../../sdk/core
+      '@orkobi/sdk-types':
+        specifier: workspace:*
+        version: link:../../sdk/types
 
   sdk/core:
     dependencies:
@@ -349,6 +358,18 @@ importers:
       '@orkobi/contracts':
         specifier: workspace:*
         version: link:../../lib/contracts
+
+  sdk/ui:
+    devDependencies:
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-router:
+        specifier: 8.5.1
+        version: 8.5.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
   tests/types:
     devDependencies:
@@ -534,6 +555,18 @@ packages:
 
   '@oxc-project/types@0.155.0':
     resolution: {integrity: sha512-SeE8JPwW1xs1tHeNycjUtUBdhorRa8o4jlvjwk49R7/Z291i+4DQa7JJIgOm/TaYQZx+QrPQbVJ/9c8dMIZN8Q==}
+
+  '@redis/client@6.3.1':
+    resolution: {integrity: sha512-masbfVKULdoAofwddepZxRhWa4w6zvBHn6TRn90TRPrRkVIlGCur3pFqwWaCbMxtYI9twepkz63e/T/tEH8GjA==}
+    engines: {node: '>= 20.0.0'}
+    peerDependencies:
+      '@node-rs/xxhash': ^1.1.0
+      '@opentelemetry/api': '>=1 <2'
+    peerDependenciesMeta:
+      '@node-rs/xxhash':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
 
   '@remix-run/route-pattern@0.22.1':
     resolution: {integrity: sha512-czdGJWh09Lapvcqt7Vb09KlrU2PhRJ8xQaI+AItTuD9aDJ5MAgxnS38lnys6Ll+6RJEqPiaUqTwIQhVLwFvv+w==}
@@ -1784,6 +1817,8 @@ snapshots:
       typescript: 6.0.3
 
   '@oxc-project/types@0.155.0': {}
+
+  '@redis/client@6.3.1': {}
 
   '@remix-run/route-pattern@0.22.1': {}
 

@@ -52,3 +52,5 @@ export interface DatabaseAdapter {
 export interface PostgreSqlAdapter extends DatabaseAdapter {
   readonly dialect: 'postgresql';
 }
+export { JobRepository } from './jobs.js';
+export type { JobLease, ClaimedJob, JobOutcome } from './jobs.js';

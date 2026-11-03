@@ -14,6 +14,8 @@ import type {
 } from '@orkobi/contracts';
 import type { OrganizationContext } from '@orkobi/contracts';
 import { moduleTransaction } from './adapter.js';
+import { jobColumns } from './jobs.js';
+import type { JobSummary, ScheduleJob } from '@orkobi/contracts';
 import type { ModuleDataOwner } from './adapter.js';
 
 const userColumns = 'id, email, name, active, platform_admin AS "platformAdmin"';
@@ -64,6 +66,72 @@ export interface StoredIntegrationToken {
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
 export class PlatformTransaction {
+  async tryJobLock(organizationId: string, moduleId: string, task: string): Promise<boolean> {
+    return (
+      await this.client.query<{ locked: boolean }>(
+        'SELECT pg_try_advisory_xact_lock(hashtextextended($1,0)) AS locked',
+        [`${organizationId}/${moduleId}/${task}`],
+      )
+    ).rows[0]!.locked;
+  }
+  async jobs(organizationId: string, userId: string): Promise<JobSummary[]> {
+    return (
+      await this.client.query<JobSummary>(
+        `SELECT ${jobColumns} FROM orkobi_core.jobs WHERE organization_id=$1 AND created_by=$2 ORDER BY created_at DESC,id LIMIT 100`,
+        [organizationId, userId],
+      )
+    ).rows;
+  }
+  async job(organizationId: string, id: string): Promise<JobSummary | undefined> {
+    return (
+      await this.client.query<JobSummary>(
+        `SELECT ${jobColumns} FROM orkobi_core.jobs WHERE organization_id=$1 AND id=$2 FOR UPDATE`,
+        [organizationId, id],
+      )
+    ).rows[0];
+  }
+  async createJob(id: string, organizationId: string, userId: string, input: ScheduleJob) {
+    // Borne la file par organisation sans inclure l'historique terminé.
+    const count = await this.client.query<{ count: number }>(
+      "SELECT count(*)::integer AS count FROM orkobi_core.jobs WHERE organization_id=$1 AND status IN ('pending','running','suspended')",
+      [organizationId],
+    );
+    if (count.rows[0]!.count >= 1000) return false;
+    await this.client.query(
+      `INSERT INTO orkobi_core.jobs(id,organization_id,module_id,task,created_by,run_at,interval_seconds,cycle_id)
+      VALUES($1,$2,$3,$4,$5,coalesce($6::timestamptz,now()),$7,$1)`,
+      [
+        id,
+        organizationId,
+        input.moduleId,
+        input.task,
+        userId,
+        input.runAt ?? null,
+        input.intervalSeconds ?? null,
+      ],
+    );
+    return true;
+  }
+  async changeJob(
+    organizationId: string,
+    id: string,
+    status: 'pending' | 'cancelled',
+    reset = false,
+  ) {
+    await this.client.query(
+      `UPDATE orkobi_core.jobs SET status=$3,updated_at=now(),
+      attempts=CASE WHEN $4::boolean THEN 0 ELSE attempts END,run_at=CASE WHEN $4::boolean THEN now() ELSE run_at END
+      WHERE organization_id=$1 AND id=$2`,
+      [organizationId, id, status, reset],
+    );
+  }
+  async suspendModuleJobs(moduleId: string, organizationId?: string) {
+    await this.client.query(
+      `UPDATE orkobi_core.jobs SET status='suspended',updated_at=now(),last_error='module_disabled'
+      WHERE module_id=$1 AND status IN ('pending','running')${organizationId ? ' AND organization_id=$2' : ''}`,
+      organizationId ? [moduleId, organizationId] : [moduleId],
+    );
+  }
   /** Réutilise la transaction d'autorisation et d'audit, sans nouvelle connexion. */
   moduleData(owner: ModuleDataOwner, context: OrganizationContext) {
     return moduleTransaction(this.client, owner, context);

@@ -13,6 +13,7 @@ const directories = [
   'lib/events',
   'sdk/core',
   'sdk/types',
+  'sdk/ui',
 ];
 
 for (const directory of directories) {

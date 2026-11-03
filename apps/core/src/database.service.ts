@@ -22,6 +22,11 @@ export class CoreDatabase implements OnApplicationShutdown {
       throw new ServiceUnavailableException();
     return this.#database.platform;
   }
+  async jobs() {
+    if (!this.#database || !(await this.#database.isReady()))
+      throw new ServiceUnavailableException();
+    return this.#database.jobs;
+  }
 
   /** Adaptateur Data Access borné aux tables détenues par le module appelant. */
   async dataAdapter(owner: ModuleDataOwner): Promise<PostgreSqlAdapter> {

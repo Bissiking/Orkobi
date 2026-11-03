@@ -42,8 +42,9 @@ droits des organisations peuvent être délégués, conformément au choix utili
 Les écrans affichent uniquement les données réellement chargées et autorisées.
 Le catalogue permet l'activation des modules officiels par organisation.
 Les sous-sections 3.1/3.2 ajoutent MFA TOTP, OIDC, récupération, sessions enrichies
-et API d'intégration désactivables avec jetons et scopes. Les tâches et services
-optionnels 3.3/3.4 restent hors de cette livraison.
+et API d'intégration désactivables avec jetons et scopes. Les sous-sections 3.3/3.4 ajoutent un cache mémoire avec Redis facultatif et
+un Job Engine PostgreSQL durable. Le kit UI/CSS natif est consommé depuis le SDK ;
+les icônes d’applications utilisent un sous-ensemble Papicons sous licence MIT.
 Les exemples des captures de recette sont des données synthétiques de test.
 
 ## Brand Commitments

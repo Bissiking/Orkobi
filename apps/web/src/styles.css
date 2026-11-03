@@ -1,44 +1,5 @@
 :root {
-  font-family: 'Manrope Variable', sans-serif;
-  font-size: 14px;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  color-scheme: light;
-  --page: #f5f7fa;
-  --surface: #fff;
-  --surface-soft: #f1f4f8;
-  --surface-hover: #eaf0f8;
-  --ink: #223047;
-  --muted: #627087;
-  --line: #e0e6ee;
-  --accent: #2458bb;
-  --accent-hover: #1c479a;
-  --accent-soft: #eaf0fc;
-  --on-accent: #fff;
-  --success: #24704f;
-  --warning: #81571b;
-  --warning-soft: #fff6e7;
-  --ring: #437ce4;
   --sidebar-width: 232px;
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --page: #151b26;
-  --surface: #1c2432;
-  --surface-soft: #242e3f;
-  --surface-hover: #2a374e;
-  --ink: #e1e8f4;
-  --muted: #a2b0c5;
-  --line: #334156;
-  --accent: #91b6ff;
-  --accent-hover: #b0caff;
-  --accent-soft: #2a3b5d;
-  --on-accent: #142643;
-  --success: #8acbab;
-  --warning: #e4bb7a;
-  --warning-soft: #372d21;
-  --ring: #91b6ff;
 }
 * {
   box-sizing: border-box;
@@ -286,22 +247,6 @@ svg {
   align-items: center;
   gap: 10px;
 }
-.icon-button {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--muted);
-}
-.icon-button:hover {
-  background: var(--surface-soft);
-  color: var(--ink);
-}
 .language-control select {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -337,58 +282,6 @@ h1 {
 .page-heading p {
   margin-top: 9px;
   font-size: 12px;
-}
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 10px 15px;
-  font-size: 11px;
-  font-weight: 650;
-  border: 1px solid var(--line);
-  background: var(--surface-soft);
-  border-radius: 6px;
-  width: fit-content;
-  flex-shrink: 0;
-  transition: background-color 160ms ease-out;
-}
-.button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
-.button.primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
-.button.secondary {
-  background: var(--surface);
-  color: var(--ink);
-}
-.button.secondary:hover {
-  background: var(--surface-soft);
-}
-.text-link,
-.text-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  line-height: 1.6;
-  font-weight: 700;
-  color: var(--accent);
-  text-underline-offset: 4px;
-}
-.text-link:hover,
-.text-button:hover {
-  text-decoration: underline;
-}
-.text-button {
-  border: 0;
-  background: transparent;
-  padding: 7px 0;
 }
 .welcome-layout {
   display: grid;

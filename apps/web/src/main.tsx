@@ -9,6 +9,7 @@ import AppErrorBoundary from './ErrorBoundary';
 import ErrorBanner from './ErrorBanner';
 import { installGlobalErrorHandlers } from './errors';
 import { PlatformProvider } from './platform/provider';
+import '@orkobi/sdk-ui/styles.css';
 import './platform/styles.css';
 import './styles.css';
 

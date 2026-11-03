@@ -1,45 +1,37 @@
 import { useSearchParams } from 'react-router';
 import {
   ArrowRight,
-  Building2,
   Check,
   CircleHelp,
-  FileText,
-  FolderKanban,
-  Handshake,
-  Layers3,
   Monitor,
   Moon,
-  Package,
   RefreshCw,
   Search,
-  Settings2,
   Sun,
-  Users,
   X,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
 import { usePlatform } from './platform/context';
 import { ModulesSection } from './platform/pages';
-import { Button } from './ui/Button';
+import { Button, AppIcon } from '@orkobi/sdk-ui';
+import type { AppIconName } from '@orkobi/sdk-ui';
 import type { TranslationKey } from './i18n';
 
 interface PlannedModule {
   id: TranslationKey;
   description: TranslationKey;
-  icon: LucideIcon;
+  icon: AppIconName;
   audience: 'all' | 'business' | 'association';
 }
 const modules: readonly PlannedModule[] = [
-  { id: 'contacts', description: 'contactsDescription', icon: Users, audience: 'all' },
-  { id: 'invoices', description: 'invoicesDescription', icon: FileText, audience: 'business' },
-  { id: 'projects', description: 'projectsDescription', icon: FolderKanban, audience: 'all' },
-  { id: 'stocks', description: 'stocksDescription', icon: Package, audience: 'business' },
-  { id: 'members', description: 'membersDescription', icon: Handshake, audience: 'association' },
-  { id: 'documents', description: 'documentsDescription', icon: Layers3, audience: 'all' },
+  { id: 'contacts', description: 'contactsDescription', icon: 'contacts', audience: 'all' },
+  { id: 'invoices', description: 'invoicesDescription', icon: 'invoices', audience: 'business' },
+  { id: 'projects', description: 'projectsDescription', icon: 'projects', audience: 'all' },
+  { id: 'stocks', description: 'stocksDescription', icon: 'stocks', audience: 'business' },
+  { id: 'members', description: 'membersDescription', icon: 'members', audience: 'association' },
+  { id: 'documents', description: 'documentsDescription', icon: 'documents', audience: 'all' },
 ];
 function PageHeading({
   title,
@@ -62,11 +54,10 @@ function PageHeading({
 }
 function ModuleItem({ module, compact = false }: { module: PlannedModule; compact?: boolean }) {
   const { messages: t } = usePreferences();
-  const Icon = module.icon;
   return (
     <li className={compact ? 'module-preview' : 'module-item'}>
       <div className={`module-icon module-${module.id}`}>
-        <Icon size={23} aria-hidden="true" />
+        <AppIcon name={module.icon} size={23} />
       </div>
       <div className="module-copy">
         <div className="module-name">
@@ -76,141 +67,6 @@ function ModuleItem({ module, compact = false }: { module: PlannedModule; compac
         <p>{t[module.description]}</p>
       </div>
     </li>
-  );
-}
-export function HomePage() {
-  const { messages: t } = usePreferences();
-  return (
-    <>
-      <PageHeading
-        title={t.welcomeTitle}
-        description={t.welcomeDescription}
-        action={
-          <Button variant="primary" to="/modules">
-            {t.explore}
-            <ArrowRight size={17} />
-          </Button>
-        }
-      />
-      <div className="welcome-layout">
-        <section className="organization-panel" aria-labelledby="your-organization">
-          <div className="panel-heading">
-            <h2 id="your-organization">{t.yourOrganization}</h2>
-            <span className="small-label">{t.preparation}</span>
-          </div>
-          <div className="organization-intro">
-            <Building2
-              className="organization-glyph"
-              size={40}
-              strokeWidth={1.35}
-              aria-hidden="true"
-            />
-            <h2>{t.organizationTitle}</h2>
-            <p>{t.organizationDescription}</p>
-            <Button variant="secondary" to="/organizations">
-              {t.organizationAction}
-              <ArrowRight size={16} />
-            </Button>
-          </div>
-          <div className="panel-note">
-            <CircleHelp size={15} aria-hidden="true" />
-            {t.organizationNote}
-          </div>
-        </section>
-        <section className="audience-panel" aria-labelledby="audience-title">
-          <h2 id="audience-title">{t.rightTitle}</h2>
-          <div className="audience-item">
-            <Building2 size={21} aria-hidden="true" />
-            <div>
-              <h3>{t.business}</h3>
-              <p>{t.businessText}</p>
-            </div>
-          </div>
-          <div className="audience-item">
-            <Handshake size={21} aria-hidden="true" />
-            <div>
-              <h3>{t.association}</h3>
-              <p>{t.associationText}</p>
-            </div>
-          </div>
-          <Button variant="text" to="/organizations">
-            {t.organizationAction}
-            <ArrowRight size={16} />
-          </Button>
-        </section>
-      </div>
-      <section className="modules-section" aria-labelledby="home-modules">
-        <div className="section-heading">
-          <div>
-            <h2 id="home-modules">{t.modulesTitle}</h2>
-            <p>{t.modulesDescription}</p>
-          </div>
-          <Button variant="text" to="/modules">
-            {t.allModules}
-            <ArrowRight size={16} />
-          </Button>
-        </div>
-        <ul className="module-previews">
-          {modules.slice(0, 3).map((module) => (
-            <ModuleItem key={module.id} module={module} compact />
-          ))}
-        </ul>
-      </section>
-      <section className="foundation-note">
-        <div className="foundation-icon">
-          <Settings2 size={21} aria-hidden="true" />
-        </div>
-        <div>
-          <h2>{t.foundationTitle}</h2>
-          <p>{t.foundationText}</p>
-        </div>
-        <Button variant="text" to="/settings">
-          {t.personalize}
-          <ArrowRight size={16} />
-        </Button>
-      </section>
-    </>
-  );
-}
-export function OrganizationsPage() {
-  const { messages: t } = usePreferences();
-  return (
-    <>
-      <PageHeading title={t.organizationsTitle} description={t.organizationsDescription} />
-      <section className="empty-panel">
-        <Building2 size={43} strokeWidth={1.3} aria-hidden="true" />
-        <h2>{t.organizationsEmptyTitle}</h2>
-        <p>{t.organizationsEmptyText}</p>
-        <Button disabled aria-describedby="organization-unavailable">
-          {t.createOrganization}
-        </Button>
-        <small id="organization-unavailable">{t.notAvailable}</small>
-      </section>
-      <div className="organization-explanations">
-        <section>
-          <Building2 size={23} aria-hidden="true" />
-          <h2>{t.business}</h2>
-          <p>{t.businessDetail}</p>
-          <Button variant="text" to="/modules?audience=business">
-            {t.explore}
-            <ArrowRight size={16} />
-          </Button>
-        </section>
-        <section>
-          <Handshake size={23} aria-hidden="true" />
-          <h2>{t.association}</h2>
-          <p>{t.associationDetail}</p>
-          <Button variant="text" to="/modules?audience=association">
-            {t.explore}
-            <ArrowRight size={16} />
-          </Button>
-        </section>
-      </div>
-      <section className="plain-note">
-        <h2>{t.orgPrincipleTitle}</h2>
-        <p>{t.orgPrincipleText}</p>
-      </section>
-    </>
   );
 }
 function normalize(value: string) {
