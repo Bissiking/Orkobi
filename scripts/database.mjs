@@ -1,7 +1,8 @@
 import process from 'node:process';
 import {
   loadDatabaseConfig,
-  PostgreSqlDatabase,
+  createDatabase,
+  databaseProfile,
   DatabaseConfigurationError,
 } from '../lib/database/dist/index.js';
 
@@ -11,13 +12,15 @@ try {
   if (command !== 'migrate' && command !== 'status') throw new Error('Commande inconnue.');
   const config = loadDatabaseConfig(process.env, command === 'migrate');
   if (!config) throw new Error('Base désactivée.');
-  database = new PostgreSqlDatabase(config);
+  database = createDatabase(config);
   if (command === 'migrate') {
     const applied = await database.migrate();
     process.stdout.write(`${JSON.stringify({ event: 'database_migrated', applied })}\n`);
   } else {
     const ready = await database.isReady();
-    process.stdout.write(`${JSON.stringify({ event: 'database_status', ready })}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ event: 'database_status', ready, ...databaseProfile(database.engine) })}\n`,
+    );
     if (!ready) process.exitCode = 1;
   }
 } catch (error) {

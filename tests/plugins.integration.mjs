@@ -1,9 +1,8 @@
+import { URL } from 'node:url';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import process from 'node:process';
-import { createRequire } from 'node:module';
-import { URL } from 'node:url';
 import { test } from 'node:test';
 import { createApplication } from '../apps/core/dist/application.js';
 import { loadConfig } from '../apps/core/dist/config.js';
@@ -15,7 +14,8 @@ import { JobEngine } from '../apps/core/dist/jobs/service.js';
 import { loadDatabaseConfig } from '../lib/database/dist/index.js';
 const { fetch, structuredClone } = globalThis;
 assert.match(process.env.DB_NAME ?? '', /^orkobi_verify_[a-z0-9]+$/u);
-const { Pool } = createRequire(new URL('../lib/database/package.json', import.meta.url))('pg');
+import { createRequire } from 'node:module';
+import { Pool } from './helpers/sql-pool.mjs';
 const password = 'A long secret passphrase 2026!';
 const manifest = JSON.parse(
   await readFile(new URL('../examples/plugin-demo/manifest.json', import.meta.url), 'utf8'),

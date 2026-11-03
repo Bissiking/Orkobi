@@ -439,3 +439,35 @@
   align-items: center;
   flex-wrap: wrap;
 }
+
+.diagnostic-values {
+  margin-block: 1.5rem;
+}
+.diagnostic-values > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.diagnostic-values dt {
+  overflow-wrap: anywhere;
+}
+.diagnostic-values dd {
+  margin: 0;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .diagnostic-values > div {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .diagnostic-values dd {
+    text-align: start;
+  }
+}
+
+.diagnostic-panel {
+  margin-top: 24px;
+}

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Pool, PoolClient } from 'pg';
+import type { SqlPool as Pool, SqlClient as PoolClient } from './connection.js';
 import type { JobSummary } from '@orkobi/contracts';
 
 export const jobColumns = `id, organization_id AS "organizationId", module_id AS "moduleId", task,

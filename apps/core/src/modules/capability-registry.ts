@@ -14,6 +14,7 @@ interface CatalogueEntry {
   readonly key: CapabilityKey;
   readonly description: string;
   readonly state: 'database' | 'limited' | 'unavailable';
+  readonly engines?: readonly string[];
 }
 
 /**
@@ -22,6 +23,39 @@ interface CatalogueEntry {
  * réduite, documentée dans sa description.
  */
 const catalogue: readonly CatalogueEntry[] = Object.freeze([
+  {
+    key: 'core.sql.arrays',
+    description: 'Tableaux SQL natifs PostgreSQL.',
+    state: 'database',
+    engines: ['postgresql'],
+  },
+  {
+    key: 'core.sql.json',
+    description: 'Type JSON natif ; MariaDB utilise un alias texte validé.',
+    state: 'database',
+    engines: ['postgresql', 'mysql'],
+  },
+  {
+    key: 'core.sql.transactionalddl',
+    description: 'DDL transactionnel avec annulation du lot.',
+    state: 'database',
+    engines: ['postgresql'],
+  },
+  {
+    key: 'core.storage.objects',
+    description: 'Stockage objet S3 étudié, fournisseur non implémenté.',
+    state: 'unavailable',
+  },
+  {
+    key: 'core.nosql',
+    description: 'Moteur documentaire facultatif, non implémenté.',
+    state: 'unavailable',
+  },
+  {
+    key: 'core.orchestration.aion',
+    description: 'Orchestration externe étudiée, connecteur non implémenté.',
+    state: 'unavailable',
+  },
   Object.freeze({
     key: 'core.plugins',
     description:
@@ -77,8 +111,7 @@ const catalogue: readonly CatalogueEntry[] = Object.freeze([
   }),
   Object.freeze({
     key: 'core.jobs',
-    description:
-      'File PostgreSQL durable, tâches ponctuelles et récurrentes des modules officiels.',
+    description: 'File SQL durable, tâches ponctuelles et récurrentes des modules officiels.',
     state: 'database',
   }),
   Object.freeze({
@@ -98,38 +131,31 @@ export class CapabilityRegistry implements CoreCapabilityService {
     private readonly config: PlatformConfig = localPlatformConfig,
   ) {}
 
+  private resolve(entry: CatalogueEntry, ready: boolean): CapabilityStatus['availability'] {
+    const engine = this.database.engine ?? 'postgresql';
+    if (
+      !ready ||
+      entry.state === 'unavailable' ||
+      (entry.engines && !entry.engines.includes(engine)) ||
+      (entry.key === 'core.identity.oidc' && !this.config.oidc)
+    )
+      return 'unavailable';
+    return entry.state === 'limited' ? 'limited' : 'available';
+  }
   async status(): Promise<{ capabilities: CapabilityStatus[] }> {
     const ready = await this.database.isReady();
     return {
       capabilities: catalogue.map((entry) => ({
         key: entry.key,
         description: entry.description,
-        availability:
-          entry.state === 'unavailable' || (entry.key === 'core.identity.oidc' && !this.config.oidc)
-            ? 'unavailable'
-            : entry.state === 'limited'
-              ? ready
-                ? 'limited'
-                : 'unavailable'
-              : ready
-                ? 'available'
-                : 'unavailable',
+        availability: this.resolve(entry, ready),
       })),
     };
   }
-
-  /** Une exigence obligatoire est satisfaite par « available » ou « limited ». */
+  /** Une exigence obligatoire est satisfaite par available ou limited. */
   async availability(key: CapabilityKey): Promise<CapabilityStatus['availability']> {
     const entry = catalogue.find((item) => item.key === key);
-    if (
-      !entry ||
-      entry.state === 'unavailable' ||
-      (key === 'core.identity.oidc' && !this.config.oidc)
-    )
-      return 'unavailable';
-    const ready = await this.database.isReady();
-    if (!ready) return 'unavailable';
-    return entry.state === 'limited' ? 'limited' : 'available';
+    return entry ? this.resolve(entry, await this.database.isReady()) : 'unavailable';
   }
 
   async has(context: OrganizationContext, capability: CapabilityKey): Promise<Result<boolean>> {

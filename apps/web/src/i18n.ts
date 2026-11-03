@@ -108,9 +108,9 @@ export const fr = {
   coreName: 'Service principal',
   coreDescription: 'Le service central auquel se connecte Orkobi.',
   serviceNote:
-    'Les sondes HTTP vérifient la vitalité des services. PostgreSQL doit être prêt pour les comptes, les organisations et les modules.',
+    'Les sondes HTTP vérifient la vitalité des services. La base SQL doit être prête pour les comptes, les organisations et les modules.',
   databaseName: 'Base de données',
-  databaseDescription: 'PostgreSQL et migrations de cette instance.',
+  databaseDescription: 'Moteur SQL et migrations de cette instance.',
   modulesServiceName: 'Gestionnaire de modules',
   modulesServiceDescription: 'Registre des modules et activation par organisation.',
   connectionError: 'Le service de l’interface ne répond pas.',
@@ -239,9 +239,9 @@ export const en: Messages = {
   coreName: 'Core service',
   coreDescription: 'The central service Orkobi connects to.',
   serviceNote:
-    'HTTP probes check service liveness. PostgreSQL must be ready for accounts, organizations and modules.',
+    'HTTP probes check service liveness. The SQL database must be ready for accounts, organizations and modules.',
   databaseName: 'Database',
-  databaseDescription: 'PostgreSQL and this instance’s migrations.',
+  databaseDescription: 'SQL engine and this instance’s migrations.',
   modulesServiceName: 'Module manager',
   modulesServiceDescription: 'Module registry and per-organization activation.',
   connectionError: 'The interface service is not responding.',

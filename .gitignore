@@ -21,3 +21,5 @@ skills-lock.json
 
 output/plugins/
 output/sdk/
+
+output/sql-engines/

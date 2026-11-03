@@ -50,3 +50,17 @@ logiques ; aucun SQL arbitraire ou privilège DDL du serveur HTTP.
 Vérifier `pnpm sdk:test`, `pnpm plugin:build`, `pnpm plugin:validate` et la suite
 `plugins.integration.mjs` via `pnpm infra:test`. La distribution publique sur un
 registre est distincte du packaging local.
+
+## Compatibilité et diagnostic (Phase 5)
+
+Lire [DOCS/PHASE_5.md](DOCS/PHASE_5.md) et [DOCS/SERVICES_ADVANCED.md](DOCS/SERVICES_ADVANCED.md).
+Les modifications de dépôts SQL doivent passer `pnpm sql:test` en plus de
+`pnpm infra:test` : mêmes parcours Core/BFF sur MariaDB/MySQL, sans base existante.
+Conserver les requêtes liées, UTC, lecture seule et verrous interprocessus.
+Ne pas remplacer la cible d'un upsert par une autre ligne partageant un nom unique.
+Ajouter les migrations natives par moteur sans réécrire celles déjà livrées.
+MySQL/MariaDB ne garantissent pas le rollback DDL : un journal `applying` bloque
+la readiness et nécessite une réparation explicite, jamais un effacement automatique.
+Ne pas exposer secrets, hôtes ou identités dans le diagnostic/les labels métriques.
+NoSQL, S3 et Aion ont été étudiés, leurs fournisseurs restent indisponibles ; ne pas
+les rendre obligatoires ni simuler leur disponibilité dans les futurs prompts.

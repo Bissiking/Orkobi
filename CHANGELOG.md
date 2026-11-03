@@ -8,6 +8,26 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 5 — SQL alternatif, diagnostic et services facultatifs — 2026-11-03
+
+- `lib/database`, Core et CLI : sélection PostgreSQL/MariaDB/MySQL, dépôts communs,
+  migrations natives alternatives et verrous de tâches, sans modifier le SQL des
+  migrations PostgreSQL appliquées. Préservation UTC/JSON, lecture seule, cible
+  des upserts de rôles et audit atomique ; journal DDL partiel bloquant la readiness.
+- Capability Registry : tableaux SQL, JSON natif et DDL transactionnel ; une exigence
+  obligatoire absente bloque l’activation. NoSQL/S3/Aion restent indisponibles.
+- Diagnostic administrateur et `/system` : mémoire, boucle événementielle, compteurs
+  HTTP, cache/jobs et limites moteur ; données agrégées sans secret, UI SDK FR/EN
+  et thèmes. Aucun framework CSS ajouté.
+- `compose.mysql.yaml`, `infra/mysql`, `infra:init --engine=…` : nouvelle instance
+  distincte, comptes migrateur/runtime et secrets séparés, sans écrasement de fichier.
+- `sql:test` et suites communes Core/BFF : vrais MariaDB/MySQL isolés ; recettes
+  de migrations, droits, identité, modules, plugins, jobs et pannes/persistance.
+  PostgreSQL/Redis conserve sa recette isolée. Documentation et consignes IA
+  actualisées dans `PHASE_5.md`, `SERVICES_ADVANCED.md` et `AGENTS.md`.
+- Validations locales et limites détaillées dans [REVIEW_PHASE_5.md](DOCS/REVIEW_PHASE_5.md).
+  NoSQL, S3 et Aion évalués, sans connexion externe, publication ni déploiement utilisateur.
+
 ### Phase 4 — extensions tierces et distribution SDK locale — 2026-11-03
 
 - `lib/contracts/src/plugins.ts`, `sdk/{core,types}` : paquets/manifeste API 1,

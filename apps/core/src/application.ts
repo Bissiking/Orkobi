@@ -1,3 +1,4 @@
+import { RuntimeDiagnostics } from './diagnostics.js';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { NestFactory } from '@nestjs/core';
@@ -33,6 +34,7 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
     response.setHeader('x-request-id', correlationId);
     response.setHeader('Cache-Control', 'no-store');
     response.once('finish', () => {
+      app.get(RuntimeDiagnostics).record(response.statusCode, performance.now() - startedAt);
       logger.event('info', 'http_request', {
         method: request.method,
         status: response.statusCode,
@@ -50,7 +52,7 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
       new DocumentBuilder()
         .setTitle('Orkobi Core — API interne')
         .setDescription(
-          'Fondations techniques ; vitalité HTTP et disponibilité PostgreSQL, sans authentification métier.',
+          'Fondations techniques ; vitalité HTTP et disponibilité SQL, identité, modules et administration.',
         )
         .setVersion(coreVersion)
         .build(),

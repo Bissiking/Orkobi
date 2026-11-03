@@ -1,6 +1,6 @@
 import type { PluginArtifact, ModuleEntry } from '@orkobi/contracts';
 import { randomUUID } from 'node:crypto';
-import type { Pool, PoolClient } from 'pg';
+import type { SqlPool as Pool, SqlClient as PoolClient } from './connection.js';
 import type {
   PlatformUser,
   PlatformOrganization,
@@ -39,6 +39,13 @@ export interface StoredModule {
   manifest: ModuleManifest;
   enabled: boolean;
 }
+export interface StoredPlugin {
+  id: string;
+  artifact: PluginArtifact;
+  digest: string;
+  installed: boolean;
+  installedAt: string;
+}
 export interface StoredMfaFactor {
   secret: string;
   confirmedAt: string | null;
@@ -74,7 +81,7 @@ export class PlatformTransaction {
     | undefined
   > {
     return (
-      await this.client.query(
+      await this.client.query<StoredPlugin>(
         'SELECT artifact,digest,installed,installed_at::text AS "installedAt" FROM orkobi_core.plugins WHERE id=$1',
         [id],
       )
@@ -90,7 +97,7 @@ export class PlatformTransaction {
     }[]
   > {
     return (
-      await this.client.query(
+      await this.client.query<StoredPlugin>(
         'SELECT id,artifact,digest,installed,installed_at::text AS "installedAt" FROM orkobi_core.plugins ORDER BY id LIMIT 100',
       )
     ).rows;
@@ -187,7 +194,7 @@ export class PlatformTransaction {
         input.moduleId,
         input.task,
         userId,
-        input.runAt ?? null,
+        input.runAt ? new Date(input.runAt) : null,
         input.intervalSeconds ?? null,
       ],
     );
@@ -567,7 +574,7 @@ export class PlatformTransaction {
         token.organizationId,
         token.scopes,
         token.createdBy,
-        token.expiresAt,
+        token.expiresAt ? new Date(token.expiresAt) : null,
       ],
     );
   }

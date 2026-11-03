@@ -1,8 +1,11 @@
+import { PostgreSqlDatabase } from './postgres.js';
+import { MySqlDatabase } from './mysql.js';
+import type { PostgreSqlConfig } from './config.js';
 // lib/database/src/index.ts
 import type { OrganizationContext, OrganizationId } from '@orkobi/contracts';
 
 export { DatabaseConfigurationError, loadDatabaseConfig } from './config.js';
-export type { PostgreSqlConfig } from './config.js';
+export type { PostgreSqlConfig, SqlDatabaseConfig } from './config.js';
 export { PostgreSqlDatabase } from './postgres.js';
 export type {
   PlatformRepository,
@@ -54,3 +57,14 @@ export interface PostgreSqlAdapter extends DatabaseAdapter {
 }
 export { JobRepository } from './jobs.js';
 export type { JobLease, ClaimedJob, JobOutcome } from './jobs.js';
+
+export { MySqlDatabase, compileMySql } from './mysql.js';
+export type { SqlEngine } from './connection.js';
+export function createDatabase(config: PostgreSqlConfig) {
+  return config.engine && config.engine !== 'postgresql'
+    ? new MySqlDatabase(config)
+    : new PostgreSqlDatabase(config);
+}
+export type CoreSqlDatabase = ReturnType<typeof createDatabase>;
+
+export { databaseProfile } from './profile.js';

@@ -29,7 +29,8 @@
     "plugin:build": "pnpm --filter @orkobi/contracts build && node scripts/build-plugin.mjs",
     "plugin:validate": "pnpm --filter @orkobi/core... build && node scripts/validate-plugin.mjs",
     "sdk:pack": "pnpm build && node scripts/pack-sdk.mjs",
-    "sdk:test": "pnpm sdk:pack && node scripts/test-sdk-artifacts.mjs"
+    "sdk:test": "pnpm sdk:pack && node scripts/test-sdk-artifacts.mjs",
+    "sql:test": "node scripts/test-sql-engines.mjs"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "devDependencies": {

@@ -9,6 +9,7 @@ import type { PostgreSqlAdapter } from './index.js';
 
 /** Infrastructure interne, sans accès SQL public ni promesse d'isolation métier. */
 export class PostgreSqlDatabase {
+  readonly engine = 'postgresql' as const;
   readonly #pool: pg.Pool;
   readonly platform: PlatformRepository;
   readonly jobs: JobRepository;

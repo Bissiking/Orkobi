@@ -1,0 +1,51 @@
+x-sql: &sql
+  environment: &environment
+    MYSQL_DATABASE: ${DB_NAME:?}
+    MYSQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD:?}
+    ORKOBI_MIGRATION_PASSWORD: ${MIGRATION_DB_PASSWORD:?}
+    ORKOBI_APP_PASSWORD: ${DB_PASSWORD:?}
+  healthcheck:
+    test:
+      [
+        CMD-SHELL,
+        'if command -v mariadb >/dev/null; then mariadb -uroot -p"$$MYSQL_ROOT_PASSWORD" -e "SELECT count(*) FROM mysql.user WHERE User=''orkobi_app''"; else mysql -uroot -p"$$MYSQL_ROOT_PASSWORD" -e "SELECT count(*) FROM mysql.user WHERE User=''orkobi_app''"; fi',
+      ]
+    interval: 3s
+    timeout: 3s
+    retries: 40
+    start_period: 20s
+services:
+  mariadb:
+    <<: *sql
+    image: mariadb:11.4
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./infra/mysql/init.sh:/docker-entrypoint-initdb.d/10-orkobi.sh:ro
+  mysql:
+    <<: *sql
+    image: mysql:8.4
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infra/mysql/init.sh:/docker-entrypoint-initdb.d/10-orkobi.sh:ro
+  test:
+    image: orkobi-sql-test:0.2.0-exp
+    build: .
+    init: true
+    environment:
+      DB_ENABLED: 'true'
+      DB_ENGINE: ${DB_ENGINE:?}
+      DB_HOST: ${DB_ENGINE:?}
+      DB_NAME: ${DB_NAME:?}
+      DB_USER: orkobi_app
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      MIGRATION_DB_USER: orkobi_migrator
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?}
+    command:
+      [
+        sh,
+        -c,
+        'node --test tests/sql-engines.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs',
+      ]
+volumes:
+  mariadb_data:
+  mysql_data:

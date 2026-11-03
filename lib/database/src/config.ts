@@ -1,10 +1,14 @@
+import type { SqlEngine } from './connection.js';
 export interface PostgreSqlConfig {
+  readonly engine?: SqlEngine;
   readonly host: string;
   readonly port: number;
   readonly database: string;
   readonly user: string;
   readonly password: string;
 }
+
+export type SqlDatabaseConfig = PostgreSqlConfig;
 
 export class DatabaseConfigurationError extends Error {}
 
@@ -18,9 +22,16 @@ export function loadDatabaseConfig(
     throw new DatabaseConfigurationError('DB_ENABLED doit être true ou false.');
   }
   if (enabled === 'false' && !migration) return undefined;
+  const engine = env.DB_ENGINE ?? 'postgresql';
+  if (!['postgresql', 'mysql', 'mariadb'].includes(engine))
+    throw new DatabaseConfigurationError('DB_ENGINE doit être postgresql, mysql ou mariadb.');
   const host = env.DB_HOST ?? '127.0.0.1';
-  const port = env.DB_PORT ?? '5432';
+  const port = env.DB_PORT ?? (engine === 'postgresql' ? '5432' : '3306');
   const database = env.DB_NAME ?? 'orkobi';
+  if (engine !== 'postgresql' && !/^[a-z][a-z0-9_]{0,63}$/u.test(database))
+    throw new DatabaseConfigurationError(
+      'DB_NAME doit être un identifiant SQL simple pour ce moteur.',
+    );
   const userKey = migration ? 'MIGRATION_DB_USER' : 'DB_USER';
   const passwordKey = migration ? 'MIGRATION_DB_PASSWORD' : 'DB_PASSWORD';
   const user = env[userKey] ?? (migration ? 'orkobi_migrator' : 'orkobi_app');
@@ -44,5 +55,12 @@ export function loadDatabaseConfig(
   if (!password || password.includes('\0')) {
     throw new DatabaseConfigurationError(`${passwordKey} doit être renseigné.`);
   }
-  return Object.freeze({ host, port: Number(port), database, user, password });
+  return Object.freeze({
+    host,
+    port: Number(port),
+    database,
+    user,
+    password,
+    ...(env.DB_ENGINE ? { engine: engine as SqlEngine } : {}),
+  });
 }

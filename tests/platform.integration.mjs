@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { createRequire } from 'node:module';
-import { URL } from 'node:url';
 import process from 'node:process';
 import { test } from 'node:test';
 import { createApplication } from '../apps/core/dist/application.js';
@@ -15,8 +13,7 @@ import { CoreSdkFactory } from '../apps/core/dist/services/sdk-factory.js';
 
 const { fetch } = globalThis;
 assert.match(process.env.DB_NAME ?? '', /^orkobi_verify_[a-z0-9]+$/u);
-const require = createRequire(new URL('../lib/database/package.json', import.meta.url));
-const { Pool } = require('pg');
+import { Pool } from './helpers/sql-pool.mjs';
 const setupToken = randomBytes(32).toString('hex');
 const password = 'A long secret passphrase 2026!';
 

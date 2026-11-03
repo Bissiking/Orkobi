@@ -1,3 +1,5 @@
+import { RuntimeDiagnostics } from '../diagnostics.js';
+import { databaseProfile } from '@orkobi/database';
 import { PluginManager } from '../plugins/manager.js';
 import { randomUUID } from 'node:crypto';
 import {
@@ -122,6 +124,7 @@ export class PlatformService {
     @Inject(JobEngine) private readonly jobs: JobEngine,
     @Inject(PluginManager) private readonly plugins: PluginManager,
     @Inject(TechnicalCache) private readonly cache: TechnicalCache,
+    @Inject(RuntimeDiagnostics) private readonly diagnostics: RuntimeDiagnostics,
   ) {}
 
   private async derive<T>(operation: () => Promise<T>): Promise<T> {
@@ -413,7 +416,14 @@ export class PlatformService {
           if (method === 'POST' && removePlugin)
             return { data: await this.plugins.remove(repo, user.id, removePlugin[1]!, body) };
           if (method === 'GET' && path === 'admin/runtime')
-            return { data: { jobs: this.jobs.status(), cache: this.cache.status() } };
+            return {
+              data: {
+                jobs: this.jobs.status(),
+                cache: this.cache.status(),
+                system: this.diagnostics.snapshot(),
+                database: databaseProfile(this.database.engine),
+              },
+            };
           const managed = await this.integrations.administration(repo, user, method, path, body);
           if (managed) return managed;
           const resetMatch = /^admin\/users\/([a-f0-9-]{36})\/password$/u.exec(path);

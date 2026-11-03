@@ -1,4 +1,4 @@
-import type { Pool, PoolClient } from 'pg';
+import type { SqlPool as Pool, SqlClient as PoolClient, SqlEngine } from './connection.js';
 import type { OrganizationContext } from '@orkobi/contracts';
 import type {
   DatabaseTransaction,
@@ -113,13 +113,16 @@ export async function moduleTransaction(
   };
 }
 
-/** Adaptateur PostgreSQL pour un module : isolation par contexte et SQL paramétré. */
-export class PostgreSqlModuleAdapter implements PostgreSqlAdapter {
-  readonly dialect = 'postgresql' as const;
+/** Adaptateur SQL pour un module : isolation par contexte et SQL paramétré. */
+export class SqlModuleAdapter {
+  readonly dialect: SqlEngine;
   constructor(
     private readonly pool: Pool,
     private readonly owner: ModuleDataOwner,
-  ) {}
+    dialect: SqlEngine = 'postgresql',
+  ) {
+    this.dialect = dialect;
+  }
   async transaction<Value>(
     context: OrganizationContext,
     operation: (transaction: DatabaseTransaction) => Promise<Value>,
@@ -127,12 +130,13 @@ export class PostgreSqlModuleAdapter implements PostgreSqlAdapter {
   ): Promise<Value> {
     const client: PoolClient = await this.pool.connect();
     try {
-      await client.query('BEGIN');
+      if (this.dialect === 'postgresql') await client.query('BEGIN');
       if (options?.isolationLevel)
         await client.query(
           `SET TRANSACTION ISOLATION LEVEL ${options.isolationLevel.toUpperCase()}`,
         );
       if (options?.readOnly) await client.query('SET TRANSACTION READ ONLY');
+      if (this.dialect !== 'postgresql') await client.query('BEGIN');
       await client.query("SET LOCAL lock_timeout = '2s'");
       const transaction = await moduleTransaction(client, this.owner, context);
       const value = await operation(transaction);
@@ -145,4 +149,8 @@ export class PostgreSqlModuleAdapter implements PostgreSqlAdapter {
       client.release();
     }
   }
+}
+
+export class PostgreSqlModuleAdapter extends SqlModuleAdapter implements PostgreSqlAdapter {
+  override readonly dialect = 'postgresql' as const;
 }

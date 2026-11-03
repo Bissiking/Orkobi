@@ -4,7 +4,9 @@
 
 Le SDK est expérimental, privé et susceptible d'évoluer. Il est indépendant de
 NestJS et de PostgreSQL. Le SDK ne fournit pas de client HTTP distant. Le Core applicatif fonctionne
-avec PostgreSQL ; ses points d’entrée autorisés créent les contextes.
+avec PostgreSQL, MariaDB ou MySQL ; ses points d’entrée autorisés créent les contextes.
+Voir [PHASE_5.md](PHASE_5.md) pour les versions prises en charge, limitations
+et capabilities moteur. Les plugins tiers gardent le même pont SDK sans SQL brut.
 
 ## Surface publique
 

@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { createRequire } from 'node:module';
-import { URL } from 'node:url';
 import process from 'node:process';
 import { test } from 'node:test';
 import { createApplication } from '../apps/core/dist/application.js';
@@ -10,17 +8,12 @@ import { JsonLogger } from '../apps/core/dist/logger.js';
 import { createBffApplication } from '../apps/bff/dist/application.js';
 import { loadBffConfig } from '../apps/bff/dist/config.js';
 import { JsonLogger as BffLogger } from '../apps/bff/dist/logger.js';
-import {
-  loadDatabaseConfig,
-  ModuleDataError,
-  PostgreSqlDatabase,
-} from '../lib/database/dist/index.js';
+import { loadDatabaseConfig, ModuleDataError, createDatabase } from '../lib/database/dist/index.js';
 
 const { fetch } = globalThis;
 // Ce fichier ne doit être exécuté que sur la base dédiée du projet de test isolé.
 assert.match(process.env.DB_NAME ?? '', /^orkobi_verify_[a-z0-9]+$/u);
-const require = createRequire(new URL('../lib/database/package.json', import.meta.url));
-const { Pool } = require('pg');
+import { Pool } from './helpers/sql-pool.mjs';
 const setupToken = randomBytes(32).toString('hex');
 const password = 'A long secret passphrase 2026!';
 
@@ -29,9 +22,7 @@ test(
   { timeout: 120000 },
   async (t) => {
     const sql = new Pool(loadDatabaseConfig(process.env, true));
-    const runtime = new PostgreSqlDatabase(
-      loadDatabaseConfig({ ...process.env, DB_ENABLED: 'true' }),
-    );
+    const runtime = createDatabase(loadDatabaseConfig({ ...process.env, DB_ENABLED: 'true' }));
     const config = loadConfig({
       ...process.env,
       NODE_ENV: 'test',
@@ -254,13 +245,17 @@ test(
     await t.test(
       'transaction : un échec de l audit annule création, modification et suppression',
       async () => {
-        await sql.query(`CREATE FUNCTION orkobi_demo.reject_note_audit() RETURNS trigger LANGUAGE plpgsql AS $$
+        await sql.query(
+          process.env.DB_ENGINE && process.env.DB_ENGINE !== 'postgresql'
+            ? `REVOKE INSERT ON \`${process.env.DB_NAME}\`.orkobi_core__audit_events FROM 'orkobi_app'@'%'`
+            : `CREATE FUNCTION orkobi_demo.reject_note_audit() RETURNS trigger LANGUAGE plpgsql AS $$
           BEGIN
             IF NEW.event LIKE 'module.orkobi.demo.notes.%' THEN RAISE EXCEPTION 'audit failure probe'; END IF;
             RETURN NEW;
           END $$;
           CREATE TRIGGER reject_note_audit BEFORE INSERT ON orkobi_core.audit_events
-          FOR EACH ROW EXECUTE FUNCTION orkobi_demo.reject_note_audit();`);
+          FOR EACH ROW EXECUTE FUNCTION orkobi_demo.reject_note_audit();`,
+        );
         try {
           await owner.call('modules/orkobi.demo/data/notes', { title: 'Must roll back' }, 503);
           await owner.call(
@@ -273,7 +268,9 @@ test(
           assert.deepEqual(rows.rows, [{ id: noteId, title: 'Note mise à jour', content: 'B' }]);
         } finally {
           await sql.query(
-            'DROP TRIGGER reject_note_audit ON orkobi_core.audit_events; DROP FUNCTION orkobi_demo.reject_note_audit();',
+            process.env.DB_ENGINE && process.env.DB_ENGINE !== 'postgresql'
+              ? `GRANT INSERT ON \`${process.env.DB_NAME}\`.orkobi_core__audit_events TO 'orkobi_app'@'%'`
+              : 'DROP TRIGGER reject_note_audit ON orkobi_core.audit_events; DROP FUNCTION orkobi_demo.reject_note_audit();',
           );
         }
       },

@@ -21,6 +21,11 @@ un cache mémoire avec Redis optionnel et le [kit UI du SDK](DOCS/UI_SDK.md)
 en CSS natif, avec des icônes Papicons pour les applications. La version reste
 **0.2.0-EXP**, sans publication ni déploiement automatique.
 
+La [Phase 5](DOCS/PHASE_5.md) ajoute MariaDB 11.4 et MySQL 8.4 comme alternatives
+à PostgreSQL, avec migrations propres, capabilities et diagnostic administrateur.
+Les [études NoSQL, S3 et Aion](DOCS/SERVICES_ADVANCED.md) précisent leur périmètre
+facultatif ; ces trois intégrations restent non implémentées.
+
 Pour développer un plugin, commencer par [le guide Phase 4](DOCS/PHASE_4.md) et
 `examples/plugin-demo/`. `pnpm plugin:build`, `pnpm plugin:validate` et
 `pnpm sdk:test` construisent et vérifient les artefacts locaux sans publication distante.

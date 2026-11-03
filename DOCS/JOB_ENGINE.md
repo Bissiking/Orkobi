@@ -2,7 +2,9 @@
 
 ## Exécution minimale
 
-PostgreSQL est la file durable. Redis est un cache jetable facultatif : aucune
+SQL est la file durable : PostgreSQL de référence, MariaDB/MySQL alternatifs
+depuis la [Phase 5](PHASE_5.md). Les noms de schémas ci-dessous sont ceux de
+PostgreSQL ; les autres moteurs utilisent des tables préfixées et GET_LOCK. Redis est un cache jetable facultatif : aucune
 session, autorisation, révocation ou tâche n’en dépend. Sans SQL prêt, le Core HTTP
 reste vivant et le worker ne lance rien. `JOBS_ENABLED=false` arrête le polling
 sans supprimer ni les tâches ni leur historique. Valeurs par défaut : worker actif,

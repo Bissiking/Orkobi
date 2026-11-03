@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { createRequire } from 'node:module';
 import process from 'node:process';
-import { URL } from 'node:url';
 import { test } from 'node:test';
 import { createApplication } from '../apps/core/dist/application.js';
 import { loadConfig } from '../apps/core/dist/config.js';
@@ -17,8 +15,7 @@ import { createOidcProvider } from './helpers/oidc-provider.mjs';
 
 assert.match(process.env.DB_NAME ?? '', /^orkobi_verify_[a-z0-9]+$/u);
 const { fetch } = globalThis;
-const require = createRequire(new URL('../lib/database/package.json', import.meta.url));
-const { Pool } = require('pg');
+import { Pool } from './helpers/sql-pool.mjs';
 const password = 'A long secret passphrase 2026!';
 
 test(

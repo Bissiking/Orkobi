@@ -276,23 +276,27 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** étendre les capacités sans compromettre le fonctionnement minimal.
 
+Guide : [PHASE_5.md](PHASE_5.md), [preuves de revue](REVIEW_PHASE_5.md).
+Les cases « étudier/évaluer » renvoient aux [décisions de services](SERVICES_ADVANCED.md) ;
+les fournisseurs NoSQL, S3 et Aion restent non implémentés et indisponibles.
+
 ## Moteurs SQL
 
-- [ ] Développer l'adaptateur MariaDB.
-- [ ] Développer l'adaptateur MySQL.
-- [ ] Tester les migrations sur chaque moteur.
-- [ ] Détecter les capabilities propres aux moteurs.
-- [ ] Afficher les limitations dans l'administration.
-- [ ] Refuser les modules dont les exigences obligatoires sont absentes.
+- [x] Développer l'adaptateur MariaDB.
+- [x] Développer l'adaptateur MySQL.
+- [x] Tester les migrations sur chaque moteur.
+- [x] Détecter les capabilities propres aux moteurs.
+- [x] Afficher les limitations dans l'administration.
+- [x] Refuser les modules dont les exigences obligatoires sont absentes.
 
 ## Autres services
 
-- [ ] Étudier l'intérêt réel d'un moteur NoSQL facultatif.
-- [ ] Limiter initialement son usage aux services techniques globaux.
-- [ ] Étudier le stockage objet compatible S3.
-- [ ] Ajouter les outils de diagnostic système.
-- [ ] Améliorer la supervision et les métriques.
-- [ ] Évaluer l'intégration d'Aion comme orchestrateur externe.
+- [x] Étudier l'intérêt réel d'un moteur NoSQL facultatif.
+- [x] Limiter initialement son usage aux services techniques globaux.
+- [x] Étudier le stockage objet compatible S3.
+- [x] Ajouter les outils de diagnostic système.
+- [x] Améliorer la supervision et les métriques.
+- [x] Évaluer l'intégration d'Aion comme orchestrateur externe.
 
 ---
 
@@ -352,9 +356,11 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0 à 4 implémentées et vérifiées localement ; prochaine étape : Phase 5.**
+**Phases 0 à 5 traitées et vérifiées localement ; prochaine étape : Phase 6.**
 
 La version produit reste **0.2.0-EXP**, sans publication stable implicite.
+La [Phase 5](PHASE_5.md) fournit les moteurs alternatifs et le diagnostic ;
+son [rapport](REVIEW_PHASE_5.md) distingue les tests réels et les services étudiés.
 Le [guide Phase 3](PHASE_3.md) décrit identité et intégrations ; le
 [Job Engine](JOB_ENGINE.md) décrit cache mémoire/Redis et tâches durables.
 Le [kit UI SDK](UI_SDK.md) fixe les règles CSS natives et les icônes Papicons

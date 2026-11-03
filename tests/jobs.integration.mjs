@@ -1,8 +1,6 @@
 const { performance, fetch } = globalThis;
-import { URL } from 'node:url';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { createRequire } from 'node:module';
 import process from 'node:process';
 import { test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -14,18 +12,17 @@ import { JobRegistry } from '../apps/core/dist/jobs/registry.js';
 import { createBffApplication } from '../apps/bff/dist/application.js';
 import { loadBffConfig } from '../apps/bff/dist/config.js';
 import { JsonLogger as BffLogger } from '../apps/bff/dist/logger.js';
-import { loadDatabaseConfig, PostgreSqlDatabase } from '../lib/database/dist/index.js';
+import { loadDatabaseConfig, createDatabase } from '../lib/database/dist/index.js';
 
 assert.match(process.env.DB_NAME ?? '', /^orkobi_verify_[a-z0-9]+$/u);
-const require = createRequire(new URL('../lib/database/package.json', import.meta.url));
-const { Pool } = require('pg');
+import { Pool } from './helpers/sql-pool.mjs';
 const password = 'A long secret passphrase 2026!';
 test(
   'Phase 3.3/3.4 : file durable, autorisation, concurrence et reprise',
   { timeout: 120000 },
   async (t) => {
     const sql = new Pool(loadDatabaseConfig(process.env, true)),
-      store = new PostgreSqlDatabase(loadDatabaseConfig({ ...process.env, DB_ENABLED: 'true' }));
+      store = createDatabase(loadDatabaseConfig({ ...process.env, DB_ENABLED: 'true' }));
     const internal = randomBytes(32).toString('hex'),
       logs = [];
     const config = loadConfig({
@@ -303,7 +300,9 @@ test(
       let aborted = false;
       // Le manifeste du registre est lu à chaque exécution ; réduit seulement le timeout de test.
       await sql.query(
-        "UPDATE orkobi_core.modules SET manifest=jsonb_set(manifest,'{tasks,0,timeoutMs}','100') WHERE id='orkobi.demo'",
+        process.env.DB_ENGINE && process.env.DB_ENGINE !== 'postgresql'
+          ? "UPDATE orkobi_core.modules SET manifest=JSON_SET(manifest,'$.tasks[0].timeoutMs',100) WHERE id='orkobi.demo'"
+          : "UPDATE orkobi_core.modules SET manifest=jsonb_set(manifest,'{tasks,0,timeoutMs}','100') WHERE id='orkobi.demo'",
       );
       registry.get =
         () =>
@@ -426,6 +425,14 @@ test(
       const runtime = await admin.call('admin/runtime');
       assert.equal(runtime.cache.mode, 'memory');
       assert.ok(runtime.jobs.completed > 0);
+      assert.ok(runtime.system.http.requests > 0);
+      assert.ok(runtime.system.memory.rssBytes > 0);
+      assert.equal(runtime.database.engine, process.env.DB_ENGINE ?? 'postgresql');
+      assert.equal(
+        runtime.database.transactionalDdl,
+        !process.env.DB_ENGINE || process.env.DB_ENGINE === 'postgresql',
+      );
+      assert.ok(!JSON.stringify(runtime).includes(process.env.DB_PASSWORD));
       await owner.call('admin/runtime', undefined, 403);
       const audit = (await owner.call(`organizations/${org.id}/audit`)).map((row) => row.event);
       assert.ok(audit.includes('job.started'));

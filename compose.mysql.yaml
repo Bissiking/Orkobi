@@ -1,0 +1,96 @@
+# Pile distincte du Compose PostgreSQL ; ne jamais partager les volumes entre moteurs.
+name: orkobi-${DB_ENGINE:?mysql ou mariadb requis}
+x-app: &app
+  image: orkobi-local:0.2.0-exp
+  build: .
+  init: true
+services:
+  sql:
+    image: ${SQL_IMAGE:?mariadb:11.4 ou mysql:8.4 requis}
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-orkobi}
+      MYSQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD:?}
+      ORKOBI_MIGRATION_PASSWORD: ${MIGRATION_DB_PASSWORD:?}
+      ORKOBI_APP_PASSWORD: ${DB_PASSWORD:?}
+    volumes:
+      - sql_data:/var/lib/mysql
+      - ./infra/mysql/init.sh:/docker-entrypoint-initdb.d/10-orkobi.sh:ro
+    healthcheck:
+      test:
+        [
+          CMD-SHELL,
+          'if command -v mariadb >/dev/null; then mariadb -uroot -p"$$MYSQL_ROOT_PASSWORD" -e "SELECT count(*) FROM mysql.user WHERE User=''orkobi_app''"; else mysql -uroot -p"$$MYSQL_ROOT_PASSWORD" -e "SELECT count(*) FROM mysql.user WHERE User=''orkobi_app''"; fi',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+  migrate:
+    <<: *app
+    command: [node, scripts/database.mjs, migrate]
+    environment:
+      DB_ENGINE: ${DB_ENGINE:?}
+      DB_HOST: sql
+      DB_PORT: '3306'
+      DB_NAME: ${DB_NAME:-orkobi}
+      MIGRATION_DB_USER: orkobi_migrator
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?}
+    depends_on:
+      sql:
+        condition: service_healthy
+    restart: 'no'
+  core:
+    <<: *app
+    environment:
+      CORE_HOST: 0.0.0.0
+      CORE_PORT: 3001
+      DB_ENABLED: 'true'
+      DB_ENGINE: ${DB_ENGINE:?}
+      DB_HOST: sql
+      DB_PORT: '3306'
+      DB_NAME: ${DB_NAME:-orkobi}
+      DB_USER: orkobi_app
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      SESSION_SECURE: ${SESSION_SECURE:-false}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-}
+      REDIS_URL: ${REDIS_URL:-}
+      JOBS_ENABLED: ${JOBS_ENABLED:-true}
+      JOBS_POLL_MS: ${JOBS_POLL_MS:-1000}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, 'http://127.0.0.1:3001/health/ready', orkobi-core]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+  bff:
+    <<: *app
+    command: [node, apps/bff/dist/main.js]
+    environment:
+      BFF_HOST: 0.0.0.0
+      BFF_PORT: 3000
+      CORE_URL: http://core:3001
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
+    ports:
+      - '127.0.0.1:${BFF_PUBLISHED_PORT:-3000}:3000'
+    depends_on:
+      core:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, 'http://127.0.0.1:3000/api/ready', orkobi-bff]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+volumes:
+  sql_data:

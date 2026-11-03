@@ -232,3 +232,11 @@ encore implémentées : aucun accès SQL métier n'est ajouté au SDK.
 Références : [pool node-postgres](https://node-postgres.com/apis/pool),
 [verrous PostgreSQL](https://www.postgresql.org/docs/18/explicit-locking.html),
 [ordre de démarrage Compose](https://docs.docker.com/compose/how-tos/startup-order/).
+
+## Moteurs alternatifs depuis la Phase 5
+
+PostgreSQL reste le choix de ce guide et de `compose.yaml`. Le
+[guide Phase 5](PHASE_5.md) décrit `DB_ENGINE`, les nouvelles instances MariaDB/MySQL
+via `compose.mysql.yaml`, leurs secrets séparés, migrations natives, limites DDL,
+sondes et recette `pnpm sql:test`. Ne pas superposer les fichiers Compose ni
+réutiliser un volume entre moteurs. Changer la variable ne convertit pas les données.

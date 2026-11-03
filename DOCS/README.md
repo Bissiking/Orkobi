@@ -10,6 +10,9 @@ ni publication ni déploiement.
 
 | Besoin                                                                 | Référence                                                                    |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Compatibilité SQL, diagnostic système et consignes Phase 5             | [PHASE_5.md](PHASE_5.md)                                                     |
+| Études NoSQL, S3 et Aion                                               | [SERVICES_ADVANCED.md](SERVICES_ADVANCED.md)                                 |
+| Preuves et limites de Phase 5                                          | [REVIEW_PHASE_5.md](REVIEW_PHASE_5.md)                                       |
 | Phase 3, identité avancée, MFA, OIDC et intégrations                   | [PHASE_3.md](PHASE_3.md)                                                     |
 | Plugins tiers, format de paquet, moteur isolé et démarrage développeur | [PHASE_4.md](PHASE_4.md)                                                     |
 | Preuves et limites de la Phase 4                                       | [REVIEW_PHASE_4.md](REVIEW_PHASE_4.md)                                       |

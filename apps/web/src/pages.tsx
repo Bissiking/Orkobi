@@ -1,3 +1,4 @@
+import { DiagnosticsPanel } from './platform/diagnostics';
 import { useSearchParams } from 'react-router';
 import {
   ArrowRight,
@@ -279,6 +280,7 @@ export function StatusPage() {
               : t.connectionRecovery}
         </div>
       </section>
+      {platform.session.user?.platformAdmin && <DiagnosticsPanel />}
       <div className="plain-note">
         <h2>{t.preparation}</h2>
         <p>{t.serviceNote}</p>

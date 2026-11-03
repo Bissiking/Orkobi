@@ -1,3 +1,4 @@
+import { RuntimeDiagnostics } from '../diagnostics.js';
 import { PluginManager } from '../plugins/manager.js';
 import { Module } from '@nestjs/common';
 import type { DynamicModule } from '@nestjs/common';
@@ -50,6 +51,7 @@ export class CoreServicesModule {
       controllers: [PlatformController, IntegrationController],
       providers: [
         CoreDatabase,
+        RuntimeDiagnostics,
         PlatformService,
         AdvancedIdentityService,
         IntegrationAccessService,
@@ -72,7 +74,7 @@ export class CoreServicesModule {
         })),
         { provide: CORE_CAPABILITIES, useExisting: CapabilityRegistry },
       ],
-      exports: [CoreDatabase],
+      exports: [CoreDatabase, RuntimeDiagnostics],
     };
   }
 }
