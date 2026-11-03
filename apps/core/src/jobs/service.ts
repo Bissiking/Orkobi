@@ -77,7 +77,8 @@ export class JobEngine implements OnApplicationBootstrap, BeforeApplicationShutd
       throw new ForbiddenException();
     if (!isModuleManifest(module.manifest)) throw new ForbiddenException();
     const declaration = module.manifest.tasks?.find((item) => item.key === task);
-    if (!declaration || !this.registry.has(moduleId, task)) throw new NotFoundException();
+    if (!declaration || !(await this.registry.has(moduleId, task, repo)))
+      throw new NotFoundException();
     const role = await repo.role(organizationId, member.roleId);
     if (!role?.permissions.includes(declaration.permission)) throw new ForbiddenException();
     return declaration;

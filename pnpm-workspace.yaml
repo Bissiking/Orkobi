@@ -4,6 +4,7 @@ packages:
   - 'lib/*'
   - 'sdk/*'
   - 'modules/*'
+  - 'examples/*'
   - 'tests/types'
 
 # Le script de télémétrie transitif de Swagger n'est pas nécessaire au Core.

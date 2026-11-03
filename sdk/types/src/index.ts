@@ -49,3 +49,11 @@ export interface ModuleRequirements {
 export type { ModuleTaskDeclaration, JobStatus, JobSummary, ScheduleJob } from '@orkobi/contracts';
 
 export type { ModuleManifest, ModuleEntry } from '@orkobi/contracts';
+
+export type {
+  PluginArtifact,
+  PluginManifest,
+  PluginSummary,
+  PluginPage,
+  PluginMigration,
+} from '@orkobi/contracts';

@@ -53,6 +53,7 @@ test('activation : une capability facultative absente ne bloque pas et la readin
   };
   let activated = false;
   const repo = {
+    plugin: async () => undefined,
     registerModule: async () => {},
     module: async () => ({ ...manifest, manifest, enabled: true }),
     organizationModules: async () => [],

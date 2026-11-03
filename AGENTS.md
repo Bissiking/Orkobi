@@ -37,3 +37,16 @@ Pour l’UI, vérifier le rendu ordinateur/mobile. Chrome et Puppeteer sont disp
 Consigner changements, preuves et limites dans DOCS et CHANGELOG. Distinguer tests
 unitaires, navigateur synthétique, vrais services locaux et production. Ne pas
 publier ni déployer sans demande explicite. Préserver les modifications utilisateur.
+
+## Plugins tiers (Phase 4)
+
+Lire [DOCS/PHASE_4.md](DOCS/PHASE_4.md). Les handlers tiers sont synchrones et
+s’exécutent uniquement dans QuickJS/WASM, jamais par `import()`, `eval()` ou le
+module `vm` de Node. Ne pas exposer de fonction ou objet hôte brut au moteur.
+Les opérations passent par le pont SDK avec utilisateur/organisation/plugin
+fixés par le Core et droits revérifiés. Conserver quotas, timeout et arrêt forcé.
+Le frontend reste déclaratif, sans JS/CSS/HTML externe. Les tables du plugin sont
+logiques ; aucun SQL arbitraire ou privilège DDL du serveur HTTP.
+Vérifier `pnpm sdk:test`, `pnpm plugin:build`, `pnpm plugin:validate` et la suite
+`plugins.integration.mjs` via `pnpm infra:test`. La distribution publique sur un
+registre est distincte du packaging local.

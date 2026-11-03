@@ -1,3 +1,4 @@
+import { PluginPage } from './platform/plugins';
 import { JobsPage } from './platform/jobs';
 import { OidcCallbackPage } from './platform/advanced';
 import { useEffect, useRef, useState } from 'react';
@@ -65,6 +66,7 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 }
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const { messages: t } = usePreferences();
+  const location = useLocation();
   const p = usePlatformCopy(),
     { session } = usePlatform();
   const activeOrganization = session.organizations.find(
@@ -89,7 +91,15 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       <nav aria-label={t.navigation} className="navigation">
         <div className="nav-group">
           {navigation.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/'} onClick={onNavigate}>
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              onClick={onNavigate}
+              className={
+                to === '/modules' && location.pathname.startsWith('/plugins/') ? 'active' : ''
+              }
+            >
               <Icon size={18} />
               {t[label]}
             </NavLink>
@@ -166,7 +176,9 @@ export default function App() {
               ? p.organizations
               : location.pathname === '/modules/demo'
                 ? p.demoTitle
-                : t.notFoundTitle;
+                : location.pathname.startsWith('/plugins/')
+                  ? t.modules
+                  : t.notFoundTitle;
   useEffect(() => {
     document.title = `${pageTitle} · Orkobi`;
     if (previousPath.current !== location.pathname) {
@@ -271,6 +283,7 @@ export default function App() {
               <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
               <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
               <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
+              <Route path="/plugins/:id/:page?" element={<PluginPage key={moduleContext} />} />
               <Route path="/jobs" element={<JobsPage key={moduleContext} />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/system" element={<StatusPage />} />

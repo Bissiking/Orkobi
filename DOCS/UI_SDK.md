@@ -10,7 +10,9 @@ présents restent des dépendances fonctionnelles ; ce ne sont pas des framework
 
 Le package reste privé et expérimental, synchronisé avec la version racine.
 Il est réellement consommé par `apps/web`, pas seulement préparé pour le SDK.
-La distribution, le chargeur et l’isolation des plugins tiers restent en Phase 4.
+La [Phase 4](PHASE_4.md) fournit les archives SDK locales et un chargeur isolé.
+Le frontend tiers utilise des pages déclaratives rendues par ce kit ; il ne
+charge pas de bundle React ou CSS arbitraire dans l’hôte.
 
 ## Avant une modification
 

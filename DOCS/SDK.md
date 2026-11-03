@@ -92,8 +92,9 @@ et des déclarations TypeScript. Pour un consommateur CommonJS, `import()` perme
 de charger le module ; `require()` a aussi été vérifié sous Node 22.22.2 pour les
 artefacts actuels, sans fournir un second build CommonJS.
 
-Le SDK ne protège pas l'hôte contre du code tiers. Une frontière d'exécution
-réelle sera nécessaire avant de promettre l'isolation des plugins externes.
+Les types ne constituent pas une frontière de sécurité. La [Phase 4](PHASE_4.md)
+exécute le code tiers dans QuickJS/WASM, dans un worker jetable, avec un pont SDK
+contrôlé et des limites. Un plugin n’est jamais importé dans le moteur JS du Core.
 
 ## UI et tâches des modules (Phase 3)
 
@@ -105,8 +106,14 @@ Aucun framework CSS externe n’est utilisé.
 `@orkobi/sdk-types` exporte aussi `ModuleManifest`, `ModuleEntry`,
 `ModuleTaskDeclaration`, `ScheduleJob`, `JobSummary` et les états de tâche.
 `@orkobi/sdk-core` expose `ModuleTaskHandler`, `ModuleTaskExecution`, `TaskSignal`
-et le contrat futur `ModuleJobService`. Le [Job Engine](JOB_ENGINE.md) exécute
-les handlers officiels avec accès aux données borné. La façade de planification
-pour les plugins tiers reste à raccorder en Phase 4 ; ne pas lui inventer une
-instance dans un plugin. Les modules officiels démontrent le contrat public,
-sans dépendre des bibliothèques internes ou de NestJS.
+et le contrat `ModuleJobService`. Les handlers officiels conservent leur contrat
+asynchrone `ModuleTaskHandler`. Les extensions externes utilisent le contrat
+**synchrone** `PluginHandler`/`PluginSdk`, implémenté par le pont isolé de Phase 4 :
+identité, permissions, CRUD et jobs bornés au plugin et au contexte autorisé.
+Voir [PHASE_4.md](PHASE_4.md) pour les signatures, l’installation et l’exemple externe.
+Les plugins importent uniquement les types du SDK ; leurs imports runtime ne sont
+pas résolus dans le moteur isolé. Le frontend est déclaratif, rendu par l’hôte.
+
+`pnpm sdk:pack` fournit les quatre archives versionnées et leurs empreintes,
+`pnpm sdk:test` vérifie leur consommation hors workspace. Aucune publication
+sur un registre externe n’est effectuée. Les packages restent privés et expérimentaux.

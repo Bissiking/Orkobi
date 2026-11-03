@@ -12,7 +12,8 @@ La [Phase 1](PHASE_1.md) ajoute installation, identité locale, sessions,
 organisations, rôles, permissions et audit. La [Phase 2](PHASE_2.md) ajoute le
 Module Manager, le Capability Registry, le Data Access Manager et le module
 officiel `orkobi.demo`. Identité, organisation, permissions et capabilities sont
-raccordées au SDK ; les modules métier externes restent indisponibles.
+raccordées au SDK. La [Phase 4](PHASE_4.md) ajoute le format des plugins tiers,
+leur installation, le moteur QuickJS/WASM et le stockage contrôlé de leurs ressources.
 Le [guide Core](CORE.md) décrit ses points d'entrée et ses limites.
 
 **`lib/`** regroupe les mécanismes internes. Le package `contracts` n'accède à
@@ -131,4 +132,7 @@ Les interfaces et les exports de packages organisent le code mais ne constituent
 pas une frontière d'exécution. Un module exécuté dans le même processus peut
 accéder aux ressources du processus. La validation des entrées et les contrôles
 d'accès de la plateforme sont présents en Phase 1.
-La frontière d'exécution des plugins tiers reste à réaliser.
+Les plugins tiers utilisent désormais la frontière QuickJS/WASM dans un worker
+jetable et un pont RPC avec contexte établi par le Core. Ils n’ont pas d’accès
+direct à SQL, au réseau ou au système. Les pages frontend sont déclaratives.
+Voir les garanties et limites dans [PHASE_4.md](PHASE_4.md).

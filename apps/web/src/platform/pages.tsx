@@ -1,3 +1,4 @@
+import { PluginsAdmin } from './plugins';
 import {
   AccountSecurity,
   AdvancedLoginPage,
@@ -469,9 +470,10 @@ function RolePanel({
               </h3>
               <p>
                 {role.permissions
-                  .map(
-                    (key) =>
-                      t[permissionLabels[key as keyof typeof permissionLabels] ?? 'auditRead'],
+                  .map((key) =>
+                    permissionLabels[key as keyof typeof permissionLabels]
+                      ? t[permissionLabels[key as keyof typeof permissionLabels]]
+                      : key,
                   )
                   .join(' · ') || '—'}
               </p>
@@ -519,10 +521,20 @@ function RolePanel({
                       selected?.permissions.includes(key) ?? key === 'organization:read'
                     }
                   />
-                  {t[permissionLabels[key]]}
+                  {permissionLabels[key as keyof typeof permissionLabels]
+                    ? t[permissionLabels[key as keyof typeof permissionLabels]]
+                    : key}
                 </label>
               ))}
-            {modulePermissions
+            {[
+              ...modulePermissions,
+              ...permissions.filter(
+                (key) =>
+                  !organizationPermissions.includes(
+                    key as (typeof organizationPermissions)[number],
+                  ) && !modulePermissions.includes(key as (typeof modulePermissions)[number]),
+              ),
+            ]
               .filter((key) => permissions.includes(key))
               .map((key) => (
                 <label className="checkbox-label" key={key}>
@@ -532,7 +544,9 @@ function RolePanel({
                     value={key}
                     defaultChecked={selected?.permissions.includes(key) ?? false}
                   />
-                  {t[permissionLabels[key]]}
+                  {permissionLabels[key as keyof typeof permissionLabels]
+                    ? t[permissionLabels[key as keyof typeof permissionLabels]]
+                    : key}
                 </label>
               ))}
           </fieldset>
@@ -694,20 +708,21 @@ export function AdministrationPage() {
     <>
       <PlatformHeading title={t.administration} description={t.adminHelp} />
       <nav className="platform-tabs" aria-label={t.administration}>
-        {(['users', 'organizations', 'integrations', 'audit'] as const).map((key) => (
+        {(['users', 'organizations', 'integrations', 'plugins', 'audit'] as const).map((key) => (
           <button
             key={key}
             aria-current={tab === key ? 'page' : undefined}
             className={tab === key ? 'active' : ''}
             onClick={() => setParams({ tab: key })}
           >
-            {key === 'integrations' ? a.integrations : t[key]}
+            {key === 'plugins' ? 'Extensions' : key === 'integrations' ? a.integrations : t[key]}
           </button>
         ))}
       </nav>
       {tab === 'users' && <UsersAdmin />}
       {tab === 'organizations' && <OrganizationsAdmin />}
       {tab === 'integrations' && <IntegrationsAdmin />}
+      {tab === 'plugins' && <PluginsAdmin />}
       {tab === 'audit' && <AuditPanel path="admin/audit" />}
       <p className="list-note">
         {t.limit} · {t.version} {__APP_VERSION__}
@@ -1039,6 +1054,11 @@ export function ModulesSection() {
                 )}
               </div>
               <div className="row-actions">
+                {module.active && module.id !== 'orkobi.demo' && (
+                  <Button variant="text" to={`/plugins/${module.id}`}>
+                    {t.openModule}
+                  </Button>
+                )}
                 {module.active && module.id === 'orkobi.demo' && (
                   <Button variant="text" to="/modules/demo">
                     {t.openModule}

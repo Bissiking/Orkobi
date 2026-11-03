@@ -15,6 +15,7 @@ export interface ModulePermissionDeclaration {
 export interface ModuleFieldDeclaration {
   readonly name: string;
   readonly type: 'text';
+  readonly label?: { readonly fr: string; readonly en: string };
   readonly required: boolean;
   readonly max?: number;
 }
@@ -43,7 +44,7 @@ export interface ModuleManifest {
 export const moduleIdPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/u;
 export const moduleVersionPattern =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/u;
-export const permissionKeyPattern = /^[a-z][a-z0-9]*:[a-z][a-z0-9_]*$/u;
+export const permissionKeyPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)*:[a-z][a-z0-9_]*$/u;
 export const capabilityKeyPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+$/u;
 export const entityNamePattern = /^[a-z][a-z0-9_]*$/u;
 /** Chaque table de module appartient à un schéma préfixé orkobi_, jamais au schéma système. */

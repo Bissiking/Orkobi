@@ -1,3 +1,4 @@
+import { PluginManager } from '../plugins/manager.js';
 import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
@@ -119,6 +120,7 @@ export class PlatformService {
     @Inject(AdvancedIdentityService) private readonly identity: AdvancedIdentityService,
     @Inject(IntegrationAccessService) private readonly integrations: IntegrationAccessService,
     @Inject(JobEngine) private readonly jobs: JobEngine,
+    @Inject(PluginManager) private readonly plugins: PluginManager,
     @Inject(TechnicalCache) private readonly cache: TechnicalCache,
   ) {}
 
@@ -183,6 +185,33 @@ export class PlatformService {
       };
     }
     const repository = await this.database.repository();
+    if (method === 'POST' && ['admin/plugins/validate', 'admin/plugins/install'].includes(path)) {
+      await repository.transaction(async (repo) => {
+        await repo.lockAdministration();
+        const { user } = await this.authenticate(repo, request, true);
+        if (!user.platformAdmin) throw new ForbiddenException();
+      });
+      const result = await this.plugins.validate(object(request.body).artifact);
+      if (path.endsWith('/validate')) return { data: result };
+    }
+    const invocation =
+      /^plugins\/([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+)\/actions\/([a-z][a-z0-9_]*)$/u.exec(path);
+    if (method === 'POST' && invocation) {
+      const context = await repository.transaction(async (repo) => {
+        await repo.lockAdministration();
+        const { user, session } = await this.authenticate(repo, request, true);
+        if (!session.activeOrganizationId) throw new BadRequestException();
+        return this.plugins.context(user.id, session.activeOrganizationId);
+      });
+      return {
+        data: await this.plugins.invoke(
+          context,
+          invocation[1]!,
+          invocation[2]!,
+          object(request.body),
+        ),
+      };
+    }
     try {
       if (method === 'POST' && path === 'setup') {
         const body = object(request.body);
@@ -335,8 +364,54 @@ export class PlatformService {
             };
           }
         }
+        if (method === 'GET' && path === 'plugins') {
+          if (!session.activeOrganizationId) throw new BadRequestException();
+          await this.authorizeOrganization(
+            repo,
+            user,
+            session.activeOrganizationId,
+            'modules:read',
+          );
+          const plugins = [];
+          for (const item of await repo.plugins()) {
+            try {
+              const auth = await this.plugins.authorized(
+                repo,
+                this.plugins.context(user.id, session.activeOrganizationId),
+                item.id,
+              );
+              const m = auth.plugin.artifact.manifest;
+              plugins.push({ id: item.id, manifest: m, digest: item.digest });
+            } catch (error) {
+              if (!(error instanceof ForbiddenException)) throw error;
+            }
+          }
+          return { data: { plugins } };
+        }
         if (path.startsWith('admin/')) {
           if (!user.platformAdmin) throw new ForbiddenException();
+          if (method === 'GET' && path === 'admin/plugins')
+            return {
+              data: {
+                plugins: (await repo.plugins()).map((p) => ({
+                  id: p.id,
+                  manifest: p.artifact.manifest,
+                  digest: p.digest,
+                  installed: p.installed,
+                  installedAt: p.installedAt,
+                })),
+              },
+            };
+          if (method === 'POST' && path === 'admin/plugins/install')
+            return { data: await this.plugins.install(repo, user.id, body) };
+          const grantPlugin =
+            /^admin\/plugins\/([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+)\/grants$/u.exec(path);
+          if (method === 'POST' && grantPlugin)
+            return { data: await this.plugins.grant(repo, user.id, grantPlugin[1]!, body) };
+          const removePlugin =
+            /^admin\/plugins\/([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+)\/remove$/u.exec(path);
+          if (method === 'POST' && removePlugin)
+            return { data: await this.plugins.remove(repo, user.id, removePlugin[1]!, body) };
           if (method === 'GET' && path === 'admin/runtime')
             return { data: { jobs: this.jobs.status(), cache: this.cache.status() } };
           const managed = await this.integrations.administration(repo, user, method, path, body);

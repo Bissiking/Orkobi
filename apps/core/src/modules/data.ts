@@ -91,6 +91,8 @@ export class ModuleDataService {
   ) {
     const module: StoredModule | undefined = await repo.module(moduleId);
     if (!module?.manifest || !isModuleManifest(module.manifest)) throw new NotFoundException();
+    const plugin = await repo.plugin(moduleId);
+    if (plugin && !plugin.installed) throw new ForbiddenException();
     const manifest = module.manifest;
     const declaration = entityOf(manifest, entity);
     const activations = await repo.organizationModules(organizationId);
@@ -102,7 +104,7 @@ export class ModuleDataService {
     const role = await repo.role(organizationId, member.roleId);
     if (!role?.permissions.includes(access === 'read' ? declaration.read : declaration.write))
       throw new ForbiddenException();
-    return { module, manifest, declaration };
+    return { module, manifest, declaration, plugin: !!plugin };
   }
 
   async list(
@@ -112,7 +114,7 @@ export class ModuleDataService {
     moduleId: string,
     entity: string,
   ): Promise<{ entries: ModuleEntry[] }> {
-    const { module, manifest, declaration } = await this.authorized(
+    const { module, manifest, declaration, plugin } = await this.authorized(
       repo,
       organizationId,
       userId,
@@ -120,6 +122,15 @@ export class ModuleDataService {
       entity,
       'read',
     );
+    if (plugin)
+      return {
+        entries: (await repo.pluginEntries(moduleId, organizationId, entity)).map((entry) => ({
+          ...entry,
+          values: Object.fromEntries(
+            declaration.fields.map((field) => [field.name, entry.values[field.name] ?? '']),
+          ),
+        })),
+      };
     const fields = declaration.fields.map((field) => field.name).join(', ');
     const transaction = await repo.moduleData(
       ownerOf(module.id, manifest),
@@ -140,7 +151,7 @@ export class ModuleDataService {
     entity: string,
     input: Body,
   ): Promise<{ entry: ModuleEntry }> {
-    const { module, manifest, declaration } = await this.authorized(
+    const { module, manifest, declaration, plugin } = await this.authorized(
       repo,
       organizationId,
       userId,
@@ -151,6 +162,24 @@ export class ModuleDataService {
     const values = fieldValues(declaration, input);
     const fields = declaration.fields.map((field) => field.name);
     const id = randomUUID();
+    if (plugin) {
+      const entry = await repo.savePluginEntry(
+        moduleId,
+        organizationId,
+        entity,
+        id,
+        userId,
+        values,
+      );
+      await repo.audit(
+        randomUUID(),
+        userId,
+        `module.${moduleId}.${entity}.created`,
+        organizationId,
+        id,
+      );
+      return { entry: entry! };
+    }
     const transaction = await repo.moduleData(
       ownerOf(module.id, manifest),
       contextOf(organizationId, userId),
@@ -182,7 +211,7 @@ export class ModuleDataService {
     input: Body,
   ): Promise<{ entry: ModuleEntry }> {
     if (!entryIdPattern.test(entryId)) throw new BadRequestException();
-    const { module, manifest, declaration } = await this.authorized(
+    const { module, manifest, declaration, plugin } = await this.authorized(
       repo,
       organizationId,
       userId,
@@ -192,6 +221,26 @@ export class ModuleDataService {
     );
     const values = fieldValues(declaration, input);
     const fields = declaration.fields.map((field) => field.name);
+    if (plugin) {
+      const entry = await repo.savePluginEntry(
+        moduleId,
+        organizationId,
+        entity,
+        entryId,
+        userId,
+        values,
+        true,
+      );
+      if (!entry) throw new NotFoundException();
+      await repo.audit(
+        randomUUID(),
+        userId,
+        `module.${moduleId}.${entity}.updated`,
+        organizationId,
+        entryId,
+      );
+      return { entry };
+    }
     const assignments = fields.map((field, index) => `${field}=$${index + 3}`).join(', ');
     const transaction = await repo.moduleData(
       ownerOf(module.id, manifest),
@@ -224,7 +273,7 @@ export class ModuleDataService {
     entryId: string,
   ): Promise<{ success: true }> {
     if (!entryIdPattern.test(entryId)) throw new BadRequestException();
-    const { module, manifest, declaration } = await this.authorized(
+    const { module, manifest, declaration, plugin } = await this.authorized(
       repo,
       organizationId,
       userId,
@@ -232,6 +281,18 @@ export class ModuleDataService {
       entity,
       'write',
     );
+    if (plugin) {
+      if (!(await repo.removePluginEntry(moduleId, organizationId, entity, entryId)))
+        throw new NotFoundException();
+      await repo.audit(
+        randomUUID(),
+        userId,
+        `module.${moduleId}.${entity}.deleted`,
+        organizationId,
+        entryId,
+      );
+      return { success: true };
+    }
     const transaction = await repo.moduleData(
       ownerOf(module.id, manifest),
       contextOf(organizationId, userId),

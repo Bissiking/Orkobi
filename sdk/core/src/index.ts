@@ -64,3 +64,35 @@ export interface TaskSignal {
   ): void;
   removeEventListener(type: 'abort', listener: () => void): void;
 }
+
+/** API synchrone du moteur isolé ; le pont hôte attend les opérations SQL sans exposer leurs objets. */
+export interface PluginSdk {
+  readonly execution: { readonly id: string | null; readonly idempotencyKey: string | null };
+  readonly context: OrganizationContext;
+  readonly identity: {
+    currentUser(): Result<UserSummary>;
+    currentOrganization(): Result<OrganizationSummary>;
+  };
+  readonly permissions: { can(permission: PermissionKey): Result<boolean> };
+  readonly data: {
+    list(entity: string): Result<{ readonly entries: readonly ModuleEntry[] }>;
+    create(
+      entity: string,
+      values: Readonly<Record<string, string>>,
+    ): Result<{ readonly entry: ModuleEntry }>;
+    update(
+      entity: string,
+      id: string,
+      values: Readonly<Record<string, string>>,
+    ): Result<{ readonly entry: ModuleEntry }>;
+    remove(entity: string, id: string): Result<{ success: true }>;
+  };
+  readonly jobs: {
+    schedule(input: Omit<ScheduleJob, 'moduleId'>): Result<{ id: string }>;
+    list(): Result<readonly JobSummary[]>;
+    cancel(id: string): Result<null>;
+    retry(id: string): Result<null>;
+  };
+}
+/** Fonctions ES Module synchrones et sans imports runtime ; les types SDK sont effacés au build. */
+export type PluginHandler = (sdk: PluginSdk, input: Readonly<Record<string, unknown>>) => unknown;

@@ -68,3 +68,9 @@ Aucun logo, illustration, témoignage, donnée client ou statistique fourni.
 Choix visuel confirmé : tableau de bord classique ; Odoo et Microsoft Business
 Central servent de repères de clarté, sans reprise de marque ni promesse de leurs
 fonctionnalités. Navigation conventionnelle, densité maîtrisée, états explicites.
+
+La Phase 4 ajoute des extensions tierces contrôlées : paquets versionnés,
+installation/retrait avec confirmation, droits explicites, moteur QuickJS/WASM
+isolé et ressources multi-organisation. Le frontend tiers reste déclaratif,
+rendu avec le kit SDK ; aucun bundle arbitraire ne rejoint le shell authentifié.
+Le SDK est distribuable en archives locales, sans publication sur un registre externe.

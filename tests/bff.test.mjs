@@ -194,6 +194,8 @@ test('BFF : routes React directes, CSP, ressources, erreurs API et absence de fi
     '/organizations',
     '/modules?audience=business',
     '/settings',
+    '/plugins/community.cards',
+    '/plugins/community.cards/cards',
     '/system',
     '/page-inconnue',
   ]) {
@@ -202,7 +204,13 @@ test('BFF : routes React directes, CSP, ressources, erreurs API et absence de fi
     assert.match(response.headers.get('content-security-policy'), /script-src 'self'/u);
     assert.match(await response.text(), /id="root"/u);
   }
-  for (const path of ['/api', '/api/secret-test', '/.env', '/assets/missing.js']) {
+  for (const path of [
+    '/api',
+    '/api/secret-test',
+    '/.env',
+    '/assets/missing.js',
+    '/plugins/community.cards/missing.js',
+  ]) {
     const response = await fetch(`${url}${path}`);
     assert.equal(response.status, 404);
     assert.deepEqual(await response.json(), {

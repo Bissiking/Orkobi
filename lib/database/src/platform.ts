@@ -1,3 +1,4 @@
+import type { PluginArtifact, ModuleEntry } from '@orkobi/contracts';
 import { randomUUID } from 'node:crypto';
 import type { Pool, PoolClient } from 'pg';
 import type {
@@ -66,6 +67,86 @@ export interface StoredIntegrationToken {
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
 export class PlatformTransaction {
+  async plugin(
+    id: string,
+  ): Promise<
+    | { artifact: PluginArtifact; digest: string; installed: boolean; installedAt: string }
+    | undefined
+  > {
+    return (
+      await this.client.query(
+        'SELECT artifact,digest,installed,installed_at::text AS "installedAt" FROM orkobi_core.plugins WHERE id=$1',
+        [id],
+      )
+    ).rows[0];
+  }
+  async plugins(): Promise<
+    {
+      id: string;
+      artifact: PluginArtifact;
+      digest: string;
+      installed: boolean;
+      installedAt: string;
+    }[]
+  > {
+    return (
+      await this.client.query(
+        'SELECT id,artifact,digest,installed,installed_at::text AS "installedAt" FROM orkobi_core.plugins ORDER BY id LIMIT 100',
+      )
+    ).rows;
+  }
+  async savePlugin(artifact: PluginArtifact, digest: string, userId: string) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.plugins(id,artifact,digest,installed_by) VALUES($1,$2,$3,$4)
+      ON CONFLICT(id) DO UPDATE SET artifact=EXCLUDED.artifact,digest=EXCLUDED.digest,installed=true,installed_by=EXCLUDED.installed_by,installed_at=now()`,
+      [artifact.manifest.module.id, artifact, digest, userId],
+    );
+  }
+  async removePlugin(id: string) {
+    await this.client.query('UPDATE orkobi_core.plugins SET installed=false WHERE id=$1', [id]);
+  }
+  async pluginEntries(pluginId: string, orgId: string, entity: string): Promise<ModuleEntry[]> {
+    return (
+      await this.client.query<ModuleEntry>(
+        `SELECT id,values,created_at::text AS "createdAt",updated_at::text AS "updatedAt"
+      FROM orkobi_core.plugin_records WHERE plugin_id=$1 AND organization_id=$2 AND entity=$3 ORDER BY created_at DESC,id LIMIT 100`,
+        [pluginId, orgId, entity],
+      )
+    ).rows;
+  }
+  async savePluginEntry(
+    pluginId: string,
+    orgId: string,
+    entity: string,
+    id: string,
+    userId: string,
+    values: Record<string, string>,
+    update = false,
+  ): Promise<ModuleEntry | undefined> {
+    return (
+      await this.client.query<ModuleEntry>(
+        update
+          ? `UPDATE orkobi_core.plugin_records SET values=$5,updated_at=now() WHERE plugin_id=$1 AND organization_id=$2 AND entity=$3 AND id=$4 RETURNING id,values,created_at::text AS "createdAt",updated_at::text AS "updatedAt"`
+          : `INSERT INTO orkobi_core.plugin_records(plugin_id,organization_id,entity,id,values,created_by) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,values,created_at::text AS "createdAt",updated_at::text AS "updatedAt"`,
+        update
+          ? [pluginId, orgId, entity, id, values]
+          : [pluginId, orgId, entity, id, values, userId],
+      )
+    ).rows[0];
+  }
+  async removePluginEntry(
+    pluginId: string,
+    orgId: string,
+    entity: string,
+    id: string,
+  ): Promise<boolean> {
+    return !!(
+      await this.client.query(
+        'DELETE FROM orkobi_core.plugin_records WHERE plugin_id=$1 AND organization_id=$2 AND entity=$3 AND id=$4',
+        [pluginId, orgId, entity, id],
+      )
+    ).rowCount;
+  }
   async tryJobLock(organizationId: string, moduleId: string, task: string): Promise<boolean> {
     return (
       await this.client.query<{ locked: boolean }>(

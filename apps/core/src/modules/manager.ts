@@ -121,6 +121,8 @@ export class ModuleManager {
     await this.sync(repo);
     const module = await repo.module(moduleId);
     if (!module) throw new NotFoundException();
+    if (enabled && (await repo.plugin(moduleId))?.installed === false)
+      throw new ConflictException();
     // Valide le manifeste stocké avant tout changement d'état.
     requireManifest(module);
     if (!enabled) {
@@ -161,6 +163,15 @@ export class ModuleManager {
         .map((activation) => activation.moduleId),
     );
     if (active) {
+      const plugin = await repo.plugin(moduleId);
+      if (plugin) {
+        if (!plugin.installed) throw new ConflictException();
+        for (const [id, range] of Object.entries(plugin.artifact.manifest.dependencyVersions)) {
+          const dependency = await repo.module(id);
+          if (!dependency?.enabled || !satisfiesRange(dependency.version, range))
+            throw new ConflictException();
+        }
+      }
       if (!module.enabled) throw new ConflictException('Module indisponible sur cette instance.');
       if (this.missingCapabilities(manifest, await this.availableCapabilities()).length)
         throw new ConflictException('Le module requiert des capabilities indisponibles.');

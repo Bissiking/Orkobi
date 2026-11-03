@@ -41,6 +41,9 @@ export class BffPlatformController {
   private async forward(method: 'GET' | 'POST', request: Request, response: Response) {
     const path = request.path.slice('/api/platform/'.length);
     if (
+      !/^(?:plugins(?:\/[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/actions\/[a-z][a-z0-9_]*)?|admin\/plugins(?:\/(?:validate|install|[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/(?:remove|grants)))?)$/u.test(
+        path,
+      ) &&
       !pathPattern.test(path) &&
       !/^(?:jobs(?:\/[a-f0-9-]{36}\/(?:retry|cancel))?|admin\/runtime)$/u.test(path)
     )

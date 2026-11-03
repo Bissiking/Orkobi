@@ -405,3 +405,37 @@
   color: var(--muted);
   font-size: 12px;
 }
+.plugin-review {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 3fr);
+  gap: 12px;
+}
+.plugin-review dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.plugin-installed {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.plugin-installed summary {
+  cursor: pointer;
+  padding: 12px 0;
+  color: var(--accent);
+}
+.plugin-installed details .platform-form {
+  margin: 16px 0;
+}
+@media (max-width: 620px) {
+  .plugin-review {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.plugin-entity .row-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}

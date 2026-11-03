@@ -128,7 +128,7 @@ services:
       [
         sh,
         -c,
-        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/cache.integration.mjs && node scripts/benchmark-services.mjs && REDIS_URL=redis://redis:6379 node scripts/benchmark-services.mjs',
+        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs && node --test tests/cache.integration.mjs && node scripts/benchmark-services.mjs && REDIS_URL=redis://redis:6379 node scripts/benchmark-services.mjs',
       ]
     environment:
       TEST_REDIS_URL: redis://redis:6379

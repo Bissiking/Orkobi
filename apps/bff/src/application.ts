@@ -73,7 +73,15 @@ class WebController {
   @Get('{*path}')
   index(@Req() request: Request, @Res() response: Response): Promise<void> {
     // Les routes API inconnues et les fichiers absents ne deviennent jamais du HTML.
-    if (request.path === '/api' || request.path.startsWith('/api/') || request.path.includes('.')) {
+    const pluginPage =
+      /^\/plugins\/[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+(?:\/[a-z][a-z0-9_]*)?\/?$/u.test(
+        request.path,
+      );
+    if (
+      request.path === '/api' ||
+      request.path.startsWith('/api/') ||
+      (request.path.includes('.') && !pluginPage)
+    ) {
       throw new NotFoundException();
     }
     return new Promise((resolve, reject) => {

@@ -8,6 +8,27 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 4 — extensions tierces et distribution SDK locale — 2026-11-03
+
+- `lib/contracts/src/plugins.ts`, `sdk/{core,types}` : paquets/manifeste API 1,
+  permissions de namespace, dépendances et plages Core/SDK, migrations et frontend
+  déclaratifs ; `PluginHandler` et `PluginSdk` pour le moteur tiers.
+- `apps/core/src/plugins` : validation QuickJS/WASM dans un worker jetable,
+  quotas mémoire/temps/RPC, pont de données et jobs avec contexte imposé et droits
+  courants. Aucun import runtime tiers dans le Core, aucun SQL/réseau/fichier exposé.
+- Migration append-only `0009_plugins` : tables logiques isolées par extension,
+  entité et organisation, registre des paquets et permissions dynamiques syntaxiquement
+  contrôlées. Aucun DDL fourni par une extension.
+- Core/BFF : installation après revue d’empreinte et confirmation, mises à jour
+  additives, droits par rôle accordés explicitement, retrait sans purge de données.
+- `apps/web/src/platform/plugins.tsx` : administration Extensions et pages CRUD
+  déclaratives FR/EN, rendu SDK UI/Papicons, confirmation des suppressions et URL.
+- `examples/plugin-demo`, scripts de build/validation/packaging/test : plugin externe
+  TypeScript, archives SDK avec SHA-256 et consommation vérifiée hors workspace.
+- Guides Phase 4 et revue, roadmap, SDK, jobs et consignes IA synchronisés.
+  Preuves et limites dans `DOCS/REVIEW_PHASE_4.md`. Version conservée `0.2.0-EXP` ;
+  aucune publication sur un registre, tag, push ou modification de l’instance existante.
+
 ### Phase 3.3/3.4 et revue de la phase — 2026-11-03
 
 - `apps/core/src/{cache,jobs}`, `lib/database/src/{jobs,jobs-migration}.ts` :

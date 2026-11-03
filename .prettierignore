@@ -11,3 +11,6 @@ coverage/
 pnpm-lock.yaml
 DOCS/BOOTSTRAP.md
 DOCS/Cahier_des_charges.md
+
+output/plugins/
+output/sdk/

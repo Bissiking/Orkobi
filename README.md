@@ -11,7 +11,8 @@ NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
 installation, authentification locale, sessions, organisations, rôles,
 administration, registre de modules avec activation par organisation, catalogue
 de capabilities et premier module officiel `orkobi.demo` (notes isolées par
-organisation). Les modules métier externes restent à construire (Phase 4).
+organisation). La [Phase 4](DOCS/PHASE_4.md) permet maintenant d’installer des extensions tierces
+à manifeste contrôlé : code isolé, ressources bornées et pages déclaratives.
 
 La [Phase 3](DOCS/PHASE_3.md) ajoute OIDC, MFA TOTP et récupération,
 sessions enrichies, authentification BFF ↔ Core et intégrations avec scopes,
@@ -19,6 +20,10 @@ expiration et révocation. Elle fournit aussi un [Job Engine durable](DOCS/JOB_E
 un cache mémoire avec Redis optionnel et le [kit UI du SDK](DOCS/UI_SDK.md)
 en CSS natif, avec des icônes Papicons pour les applications. La version reste
 **0.2.0-EXP**, sans publication ni déploiement automatique.
+
+Pour développer un plugin, commencer par [le guide Phase 4](DOCS/PHASE_4.md) et
+`examples/plugin-demo/`. `pnpm plugin:build`, `pnpm plugin:validate` et
+`pnpm sdk:test` construisent et vérifient les artefacts locaux sans publication distante.
 
 La [documentation](DOCS/README.md) fournit les points d’entrée pour les développeurs
 et les futures IA ; la [revue Phase 3](DOCS/REVIEW_PHASE_3.md) consigne les preuves.

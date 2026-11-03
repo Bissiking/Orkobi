@@ -53,9 +53,12 @@ borné au module, à ses entités, à ses permissions et à l’organisation cou
 L’accès actuel est en lecture, limité à 100 entrées comme le Data Access Manager.
 Il ne fournit ni SQL, ni pool, ni accès système. Pour un futur effet externe,
 utiliser `idempotencyKey` chez le destinataire et supporter la répétition.
-Le contrat `ModuleJobService` prépare une façade liée au module ; son raccord
-aux plugins externes et l’isolation d’exécution restent en Phase 4. Le SDK
-`CoreSdk` existant conserve son contrat.
+Les plugins externes sont raccordés depuis la [Phase 4](PHASE_4.md) via
+`PluginHandler` et `PluginSdk` : leur code tourne dans QuickJS/WASM, avec une
+terminaison forcée du worker, et leurs appels `sdk.jobs` sont bornés au module.
+Ils ne partagent pas le moteur JavaScript des handlers officiels. `sdk.execution`
+leur transmet aussi l’identifiant et la clé d’idempotence du job. Le SDK `CoreSdk`
+existant conserve son contrat pour les modules officiels.
 
 ## API et écran utilisateur
 

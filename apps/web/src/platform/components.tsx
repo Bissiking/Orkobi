@@ -43,12 +43,14 @@ export function TaskForm({
   onSave,
   submit,
   reset = false,
+  disabled = false,
 }: {
   title?: string;
   children: ReactNode;
   onSave: (data: FormData) => Promise<void | false>;
   submit?: string;
   reset?: boolean;
+  disabled?: boolean;
 }) {
   const t = usePlatformCopy();
   const [pending, setPending] = useState(false),
@@ -56,7 +58,7 @@ export function TaskForm({
     [success, setSuccess] = useState(false);
   const handle = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (pending) return;
+    if (pending || disabled) return;
     const form = event.currentTarget,
       data = new FormData(form);
     setPending(true);
@@ -79,7 +81,7 @@ export function TaskForm({
       <fieldset disabled={pending}>{children}</fieldset>
       {message && <Notice tone={success ? 'success' : 'error'}>{message}</Notice>}
       <div>
-        <Button variant="primary" type="submit" disabled={pending}>
+        <Button variant="primary" type="submit" disabled={pending || disabled}>
           {pending ? t.saving : (submit ?? t.save)}
         </Button>
       </div>

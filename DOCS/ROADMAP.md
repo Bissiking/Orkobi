@@ -257,18 +257,18 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** permettre le développement d'extensions externes contrôlées.
 
-- [ ] Publier les contrats du SDK.
-- [ ] Fournir une documentation développeur.
-- [ ] Définir le manifeste des plugins tiers.
-- [ ] Déclarer tables, migrations et ressources.
-- [ ] Déclarer permissions et capabilities.
-- [ ] Déclarer dépendances et versions compatibles.
-- [ ] Mettre en place l'isolation d'exécution des plugins.
-- [ ] Contrôler tous les accès aux ressources sensibles.
-- [ ] Préparer un validateur de plugins.
-- [ ] Définir les règles de compatibilité frontend.
-- [ ] Implémenter installation et retrait sécurisés.
-- [ ] Tester un plugin externe de démonstration.
+- [x] Distribuer les contrats du SDK dans les exports et archives locales versionnées (registre externe distinct).
+- [x] Fournir une documentation développeur.
+- [x] Définir le manifeste des plugins tiers.
+- [x] Déclarer tables, migrations et ressources.
+- [x] Déclarer permissions et capabilities.
+- [x] Déclarer dépendances et versions compatibles.
+- [x] Mettre en place l'isolation d'exécution des plugins.
+- [x] Contrôler tous les accès aux ressources sensibles.
+- [x] Préparer un validateur de plugins.
+- [x] Définir les règles de compatibilité frontend.
+- [x] Implémenter installation et retrait sécurisés.
+- [x] Tester un plugin externe de démonstration.
 
 ---
 
@@ -352,7 +352,7 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0 à 3 implémentées et vérifiées localement ; prochaine étape : Phase 4.**
+**Phases 0 à 4 implémentées et vérifiées localement ; prochaine étape : Phase 5.**
 
 La version produit reste **0.2.0-EXP**, sans publication stable implicite.
 Le [guide Phase 3](PHASE_3.md) décrit identité et intégrations ; le
@@ -362,7 +362,11 @@ pour les futures extensions. Les [preuves de revue](REVIEW_PHASE_3.md) distingue
 les contrôles unitaires, SQL/Redis réels, navigateur synthétique et les limites
 qui restent propres au déploiement.
 
-Les conditions de publication et de production restent distinctes.
+La [Phase 4](PHASE_4.md) fournit les extensions tierces contrôlées, la documentation
+développeur et les archives SDK locales. Les [preuves de revue](REVIEW_PHASE_4.md)
+précisent les tests, la frontière d’exécution et ses limites.
+
+Les conditions de publication sur un registre externe et de production restent distinctes.
 
 Le [guide de Phase 2](PHASE_2.md) décrit le Module Manager, le Capability
 Registry, le Data Access Manager et le module `orkobi.demo`, avec leurs tests.

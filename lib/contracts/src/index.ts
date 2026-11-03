@@ -81,3 +81,13 @@ export interface OrganizationContext {
 export type Result<Value> =
   { readonly ok: true; readonly value: Value } | { readonly ok: false; readonly error: CoreError };
 export type { ModuleTaskDeclaration, JobStatus, JobSummary, ScheduleJob } from './jobs.js';
+
+export { isPluginArtifact, pluginApiVersion } from './plugins.js';
+export type {
+  PluginArtifact,
+  PluginManifest,
+  PluginSummary,
+  PluginPage,
+  PluginMigration,
+  PluginIcon,
+} from './plugins.js';

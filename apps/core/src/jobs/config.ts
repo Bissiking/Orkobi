@@ -16,3 +16,5 @@ export function loadJobConfig(env: NodeJS.ProcessEnv): JobConfig {
     throw new Error('JOBS_ENABLED ou JOBS_POLL_MS invalide.');
   return Object.freeze({ enabled: enabled === 'true', pollMs: Number(poll) });
 }
+
+export const PLUGIN_JOBS = Symbol('PLUGIN_JOBS');

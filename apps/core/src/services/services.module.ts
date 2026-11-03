@@ -1,3 +1,4 @@
+import { PluginManager } from '../plugins/manager.js';
 import { Module } from '@nestjs/common';
 import type { DynamicModule } from '@nestjs/common';
 import type { PostgreSqlConfig } from '@orkobi/database';
@@ -22,7 +23,7 @@ import { CoreSdkFactory } from './sdk-factory.js';
 import { UnavailableCoreServices } from './unavailable-services.js';
 import { JobEngine } from '../jobs/service.js';
 import { JobRegistry } from '../jobs/registry.js';
-import { JOB_CONFIG, defaultJobConfig } from '../jobs/config.js';
+import { JOB_CONFIG, defaultJobConfig, PLUGIN_JOBS } from '../jobs/config.js';
 import type { JobConfig } from '../jobs/config.js';
 import { TechnicalCache, CACHE_CONFIG } from '../cache/service.js';
 import type { CacheConfig } from '../cache/service.js';
@@ -56,7 +57,9 @@ export class CoreServicesModule {
         CapabilityRegistry,
         ModuleManager,
         ModuleDataService,
+        PluginManager,
         JobEngine,
+        { provide: PLUGIN_JOBS, useExisting: JobEngine },
         JobRegistry,
         TechnicalCache,
         { provide: JOB_CONFIG, useValue: jobs },

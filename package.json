@@ -2,7 +2,7 @@
   "name": "orkobi",
   "version": "0.2.0-EXP",
   "private": true,
-  "description": "Orkobi - L'ERP qui s'adapte \u00e0 vous.",
+  "description": "Orkobi - L'ERP qui s'adapte à vous.",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:core": "node scripts/dev-core.mjs core",
@@ -25,7 +25,11 @@
     "test:types": "pnpm --filter @orkobi/contract-tests typecheck",
     "test": "pnpm build && pnpm test:types && node --test tests/*.test.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm test",
-    "bench:services": "pnpm --filter @orkobi/core... build && node scripts/benchmark-services.mjs"
+    "bench:services": "pnpm --filter @orkobi/core... build && node scripts/benchmark-services.mjs",
+    "plugin:build": "pnpm --filter @orkobi/contracts build && node scripts/build-plugin.mjs",
+    "plugin:validate": "pnpm --filter @orkobi/core... build && node scripts/validate-plugin.mjs",
+    "sdk:pack": "pnpm build && node scripts/pack-sdk.mjs",
+    "sdk:test": "pnpm sdk:pack && node scripts/test-sdk-artifacts.mjs"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "devDependencies": {

@@ -23,6 +23,12 @@ interface CatalogueEntry {
  */
 const catalogue: readonly CatalogueEntry[] = Object.freeze([
   Object.freeze({
+    key: 'core.plugins',
+    description:
+      'Extensions tierces à manifeste versionné, moteur QuickJS/WASM isolé et accès SDK contrôlés.',
+    state: 'limited',
+  }),
+  Object.freeze({
     key: 'core.identity',
     description: 'Comptes, sessions et connexions locales.',
     state: 'database',

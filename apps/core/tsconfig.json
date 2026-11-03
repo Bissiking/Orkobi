@@ -5,7 +5,8 @@
     "rootDir": "./src",
     "types": ["node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "lib": ["ES2022", "DOM"]
   },
   "include": ["src/**/*.ts"]
 }
