@@ -119,3 +119,11 @@ pas résolus dans le moteur isolé. Le frontend est déclaratif, rendu par l’h
 `pnpm sdk:pack` fournit les quatre archives versionnées et leurs empreintes,
 `pnpm sdk:test` vérifie leur consommation hors workspace. Aucune publication
 sur un registre externe n’est effectuée. Les packages restent privés et expérimentaux.
+
+## Distribution par le Store (Phase 6)
+
+Le [Store](PHASE_6.md) distribue les mêmes paquets API 1 depuis des catalogues signés.
+Le SDK guest garde son périmètre sans réseau, fichiers, SQL ou API administrateur.
+Les nouveaux DTO de catalogue/revue et les comparateurs de version sont dans les
+contrats publics ; ils n'accordent aucun accès Store au plugin. Les archives locales
+SDK restent distinctes d'une publication npm, et le Store ne les publie pas.

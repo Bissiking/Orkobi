@@ -38,7 +38,12 @@ export function PluginsAdmin() {
   return (
     <>
       <section className="platform-panel">
-        <h2>{fr ? 'Installer une extension' : 'Install an extension'}</h2>
+        <div className="page-heading">
+          <h2>{fr ? 'Installer une extension' : 'Install an extension'}</h2>
+          <Button variant="secondary" to="/admin?tab=store">
+            {fr ? 'Parcourir le Store' : 'Browse Store'}
+          </Button>
+        </div>
         <p>
           {fr
             ? 'Chargez un paquet Orkobi, vérifiez ses ressources et ses droits, puis confirmez son installation. Il restera désactivé jusqu’à votre choix.'

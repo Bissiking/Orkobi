@@ -16,3 +16,6 @@ output/plugins/
 output/sdk/
 
 output/sql-engines/
+
+output/store/
+output/store-keys/

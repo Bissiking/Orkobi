@@ -304,16 +304,21 @@ les fournisseurs NoSQL, S3 et Aion restent non implémentés et indisponibles.
 
 **Objectif :** distribuer et maintenir les extensions.
 
-- [ ] Définir le registre public des plugins.
-- [ ] Définir les catalogues de versions.
-- [ ] Héberger l'API Store indépendamment du Core.
-- [ ] Permettre les dépôts officiels et communautaires.
-- [ ] Vérifier provenance, intégrité et signatures.
-- [ ] Afficher permissions, tables et dépendances.
-- [ ] Ajouter la compatibilité Core / SDK / SQL.
-- [ ] Gérer les mises à jour et les demandes de nouveaux droits.
-- [ ] Ajouter les dépôts privés.
-- [ ] Garantir le fonctionnement d'Orkobi sans Store accessible.
+Guide : [PHASE_6.md](PHASE_6.md), [preuves de revue](REVIEW_PHASE_6.md).
+API indépendante exécutée localement en Docker ; aucune ouverture d’un registre
+Internet officiel ou publication npm implicite. Les racines de confiance sont
+configurées par l’opérateur, sans source distante prédéfinie.
+
+- [x] Définir le registre public des plugins.
+- [x] Définir les catalogues de versions.
+- [x] Héberger l'API Store indépendamment du Core.
+- [x] Permettre les dépôts officiels et communautaires.
+- [x] Vérifier provenance, intégrité et signatures.
+- [x] Afficher permissions, tables et dépendances.
+- [x] Ajouter la compatibilité Core / SDK / SQL.
+- [x] Gérer les mises à jour et les demandes de nouveaux droits.
+- [x] Ajouter les dépôts privés.
+- [x] Garantir le fonctionnement d'Orkobi sans Store accessible.
 
 ---
 
@@ -356,9 +361,11 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0 à 5 traitées et vérifiées localement ; prochaine étape : Phase 6.**
+**Phases 0 à 6 traitées et vérifiées localement ; prochaine étape : Phase 7.**
 
 La version produit reste **0.2.0-EXP**, sans publication stable implicite.
+Le [Store de Phase 6](PHASE_6.md) ajoute la distribution signée et privée ;
+les [preuves](REVIEW_PHASE_6.md) distinguent recettes locales et hébergement public.
 La [Phase 5](PHASE_5.md) fournit les moteurs alternatifs et le diagnostic ;
 son [rapport](REVIEW_PHASE_5.md) distingue les tests réels et les services étudiés.
 Le [guide Phase 3](PHASE_3.md) décrit identité et intégrations ; le

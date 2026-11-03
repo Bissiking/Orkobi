@@ -18,6 +18,7 @@
     "@orkobi/module-demo": "workspace:*",
     "@orkobi/sdk-core": "workspace:*",
     "@orkobi/sdk-types": "workspace:*",
+    "@orkobi/store": "workspace:*",
     "@redis/client": "6.3.1",
     "quickjs-emscripten": "0.32.0",
     "reflect-metadata": "0.2.2",

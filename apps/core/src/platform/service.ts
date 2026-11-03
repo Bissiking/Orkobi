@@ -1,3 +1,4 @@
+import { StoreService } from '../store/service.js';
 import { RuntimeDiagnostics } from '../diagnostics.js';
 import { databaseProfile } from '@orkobi/database';
 import { PluginManager } from '../plugins/manager.js';
@@ -122,6 +123,7 @@ export class PlatformService {
     @Inject(AdvancedIdentityService) private readonly identity: AdvancedIdentityService,
     @Inject(IntegrationAccessService) private readonly integrations: IntegrationAccessService,
     @Inject(JobEngine) private readonly jobs: JobEngine,
+    @Inject(StoreService) private readonly store: StoreService,
     @Inject(PluginManager) private readonly plugins: PluginManager,
     @Inject(TechnicalCache) private readonly cache: TechnicalCache,
     @Inject(RuntimeDiagnostics) private readonly diagnostics: RuntimeDiagnostics,
@@ -188,6 +190,22 @@ export class PlatformService {
       };
     }
     const repository = await this.database.repository();
+    if (/^admin\/store(?:\/(?:review|install))?$/u.test(path)) {
+      return {
+        data: await this.store.execute(
+          method,
+          path,
+          method === 'POST' ? object(request.body) : {},
+          (operation) =>
+            repository.transaction(async (repo) => {
+              await repo.lockAdministration();
+              const { user } = await this.authenticate(repo, request, method === 'POST');
+              if (!user.platformAdmin) throw new ForbiddenException();
+              return operation(repo, user.id);
+            }),
+        ),
+      };
+    }
     if (method === 'POST' && ['admin/plugins/validate', 'admin/plugins/install'].includes(path)) {
       await repository.transaction(async (repo) => {
         await repo.lockAdministration();

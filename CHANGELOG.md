@@ -8,6 +8,23 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.2.0-EXP — 2026-10-31
 
+### Phase 6 — Store indépendant et distribution signée — 2026-11-03
+
+- `apps/store`, `lib/store`, scripts de clés/publication locale et Compose autonome :
+  catalogues API 1, versions immuables, paquets adressés par SHA-256, signatures
+  Ed25519, expiration, dépôts publics et bearer privé. Aucune clé privée côté serveur.
+- Core/BFF : racines de confiance configurées côté serveur, transport borné sans
+  redirection, revue/confirmation, compatibilité Core/SDK/SQL et dépendances,
+  revalidation des droits et du catalogue avant installation. Aucun réseau sous verrou SQL.
+- Migration append-only `0010_store` sur les trois moteurs : checkpoints anti-rejeu
+  et provenance. Installation manuelle marquée non vérifiée ; nouveaux droits et
+  accords dormants traités explicitement lors des mises à jour.
+- Administration → Store : recherche, versions, ressources, droits, dépendances,
+  clés et nouveaux consentements, UI SDK/Papicons FR/EN, thèmes, URL et mobile.
+- Recettes Store autonome et SQL communes, docs/opérations/consignes IA ;
+  [preuves et limites](DOCS/REVIEW_PHASE_6.md). Registre Internet et publication npm
+  restent distincts ; aucun déploiement utilisateur effectué.
+
 ### Phase 5 — SQL alternatif, diagnostic et services facultatifs — 2026-11-03
 
 - `lib/database`, Core et CLI : sélection PostgreSQL/MariaDB/MySQL, dépôts communs,

@@ -64,3 +64,18 @@ la readiness et nécessite une réparation explicite, jamais un effacement autom
 Ne pas exposer secrets, hôtes ou identités dans le diagnostic/les labels métriques.
 NoSQL, S3 et Aion ont été étudiés, leurs fournisseurs restent indisponibles ; ne pas
 les rendre obligatoires ni simuler leur disponibilité dans les futurs prompts.
+
+## Store et distribution (Phase 6)
+
+Lire [DOCS/PHASE_6.md](DOCS/PHASE_6.md). Les catalogues et paquets viennent de
+sources épinglées côté serveur ; ne jamais accepter une URL, clé ou token du navigateur.
+Conserver Ed25519, l'empreinte canonique, l'expiration et le checkpoint SQL anti-rejeu.
+Le Store reste autonome, en lecture seule et sans clé privée. Aucun appel Store ne
+doit devenir nécessaire aux sessions, permissions ou plugins installés.
+La revue est liée à l'administrateur et au paquet ; revérifier droits et catalogue
+avant commit, sans réseau ni sandbox dans une transaction SQL. Les mises à jour
+restent désactivées et les nouveaux droits doivent être accordés explicitement ;
+nettoyer les accords dormants lors d'un changement de déclarations.
+Vérifier `pnpm store:test` et `tests/store.integration.mjs` dans les recettes SQL,
+en plus des vérifications SDK et plugins. Ne pas publier un dépôt Internet, ajouter
+une racine de confiance ou modifier une configuration utilisateur implicitement.

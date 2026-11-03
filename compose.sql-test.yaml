@@ -44,7 +44,7 @@ services:
       [
         sh,
         -c,
-        'node --test tests/sql-engines.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs',
+        'node --test tests/sql-engines.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs && node --test tests/store.integration.mjs',
       ]
 volumes:
   mariadb_data:

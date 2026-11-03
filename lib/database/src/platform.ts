@@ -1,4 +1,4 @@
-import type { PluginArtifact, ModuleEntry } from '@orkobi/contracts';
+import type { PluginArtifact, ModuleEntry, StoreOrigin } from '@orkobi/contracts';
 import { randomUUID } from 'node:crypto';
 import type { SqlPool as Pool, SqlClient as PoolClient } from './connection.js';
 import type {
@@ -74,6 +74,86 @@ export interface StoredIntegrationToken {
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
 export class PlatformTransaction {
+  /** Métadonnées bornées du registre, sans charger le code des paquets du Store. */
+  async storeModules() {
+    return (
+      await this.client.query<{
+        id: string;
+        version: string;
+        digest: string | null;
+        installed: boolean | null;
+      }>(
+        'SELECT m.id,m.version,p.digest,p.installed FROM orkobi_core.modules m LEFT JOIN orkobi_core.plugins p ON p.id=m.id ORDER BY m.id',
+      )
+    ).rows;
+  }
+  async storeCheckpoint(repositoryId: string) {
+    return (
+      await this.client.query<{ sequence: string | number; digest: string; keyId: string }>(
+        'SELECT catalog_sequence AS "sequence",digest,key_id AS "keyId" FROM orkobi_core.store_checkpoints WHERE repository_id=$1 FOR UPDATE',
+        [repositoryId],
+      )
+    ).rows[0];
+  }
+  async saveStoreCheckpoint(repositoryId: string, sequence: number, digest: string, keyId: string) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.store_checkpoints(repository_id,catalog_sequence,digest,key_id) VALUES($1,$2,$3,$4)
+      ON CONFLICT(repository_id) DO UPDATE SET catalog_sequence=EXCLUDED.catalog_sequence,digest=EXCLUDED.digest,key_id=EXCLUDED.key_id,checked_at=now()`,
+      [repositoryId, sequence, digest, keyId],
+    );
+  }
+  async storeOrigin(id: string): Promise<StoreOrigin | undefined> {
+    const row = (
+      await this.client.query<StoreOrigin>(
+        'SELECT repository_id AS "repositoryId",key_id AS "keyId",catalog_sequence AS "catalogSequence",digest,verified FROM orkobi_core.plugin_origins WHERE plugin_id=$1',
+        [id],
+      )
+    ).rows[0];
+    return row ? { ...row, catalogSequence: Number(row.catalogSequence) } : undefined;
+  }
+  async saveStoreOrigin(id: string, origin: StoreOrigin) {
+    await this.client.query(
+      `INSERT INTO orkobi_core.plugin_origins(plugin_id,repository_id,key_id,catalog_sequence,digest,verified) VALUES($1,$2,$3,$4,$5,$6)
+      ON CONFLICT(plugin_id) DO UPDATE SET repository_id=EXCLUDED.repository_id,key_id=EXCLUDED.key_id,catalog_sequence=EXCLUDED.catalog_sequence,digest=EXCLUDED.digest,verified=EXCLUDED.verified`,
+      [
+        id,
+        origin.repositoryId,
+        origin.keyId,
+        origin.catalogSequence,
+        origin.digest,
+        origin.verified,
+      ],
+    );
+  }
+  async clearStoreOrigin(id: string) {
+    await this.client.query(
+      'UPDATE orkobi_core.plugin_origins SET verified=false WHERE plugin_id=$1',
+      [id],
+    );
+  }
+  /** Les nouveaux droits déclarés ne réactivent aucun ancien accord dormant. */
+  async revokeDeclaredPermissions(keys: readonly string[]) {
+    if (!keys.length) return;
+    let cursor: string | undefined;
+    while (true) {
+      const rows = (
+        await this.client.query<{ id: string; permissions: string[] }>(
+          `SELECT id,permissions FROM orkobi_core.roles ${cursor ? 'WHERE id>$1' : ''} ORDER BY id LIMIT 200 FOR UPDATE`,
+          cursor ? [cursor] : [],
+        )
+      ).rows;
+      for (const role of rows) {
+        const permissions = role.permissions.filter((key) => !keys.includes(key));
+        if (permissions.length !== role.permissions.length)
+          await this.client.query('UPDATE orkobi_core.roles SET permissions=$2 WHERE id=$1', [
+            role.id,
+            permissions,
+          ]);
+      }
+      if (rows.length < 200) break;
+      cursor = rows.at(-1)!.id;
+    }
+  }
   async plugin(
     id: string,
   ): Promise<

@@ -10,6 +10,8 @@ ni publication ni déploiement.
 
 | Besoin                                                                 | Référence                                                                    |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Store, sources signées et distribution des plugins                     | [PHASE_6.md](PHASE_6.md)                                                     |
+| Preuves et limites de Phase 6                                          | [REVIEW_PHASE_6.md](REVIEW_PHASE_6.md)                                       |
 | Compatibilité SQL, diagnostic système et consignes Phase 5             | [PHASE_5.md](PHASE_5.md)                                                     |
 | Études NoSQL, S3 et Aion                                               | [SERVICES_ADVANCED.md](SERVICES_ADVANCED.md)                                 |
 | Preuves et limites de Phase 5                                          | [REVIEW_PHASE_5.md](REVIEW_PHASE_5.md)                                       |

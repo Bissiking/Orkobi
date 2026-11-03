@@ -1,3 +1,6 @@
+import { StoreService } from '../store/service.js';
+import { STORE_CONFIG } from '../store/config.js';
+import type { StoreRepositoryConfig } from '@orkobi/store';
 import { RuntimeDiagnostics } from '../diagnostics.js';
 import { PluginManager } from '../plugins/manager.js';
 import { Module } from '@nestjs/common';
@@ -45,6 +48,7 @@ export class CoreServicesModule {
     platform: PlatformConfig = localPlatformConfig,
     jobs: JobConfig = defaultJobConfig,
     cache: CacheConfig = { redisUrl: undefined },
+    store: readonly StoreRepositoryConfig[] = [],
   ): DynamicModule {
     return {
       module: CoreServicesModule,
@@ -60,6 +64,8 @@ export class CoreServicesModule {
         ModuleManager,
         ModuleDataService,
         PluginManager,
+        StoreService,
+        { provide: STORE_CONFIG, useValue: store },
         JobEngine,
         { provide: PLUGIN_JOBS, useExisting: JobEngine },
         JobRegistry,

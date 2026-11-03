@@ -242,6 +242,9 @@ importers:
       '@orkobi/sdk-types':
         specifier: workspace:*
         version: link:../../sdk/types
+      '@orkobi/store':
+        specifier: workspace:*
+        version: link:../../lib/store
       '@redis/client':
         specifier: 6.3.1
         version: 6.3.1
@@ -258,6 +261,19 @@ importers:
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
+
+  apps/store:
+    dependencies:
+      '@orkobi/contracts':
+        specifier: workspace:*
+        version: link:../../lib/contracts
+      '@orkobi/store':
+        specifier: workspace:*
+        version: link:../../lib/store
+    devDependencies:
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
@@ -352,6 +368,16 @@ importers:
       '@orkobi/identity':
         specifier: workspace:*
         version: link:../identity
+
+  lib/store:
+    dependencies:
+      '@orkobi/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
 
   modules/demo:
     dependencies:

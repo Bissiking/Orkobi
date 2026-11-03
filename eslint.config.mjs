@@ -14,6 +14,8 @@ export default tseslint.config(
       'output/playwright/**',
       'output/infrastructure/**',
       'output/sql-engines/**',
+      'output/store/**',
+      'output/store-keys/**',
       'output/plugins/**',
       'output/sdk/**',
       '.impeccable/**',

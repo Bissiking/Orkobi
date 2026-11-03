@@ -240,3 +240,12 @@ PostgreSQL reste le choix de ce guide et de `compose.yaml`. Le
 via `compose.mysql.yaml`, leurs secrets séparés, migrations natives, limites DDL,
 sondes et recette `pnpm sql:test`. Ne pas superposer les fichiers Compose ni
 réutiliser un volume entre moteurs. Changer la variable ne convertit pas les données.
+
+## Store indépendant (Phase 6)
+
+`compose.store.yaml` démarre uniquement le registre en lecture, sans dépendance à
+SQL ou au Core. Les clés privées restent hors serveur ; `pnpm store:test` fournit
+une recette isolée public/privé et efface ses secrets temporaires. Le
+[guide Phase 6](PHASE_6.md) décrit les sources épinglées et le réseau à configurer
+explicitement entre Core et registre. Ne pas remplacer une URL de production ou
+ouvrir un domaine public implicitement.

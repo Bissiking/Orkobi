@@ -159,6 +159,19 @@ export const mysqlMigrations: readonly MySqlMigration[] = Object.freeze([
       ),
     ],
   },
+  {
+    id: '0010_store',
+    statements: [
+      table(
+        'orkobi_core__store_checkpoints',
+        `repository_id varchar(40) CHARACTER SET ascii PRIMARY KEY,catalog_sequence bigint NOT NULL,digest char(64) NOT NULL,key_id char(64) NOT NULL,checked_at ${created},CHECK(catalog_sequence>0)`,
+      ),
+      table(
+        'orkobi_core__plugin_origins',
+        `plugin_id ${key} PRIMARY KEY,repository_id varchar(40) CHARACTER SET ascii NOT NULL,key_id char(64) NOT NULL,catalog_sequence bigint NOT NULL,digest char(64) NOT NULL,verified boolean NOT NULL DEFAULT true,FOREIGN KEY(plugin_id) REFERENCES orkobi_core__plugins(id)`,
+      ),
+    ],
+  },
 ]);
 export const mysqlChecksum = (migration: MySqlMigration) =>
   createHash('sha256').update(JSON.stringify(migration.statements)).digest('hex');

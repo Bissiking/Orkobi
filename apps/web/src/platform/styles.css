@@ -471,3 +471,62 @@
 .diagnostic-panel {
   margin-top: 24px;
 }
+
+.store-extension {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 220px;
+  max-width: 36ch;
+}
+.store-extension > svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.store-extension p {
+  margin-bottom: 0;
+}
+.store-review code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 620px) {
+  .admin-tabs {
+    flex-wrap: wrap;
+    column-gap: 16px;
+    row-gap: 0;
+  }
+  .table-scroll .store-catalog {
+    min-width: 0;
+    width: 100%;
+  }
+  .store-catalog thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .store-catalog tbody,
+  .store-catalog tr,
+  .store-catalog td {
+    display: block;
+  }
+  .store-catalog tr {
+    padding-block: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .store-catalog td {
+    max-width: none;
+    border: 0;
+    padding: 6px 0;
+  }
+  .store-catalog td[data-label]::before {
+    content: attr(data-label) ' : ';
+    font-weight: 700;
+  }
+  .store-extension {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}

@@ -91,3 +91,15 @@ export type {
   PluginMigration,
   PluginIcon,
 } from './plugins.js';
+
+export { parseVersion, satisfiesRange } from './version-range.js';
+export type {
+  StoreSqlEngine,
+  StoreRelease,
+  StoreCatalog,
+  SignedStoreCatalog,
+  StoreOrigin,
+  StoreReleaseSummary,
+  StoreRepositorySummary,
+  StoreReview,
+} from './store.js';

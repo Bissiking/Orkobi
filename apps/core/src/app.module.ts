@@ -1,3 +1,4 @@
+import type { StoreRepositoryConfig } from '@orkobi/store';
 import { Module } from '@nestjs/common';
 import type { DynamicModule } from '@nestjs/common';
 import type { PostgreSqlConfig } from '@orkobi/database';
@@ -15,10 +16,11 @@ export class AppModule {
     platform: PlatformConfig = localPlatformConfig,
     jobs?: JobConfig,
     cache?: CacheConfig,
+    store: readonly StoreRepositoryConfig[] = [],
   ): DynamicModule {
     return {
       module: AppModule,
-      imports: [CoreServicesModule.register(database, platform, jobs, cache)],
+      imports: [CoreServicesModule.register(database, platform, jobs, cache, store)],
     };
   }
 }

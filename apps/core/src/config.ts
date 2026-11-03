@@ -1,3 +1,5 @@
+import { loadStoreConfig } from './store/config.js';
+import type { StoreRepositoryConfig } from '@orkobi/store';
 import { DatabaseConfigurationError, loadDatabaseConfig } from '@orkobi/database';
 import type { PostgreSqlConfig } from '@orkobi/database';
 import type { PlatformConfig } from './platform/config.js';
@@ -16,6 +18,7 @@ export interface CoreConfig {
   readonly platform?: PlatformConfig;
   readonly jobs?: JobConfig;
   readonly cache?: CacheConfig;
+  readonly store?: readonly StoreRepositoryConfig[];
 }
 
 export class ConfigurationError extends Error {}
@@ -106,6 +109,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
   if (env.INTERNAL_TOKEN && !/^[a-f0-9]{64}$/u.test(env.INTERNAL_TOKEN)) {
     throw new ConfigurationError('INTERNAL_TOKEN doit contenir 64 caractères hexadécimaux.');
   }
+  let store: readonly StoreRepositoryConfig[];
+  try {
+    store = loadStoreConfig(env);
+  } catch {
+    throw new ConfigurationError('Configuration des dépôts Store invalide.');
+  }
   const oidc = loadOidcConfig(env);
   let jobs: JobConfig | undefined, cache: CacheConfig | undefined;
   try {
@@ -140,6 +149,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): CoreConfig {
     host,
     port: Number(port),
     openApiEnabled: openApi === 'true',
+    ...(store.length ? { store } : {}),
     ...(jobs ? { jobs } : {}),
     ...(cache ? { cache } : {}),
     ...(database ? { database } : {}),

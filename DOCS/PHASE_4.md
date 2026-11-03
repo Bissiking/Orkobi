@@ -8,7 +8,8 @@ le navigateur de l’utilisateur ou dans le moteur JavaScript du Core.
 
 La version produit et celle des packages restent `0.2.0-EXP`. Les contrats sont
 exportés et distribuables sous forme d’archives locales. **Aucune publication sur
-un registre npm, aucun Store et aucun déploiement ne sont effectués.** Le canal,
+un registre npm ni aucun déploiement ne sont effectués. Le [Store de Phase 6](PHASE_6.md)
+complète maintenant la distribution locale décrite ici.** Le canal,
 le registre et la publication publique restent une opération distincte.
 
 ## Créer son premier plugin
@@ -121,7 +122,8 @@ faire l’objet d’un contrat distinct et de permissions explicites.
 6. Le lien **Ouvrir** du module rejoint `/plugins/<id>/<page?>`.
 
 Le hash prouve l’intégrité de ce qui a été revu ; **il n’authentifie pas l’auteur**.
-Aucun mécanisme de signature de distributeur ou Store n’est annoncé ici.
+La [Phase 6](PHASE_6.md) ajoute une signature de distributeur pour les paquets
+issus d’un Store configuré. Un fichier chargé manuellement reste hors de cette preuve.
 
 ## Mettre à jour ou retirer
 

@@ -44,6 +44,7 @@ export class BffPlatformController {
       !/^(?:plugins(?:\/[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/actions\/[a-z][a-z0-9_]*)?|admin\/plugins(?:\/(?:validate|install|[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/(?:remove|grants)))?)$/u.test(
         path,
       ) &&
+      !/^admin\/store(?:\/(?:review|install))?$/u.test(path) &&
       !pathPattern.test(path) &&
       !/^(?:jobs(?:\/[a-f0-9-]{36}\/(?:retry|cancel))?|admin\/runtime)$/u.test(path)
     )
@@ -76,9 +77,11 @@ export class BffPlatformController {
         headers,
         ...(method === 'POST' ? { body: JSON.stringify(request.body) } : {}),
         signal: AbortSignal.timeout(
-          path.startsWith('oidc/')
-            ? Math.max(20000, this.config.coreTimeoutMs)
-            : this.config.coreTimeoutMs,
+          path.startsWith('admin/store')
+            ? Math.max(15000, this.config.coreTimeoutMs)
+            : path.startsWith('oidc/')
+              ? Math.max(20000, this.config.coreTimeoutMs)
+              : this.config.coreTimeoutMs,
         ),
         redirect: 'error',
       });
@@ -92,7 +95,7 @@ export class BffPlatformController {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
-        if (size > 524288) {
+        if (size > (path === 'admin/store' ? 2097152 : 524288)) {
           await reader.cancel();
           throw new Error();
         }

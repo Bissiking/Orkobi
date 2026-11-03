@@ -13,7 +13,7 @@ import { coreVersion } from './version.js';
 
 export async function createApplication(config: CoreConfig, logger = new JsonLogger()) {
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.register(config.database, config.platform, config.jobs, config.cache),
+    AppModule.register(config.database, config.platform, config.jobs, config.cache, config.store),
     {
       logger,
       abortOnError: false,

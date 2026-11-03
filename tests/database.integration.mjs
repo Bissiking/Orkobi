@@ -56,7 +56,7 @@ test('PostgreSQL réel : migrations, concurrence, rollback, dérive et droits', 
         applyMigrations(client, [
           ...migrations,
           {
-            id: '0010_rollback_probe',
+            id: '0011_rollback_probe',
             sql: 'CREATE TABLE orkobi_core.rollback_probe (id integer); SELECT absent_column;',
           },
         ]),

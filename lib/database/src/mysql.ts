@@ -14,6 +14,7 @@ const booleans = new Set([
   'platformAdmin',
   'enabled',
   'installed',
+  'verified',
   'current',
   'locked',
   'allowed',

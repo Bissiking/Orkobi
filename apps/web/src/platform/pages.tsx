@@ -1,3 +1,4 @@
+import { StoreAdmin } from './store';
 import { PluginsAdmin } from './plugins';
 import {
   AccountSecurity,
@@ -707,22 +708,31 @@ export function AdministrationPage() {
   return (
     <>
       <PlatformHeading title={t.administration} description={t.adminHelp} />
-      <nav className="platform-tabs" aria-label={t.administration}>
-        {(['users', 'organizations', 'integrations', 'plugins', 'audit'] as const).map((key) => (
-          <button
-            key={key}
-            aria-current={tab === key ? 'page' : undefined}
-            className={tab === key ? 'active' : ''}
-            onClick={() => setParams({ tab: key })}
-          >
-            {key === 'plugins' ? 'Extensions' : key === 'integrations' ? a.integrations : t[key]}
-          </button>
-        ))}
+      <nav className="platform-tabs admin-tabs" aria-label={t.administration}>
+        {(['users', 'organizations', 'integrations', 'plugins', 'store', 'audit'] as const).map(
+          (key) => (
+            <button
+              key={key}
+              aria-current={tab === key ? 'page' : undefined}
+              className={tab === key ? 'active' : ''}
+              onClick={() => setParams({ tab: key })}
+            >
+              {key === 'store'
+                ? 'Store'
+                : key === 'plugins'
+                  ? 'Extensions'
+                  : key === 'integrations'
+                    ? a.integrations
+                    : t[key]}
+            </button>
+          ),
+        )}
       </nav>
       {tab === 'users' && <UsersAdmin />}
       {tab === 'organizations' && <OrganizationsAdmin />}
       {tab === 'integrations' && <IntegrationsAdmin />}
       {tab === 'plugins' && <PluginsAdmin />}
+      {tab === 'store' && <StoreAdmin />}
       {tab === 'audit' && <AuditPanel path="admin/audit" />}
       <p className="list-note">
         {t.limit} · {t.version} {__APP_VERSION__}

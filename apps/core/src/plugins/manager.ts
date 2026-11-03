@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { createId, isPluginArtifact } from '@orkobi/contracts';
-import type { PluginArtifact, OrganizationContext } from '@orkobi/contracts';
+import type { PluginArtifact, OrganizationContext, StoreOrigin } from '@orkobi/contracts';
 import type { PlatformTransaction } from '@orkobi/database';
 import { CoreDatabase } from '../database.service.js';
 import { ModuleDataService } from '../modules/data.js';
@@ -21,17 +21,8 @@ import { PLUGIN_JOBS } from '../jobs/config.js';
 import type { TaskSignal } from '@orkobi/sdk-core';
 import { runPlugin, PluginExecutionError } from './sandbox.js';
 
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (value && typeof value === 'object')
-    return `{${Object.keys(value)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`)
-      .join(',')}}`;
-  return JSON.stringify(value);
-}
-export const pluginDigest = (artifact: PluginArtifact) =>
-  createHash('sha256').update(canonical(artifact)).digest('hex');
+import { canonical, artifactDigest } from '@orkobi/store';
+export const pluginDigest = artifactDigest;
 const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException();
   return value as Record<string, unknown>;
@@ -100,7 +91,12 @@ export class PluginManager {
       this.executing--;
     }
   }
-  async install(repo: PlatformTransaction, userId: string, body: Record<string, unknown>) {
+  async install(
+    repo: PlatformTransaction,
+    userId: string,
+    body: Record<string, unknown>,
+    origin?: StoreOrigin,
+  ) {
     const artifact = this.artifact(body.artifact),
       manifest = artifact.manifest,
       module = manifest.module,
@@ -168,8 +164,18 @@ export class PluginManager {
       )
         throw new ConflictException();
     }
+    if (previous) {
+      const old = previous.artifact.manifest.module.permissions.map((p) => p.key);
+      const next = module.permissions.map((p) => p.key);
+      await repo.revokeDeclaredPermissions([
+        ...next.filter((key) => !old.includes(key)),
+        ...old.filter((key) => !next.includes(key)),
+      ]);
+    }
     await repo.registerModule(module.id, module.version, module.name, module);
     await repo.savePlugin(artifact, digest, userId);
+    if (origin) await repo.saveStoreOrigin(module.id, origin);
+    else await repo.clearStoreOrigin(module.id);
     await repo.audit(
       randomUUID(),
       userId,

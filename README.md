@@ -26,6 +26,11 @@ La [Phase 5](DOCS/PHASE_5.md) ajoute MariaDB 11.4 et MySQL 8.4 comme alternative
 Les [études NoSQL, S3 et Aion](DOCS/SERVICES_ADVANCED.md) précisent leur périmètre
 facultatif ; ces trois intégrations restent non implémentées.
 
+La [Phase 6](DOCS/PHASE_6.md) fournit un Store indépendant, des catalogues signés,
+les dépôts privés et la revue des installations/mises à jour. Les plugins installés
+fonctionnent sans Store accessible. L’ouverture d’un registre Internet reste une
+opération de déploiement distincte.
+
 Pour développer un plugin, commencer par [le guide Phase 4](DOCS/PHASE_4.md) et
 `examples/plugin-demo/`. `pnpm plugin:build`, `pnpm plugin:validate` et
 `pnpm sdk:test` construisent et vérifient les artefacts locaux sans publication distante.
