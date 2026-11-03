@@ -1,0 +1,146 @@
+import { publicBusinessDetails } from '@orkobi/contracts';
+import {
+  Controller,
+  Get,
+  Post,
+  Inject,
+  Req,
+  Res,
+  ForbiddenException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
+import type { BffConfig } from './config.js';
+
+export const BFF_PLATFORM_CONFIG = Symbol('BFF_PLATFORM_CONFIG');
+const moduleId = '[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+';
+const pathPattern = new RegExp(
+  `^(?:status|session|setup|login|logout|profile(?:/password)?|mfa/(?:status|enroll|confirm|disable|login)|oidc(?:/(?:status|start|callback|unlink))?|sessions(?:/revoke)?|capabilities|modules(?:/(?:${moduleId})(?:/(?:activate|deactivate|data(?:/[a-z][a-z0-9_]*(?:/[a-f0-9-]{36}(?:/delete)?)?)?))?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:select|members|roles|audit|integrations))?)?|admin/(?:users(?:/[a-f0-9-]{36}(?:/password)?)?|organizations(?:/[a-f0-9-]{36}(?:/(?:members|roles))?)?|modules(?:/${moduleId})?|integration-tokens(?:/[a-f0-9-]{36}/revoke)?|integrations|audit))$`,
+  'u',
+);
+
+@Controller('api/platform')
+export class BffPlatformController {
+  constructor(@Inject(BFF_PLATFORM_CONFIG) private readonly config: BffConfig) {}
+  @Get('{*path}')
+  read(@Req() request: Request, @Res() response: Response) {
+    return this.forward('GET', request, response);
+  }
+  @Post('{*path}')
+  write(@Req() request: Request, @Res() response: Response) {
+    const origin = this.config.publicOrigin ?? `http://${request.headers.host}`;
+    if (
+      request.headers.origin !== origin ||
+      request.headers['x-orkobi-request'] !== '1' ||
+      !request.is('application/json') ||
+      request.headers['sec-fetch-site'] === 'cross-site'
+    )
+      throw new ForbiddenException();
+    return this.forward('POST', request, response);
+  }
+  private async forward(method: 'GET' | 'POST', request: Request, response: Response) {
+    const path = request.path.slice('/api/platform/'.length);
+    if (
+      !/^(?:plugins(?:\/[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/actions\/[a-z][a-z0-9_]*)?|admin\/plugins(?:\/(?:validate|install|[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+\/(?:remove|grants)))?)$/u.test(
+        path,
+      ) &&
+      !/^admin\/store(?:\/(?:review|install))?$/u.test(path) &&
+      !/^(?:business(?:\/[a-z]+(?:\/[a-z_]+(?:\/[a-f0-9-]{36}(?:\/[a-z_]+)?)?)?)?|admin\/business\/grants)$/u.test(
+        path,
+      ) &&
+      !pathPattern.test(path) &&
+      !/^(?:jobs(?:\/[a-f0-9-]{36}\/(?:retry|cancel))?|admin\/runtime)$/u.test(path)
+    )
+      throw new NotFoundException();
+    const headers: Record<string, string> = {
+      accept: 'application/json',
+      ...(this.config.internalToken ? { 'x-orkobi-internal': this.config.internalToken } : {}),
+    };
+    if (typeof request.headers['user-agent'] === 'string')
+      headers['user-agent'] = request.headers['user-agent'].slice(0, 200);
+    // Liste fermée : aucun Authorization, cookie tiers, Host ou X-Forwarded-* utilisateur.
+    const sessionCookies = (request.headers.cookie ?? '')
+      .split(';')
+      .map((cookie) => cookie.trim())
+      .filter((cookie) =>
+        /^(?:orkobi\.local|__Host-orkobi|orkobi\.oidc|__Host-orkobi-oidc)=[a-f0-9]{64}$/u.test(
+          cookie,
+        ),
+      );
+    if (sessionCookies.length) headers.cookie = sessionCookies.join('; ');
+    if (method === 'POST') {
+      headers['content-type'] = 'application/json';
+      headers['x-orkobi-request'] = '1';
+      if (typeof request.headers['x-csrf-token'] === 'string')
+        headers['x-csrf-token'] = request.headers['x-csrf-token'];
+    }
+    try {
+      const target = new URL(`/platform/${path}`, this.config.coreUrl);
+      if (method === 'GET' && path.startsWith('business/') && request.query.cursor !== undefined) {
+        if (
+          typeof request.query.cursor !== 'string' ||
+          !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/u.test(request.query.cursor)
+        ) {
+          const { BadRequestException } = await import('@nestjs/common');
+          throw new BadRequestException();
+        }
+        target.searchParams.set('cursor', request.query.cursor);
+      }
+      const upstream = await fetch(target, {
+        method,
+        headers,
+        ...(method === 'POST' ? { body: JSON.stringify(request.body) } : {}),
+        signal: AbortSignal.timeout(
+          path.startsWith('admin/store')
+            ? Math.max(15000, this.config.coreTimeoutMs)
+            : path.startsWith('oidc/')
+              ? Math.max(20000, this.config.coreTimeoutMs)
+              : this.config.coreTimeoutMs,
+        ),
+        redirect: 'error',
+      });
+      if (upstream.headers.get('content-type')?.split(';')[0] !== 'application/json')
+        throw new Error();
+      const reader = upstream.body?.getReader();
+      if (!reader) throw new Error();
+      const chunks: Uint8Array[] = [];
+      let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.length;
+        if (size > (path === 'admin/store' ? 2097152 : 524288)) {
+          await reader.cancel();
+          throw new Error();
+        }
+        chunks.push(value);
+      }
+      const payload: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      if (!upstream.ok) {
+        // Le BFF conserve sa propre corrélation et son filtre d'erreurs expurgé.
+        const { HttpException } = await import('@nestjs/common');
+        throw new HttpException(
+          (path.startsWith('business') &&
+          payload &&
+          typeof payload === 'object' &&
+          'error' in payload
+            ? publicBusinessDetails(payload.error)
+            : null) ?? 'Opération refusée.',
+          [400, 401, 403, 404, 409, 429, 503].includes(upstream.status) ? upstream.status : 503,
+        );
+      }
+      const cookies = upstream.headers
+        .getSetCookie()
+        .filter((cookie) =>
+          /^(?:orkobi\.local|__Host-orkobi|orkobi\.oidc|__Host-orkobi-oidc)=/u.test(cookie),
+        );
+      if (cookies.length) response.setHeader('set-cookie', cookies);
+      response.status(upstream.status).json(payload);
+    } catch (error) {
+      const { HttpException } = await import('@nestjs/common');
+      if (error instanceof HttpException) throw error;
+      throw new ServiceUnavailableException();
+    }
+  }
+}

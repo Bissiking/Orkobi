@@ -3,7 +3,7 @@
 # Orkobi — Roadmap de développement
 
 **Slogan :** Orkobi s'adapte à vous.  
-**Version cible :** 0.1.0-EXP  
+**Version cible :** 0.3.0-dev.1<br>
 **Statut :** Développement initial  
 **Architecture :** ERP modulaire, multi-organisation  
 **Projet :** Indépendant de LUMA
@@ -44,7 +44,7 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 - [x] Configurer ESLint et Prettier.
 - [x] Ajouter `.gitignore` et `.env.example`.
 - [x] Définir les conventions de développement des bibliothèques et du SDK.
-- [x] Préparer les scripts communs de développement et de test (Core démarrable via `pnpm dev`).
+- [x] Préparer les scripts communs de développement et de test (pile démarrable via `pnpm dev`, Core seul via `pnpm dev:core`).
 
 ## 0.2 — Backend Core
 
@@ -58,24 +58,24 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 0.3 — Frontend et BFF
 
-- [ ] Initialiser React avec Vite.
-- [ ] Configurer le routage frontend.
-- [ ] Créer le BFF NestJS.
-- [ ] Définir le contrat BFF ↔ Core.
-- [ ] Configurer les échanges et la gestion des erreurs.
-- [ ] Créer le layout principal Orkobi.
-- [ ] Préparer les thèmes clair et sombre.
-- [ ] Configurer l'internationalisation FR/EN.
+- [x] Initialiser React avec Vite.
+- [x] Configurer le routage frontend.
+- [x] Créer le BFF NestJS.
+- [x] Définir le contrat BFF ↔ Core.
+- [x] Configurer les échanges et la gestion des erreurs.
+- [x] Créer le layout principal Orkobi.
+- [x] Préparer les thèmes clair et sombre.
+- [x] Configurer l'internationalisation FR/EN.
 
 ## 0.4 — Infrastructure
 
-- [ ] Configurer PostgreSQL.
-- [ ] Créer le système de migrations.
-- [ ] Configurer Docker Compose.
-- [ ] Configurer les volumes persistants.
-- [ ] Ajouter les contrôles de santé des services.
-- [ ] Vérifier le redémarrage complet de l'environnement.
-- [ ] Documenter la procédure d'installation.
+- [x] Configurer PostgreSQL.
+- [x] Créer le système de migrations.
+- [x] Configurer Docker Compose.
+- [x] Configurer les volumes persistants.
+- [x] Ajouter les contrôles de santé des services.
+- [x] Vérifier le redémarrage complet de l'environnement.
+- [x] Documenter la procédure d'installation.
 
 ---
 
@@ -85,109 +85,118 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 1.1 — Installation initiale
 
-- [ ] Détecter si une instance est déjà initialisée.
-- [ ] Créer un assistant d'installation.
-- [ ] Vérifier la connexion SQL.
-- [ ] Créer le premier administrateur plateforme.
-- [ ] Bloquer les nouvelles initialisations après installation.
-- [ ] Journaliser les opérations sensibles.
+- [x] Détecter si une instance est déjà initialisée.
+- [x] Créer un assistant d'installation.
+- [x] Vérifier la connexion SQL.
+- [x] Créer le premier administrateur plateforme.
+- [x] Bloquer les nouvelles initialisations après installation.
+- [x] Journaliser les opérations sensibles.
 
 ## 1.2 — Identity Manager
 
-- [ ] Créer les identifiants uniques des utilisateurs.
-- [ ] Implémenter l'authentification locale.
-- [ ] Sécuriser le stockage des mots de passe.
-- [ ] Implémenter les sessions serveur.
-- [ ] Configurer les cookies sécurisés et protections CSRF.
-- [ ] Implémenter connexion et déconnexion.
-- [ ] Implémenter l'expiration et la révocation des sessions.
-- [ ] Créer la page Profil.
-- [ ] Préparer le modèle des identités OIDC externes.
+- [x] Créer les identifiants uniques des utilisateurs.
+- [x] Implémenter l'authentification locale.
+- [x] Sécuriser le stockage des mots de passe.
+- [x] Implémenter les sessions serveur.
+- [x] Configurer les cookies sécurisés et protections CSRF.
+- [x] Implémenter connexion et déconnexion.
+- [x] Implémenter l'expiration et la révocation des sessions.
+- [x] Créer la page Profil.
+- [x] Préparer le modèle des identités OIDC externes.
 
 ## 1.3 — Organization Manager
 
-- [ ] Créer les identifiants uniques d'organisation.
-- [ ] Permettre la création d'une entreprise ou association.
-- [ ] Implémenter les appartenances utilisateur/organisation.
-- [ ] Permettre plusieurs organisations par utilisateur.
-- [ ] Gérer la sélection de l'organisation active.
-- [ ] Séparer les paramètres de chaque organisation.
-- [ ] Vérifier l'isolation des données entre organisations.
+- [x] Créer les identifiants uniques d'organisation.
+- [x] Permettre la création d'une entreprise ou association.
+- [x] Implémenter les appartenances utilisateur/organisation.
+- [x] Permettre plusieurs organisations par utilisateur.
+- [x] Gérer la sélection de l'organisation active.
+- [x] Séparer les paramètres de chaque organisation.
+- [x] Vérifier l'isolation des données entre organisations.
 
 ## 1.4 — Security Manager
 
-- [ ] Créer les rôles et permissions.
-- [ ] Séparer administrateur plateforme et administrateur organisation.
-- [ ] Implémenter les contrôles d'accès côté Core.
-- [ ] Refuser par défaut les opérations non autorisées.
-- [ ] Implémenter l'audit des actions sensibles.
-- [ ] Protéger les endpoints administratifs.
-- [ ] Tester les accès inter-organisations non autorisés.
+- [x] Créer les rôles et permissions.
+- [x] Séparer administrateur plateforme et administrateur organisation.
+- [x] Implémenter les contrôles d'accès côté Core.
+- [x] Refuser par défaut les opérations non autorisées.
+- [x] Implémenter l'audit des actions sensibles.
+- [x] Protéger les endpoints administratifs.
+- [x] Tester les accès inter-organisations non autorisés.
 
 ## 1.5 — Administration
 
-- [ ] Créer le dashboard administratif minimal.
-- [ ] Gérer les utilisateurs.
-- [ ] Gérer les organisations.
-- [ ] Gérer les appartenances et rôles.
-- [ ] Afficher l'état des services.
-- [ ] Afficher la version d'Orkobi.
-- [ ] Consulter les journaux d'audit.
+- [x] Créer le dashboard administratif minimal.
+- [x] Gérer les utilisateurs.
+- [x] Gérer les organisations.
+- [x] Gérer les appartenances et rôles.
+- [x] Afficher l'état des services.
+- [x] Afficher la version d'Orkobi.
+- [x] Consulter les journaux d'audit.
 
 ### Critères de validation V0.1.0
 
-- [ ] Installation initiale réussie.
-- [ ] Administrateur local fonctionnel.
-- [ ] Connexion et déconnexion fonctionnelles.
-- [ ] Création de deux organisations.
-- [ ] Gestion des utilisateurs et de leurs appartenances.
-- [ ] Isolation des organisations vérifiée par tests.
-- [ ] Redémarrage sans perte de données.
-- [ ] Tests automatisés essentiels réussis.
+- [x] Installation initiale réussie.
+- [x] Administrateur local fonctionnel.
+- [x] Connexion et déconnexion fonctionnelles.
+- [x] Création de deux organisations.
+- [x] Gestion des utilisateurs et de leurs appartenances.
+- [x] Isolation des organisations vérifiée par tests.
+- [x] Redémarrage sans perte de données.
+- [x] Tests automatisés essentiels réussis.
 
 ---
 
-# Phase 2 — Orkobi Core 0.2.0
+# Phase 2 — Orkobi Core 0.2.0-EXP
 
 **Objectif :** poser les bases du fonctionnement modulaire.
 
 ## 2.1 — Module Manager
 
-- [ ] Définir le manifeste standard des modules.
-- [ ] Créer un registre central des modules.
-- [ ] Déclarer les dépendances entre modules.
-- [ ] Gérer les versions compatibles.
-- [ ] Gérer activation et désactivation.
-- [ ] Permettre l'activation par organisation.
-- [ ] Bloquer la désactivation en cas de dépendance critique.
-- [ ] Conserver les données lors d'une désactivation.
+- [x] Définir le manifeste standard des modules.
+- [x] Créer un registre central des modules.
+- [x] Déclarer les dépendances entre modules.
+- [x] Gérer les versions compatibles.
+- [x] Gérer activation et désactivation.
+- [x] Permettre l'activation par organisation.
+- [x] Bloquer la désactivation en cas de dépendance critique.
+- [x] Conserver les données lors d'une désactivation.
 
 ## 2.2 — Capability Registry
 
-- [ ] Créer le catalogue officiel des capabilities.
-- [ ] Distinguer capabilities, exigences et permissions.
-- [ ] Définir les capacités obligatoires et facultatives.
-- [ ] Détecter les capacités disponibles.
-- [ ] Gérer les fonctionnalités limitées.
-- [ ] Documenter les contrats du Core.
+- [x] Créer le catalogue officiel des capabilities.
+- [x] Distinguer capabilities, exigences et permissions.
+- [x] Définir les capacités obligatoires et facultatives.
+- [x] Détecter les capacités disponibles.
+- [x] Gérer les fonctionnalités limitées.
+- [x] Documenter les contrats du Core.
 
 ## 2.3 — Data Access Manager
 
-- [ ] Créer les abstractions d'accès SQL du SDK.
-- [ ] Contrôler les accès aux données par organisation.
-- [ ] Définir la propriété des ressources par module.
-- [ ] Préparer la déclaration des tables.
-- [ ] Préparer les migrations propres aux modules.
-- [ ] Refuser les opérations non autorisées.
+- [x] Créer les abstractions d'accès SQL du SDK.
+- [x] Contrôler les accès aux données par organisation.
+- [x] Définir la propriété des ressources par module.
+- [x] Préparer la déclaration des tables.
+- [x] Préparer les migrations propres aux modules.
+- [x] Refuser les opérations non autorisées.
 
 ## 2.4 — Premier module officiel
 
-- [ ] Créer un module de démonstration.
-- [ ] Déclarer son manifeste.
-- [ ] Déclarer ses permissions.
-- [ ] Créer ses ressources via le Core.
-- [ ] Intégrer ses pages au frontend.
-- [ ] Tester activation, désactivation et conservation des données.
+- [x] Créer un module de démonstration.
+- [x] Déclarer son manifeste.
+- [x] Déclarer ses permissions.
+- [x] Créer ses ressources via le Core.
+- [x] Intégrer ses pages au frontend.
+- [x] Tester activation, désactivation et conservation des données.
+
+### Critères de validation V0.2.0-EXP
+
+- [x] Manifeste démo valide et synchronisé au démarrage des opérations modules.
+- [x] Activation plateforme puis activation par organisation avec contrôle des dépendances.
+- [x] Données de module isolées par organisation et conservées après désactivation.
+- [x] Audit des opérations de module.
+- [x] Interface modules et notes de démonstration fonctionnelles.
+- [x] Tests unitaires et d'intégration réussis.
 
 ---
 
@@ -197,39 +206,50 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 ## 3.1 — Authentification avancée
 
-- [ ] Ajouter les fournisseurs OIDC externes.
-- [ ] Permettre la liaison des identités.
-- [ ] Ajouter la MFA locale.
-- [ ] Prévoir les mécanismes de récupération sécurisés.
-- [ ] Gérer les sessions actives depuis le profil.
+- [x] Ajouter les fournisseurs OIDC externes.
+- [x] Permettre la liaison des identités.
+- [x] Ajouter la MFA locale.
+- [x] Prévoir les mécanismes de récupération sécurisés.
+- [x] Gérer les sessions actives depuis le profil.
 
 ## 3.2 — API Access Manager
 
-- [ ] Séparer les API internes des API d'intégration.
-- [ ] Autoriser la désactivation globale des intégrations.
-- [ ] Ajouter les restrictions par organisation.
-- [ ] Gérer les identités et jetons d'intégration.
-- [ ] Définir scopes, expiration et révocation.
-- [ ] Journaliser les appels sensibles.
-- [ ] Sécuriser l'authentification BFF ↔ Core.
+- [x] Séparer les API internes des API d'intégration.
+- [x] Autoriser la désactivation globale des intégrations.
+- [x] Ajouter les restrictions par organisation.
+- [x] Gérer les identités et jetons d'intégration.
+- [x] Définir scopes, expiration et révocation.
+- [x] Journaliser les appels sensibles.
+- [x] Sécuriser l'authentification BFF ↔ Core.
+
+## 3.2-BIS — Erreurs et composants partagés
+
+- [x] Unifier les filtres d'erreurs HTTP du Core et du BFF (`publicHttpError`).
+- [x] Capturer les exceptions et rejets non interceptés côté interface.
+- [x] Centraliser le mapping code d'erreur → message affiché.
+- [x] Ajouter une bannière d'erreurs activable en développement.
+- [x] Créer les composants réutilisables `Button`, `Field`, `Notice` (`@orkobi/sdk-ui`, source `sdk/ui/`).
+- [x] Migrer les usages de boutons et messages du frontend.
+- [x] Fournir notre propre kit UI/CSS natif, sans framework CSS externe, intégré au SDK.
+- [x] Documenter les composants, thèmes, icônes Papicons et consignes pour les futurs prompts et IA.
 
 ## 3.3 — Services optionnels
 
-- [ ] Ajouter un adaptateur Redis.
-- [ ] Gérer le cache avec ou sans Redis.
-- [ ] Préparer un système de files de tâches.
-- [ ] Mesurer les performances et identifier les besoins d'optimisation.
+- [x] Ajouter un adaptateur Redis.
+- [x] Gérer le cache avec ou sans Redis.
+- [x] Préparer un système de files de tâches.
+- [x] Mesurer les performances et identifier les besoins d'optimisation.
 
 ## 3.4 — Job Engine
 
-- [ ] Créer le planificateur interne.
-- [ ] Permettre aux modules de déclarer leurs tâches.
-- [ ] Ajouter les tâches ponctuelles et récurrentes.
-- [ ] Contrôler les permissions et l'organisation d'exécution.
-- [ ] Gérer erreurs, retries et timeouts.
-- [ ] Éviter les exécutions concurrentes involontaires.
-- [ ] Journaliser les exécutions.
-- [ ] Suspendre les tâches lors de la désactivation d'un module.
+- [x] Créer le planificateur interne.
+- [x] Permettre aux modules de déclarer leurs tâches.
+- [x] Ajouter les tâches ponctuelles et récurrentes.
+- [x] Contrôler les permissions et l'organisation d'exécution.
+- [x] Gérer erreurs, retries et timeouts.
+- [x] Éviter les exécutions concurrentes involontaires.
+- [x] Journaliser les exécutions.
+- [x] Suspendre les tâches lors de la désactivation d'un module.
 
 ---
 
@@ -237,18 +257,18 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** permettre le développement d'extensions externes contrôlées.
 
-- [ ] Publier les contrats du SDK.
-- [ ] Fournir une documentation développeur.
-- [ ] Définir le manifeste des plugins tiers.
-- [ ] Déclarer tables, migrations et ressources.
-- [ ] Déclarer permissions et capabilities.
-- [ ] Déclarer dépendances et versions compatibles.
-- [ ] Mettre en place l'isolation d'exécution des plugins.
-- [ ] Contrôler tous les accès aux ressources sensibles.
-- [ ] Préparer un validateur de plugins.
-- [ ] Définir les règles de compatibilité frontend.
-- [ ] Implémenter installation et retrait sécurisés.
-- [ ] Tester un plugin externe de démonstration.
+- [x] Distribuer les contrats du SDK dans les exports et archives locales versionnées (registre externe distinct).
+- [x] Fournir une documentation développeur.
+- [x] Définir le manifeste des plugins tiers.
+- [x] Déclarer tables, migrations et ressources.
+- [x] Déclarer permissions et capabilities.
+- [x] Déclarer dépendances et versions compatibles.
+- [x] Mettre en place l'isolation d'exécution des plugins.
+- [x] Contrôler tous les accès aux ressources sensibles.
+- [x] Préparer un validateur de plugins.
+- [x] Définir les règles de compatibilité frontend.
+- [x] Implémenter installation et retrait sécurisés.
+- [x] Tester un plugin externe de démonstration.
 
 ---
 
@@ -256,23 +276,27 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** étendre les capacités sans compromettre le fonctionnement minimal.
 
+Guide : [PHASE_5.md](PHASE_5.md), [preuves de revue](REVIEW_PHASE_5.md).
+Les cases « étudier/évaluer » renvoient aux [décisions de services](SERVICES_ADVANCED.md) ;
+les fournisseurs NoSQL, S3 et Aion restent non implémentés et indisponibles.
+
 ## Moteurs SQL
 
-- [ ] Développer l'adaptateur MariaDB.
-- [ ] Développer l'adaptateur MySQL.
-- [ ] Tester les migrations sur chaque moteur.
-- [ ] Détecter les capabilities propres aux moteurs.
-- [ ] Afficher les limitations dans l'administration.
-- [ ] Refuser les modules dont les exigences obligatoires sont absentes.
+- [x] Développer l'adaptateur MariaDB.
+- [x] Développer l'adaptateur MySQL.
+- [x] Tester les migrations sur chaque moteur.
+- [x] Détecter les capabilities propres aux moteurs.
+- [x] Afficher les limitations dans l'administration.
+- [x] Refuser les modules dont les exigences obligatoires sont absentes.
 
 ## Autres services
 
-- [ ] Étudier l'intérêt réel d'un moteur NoSQL facultatif.
-- [ ] Limiter initialement son usage aux services techniques globaux.
-- [ ] Étudier le stockage objet compatible S3.
-- [ ] Ajouter les outils de diagnostic système.
-- [ ] Améliorer la supervision et les métriques.
-- [ ] Évaluer l'intégration d'Aion comme orchestrateur externe.
+- [x] Étudier l'intérêt réel d'un moteur NoSQL facultatif.
+- [x] Limiter initialement son usage aux services techniques globaux.
+- [x] Étudier le stockage objet compatible S3.
+- [x] Ajouter les outils de diagnostic système.
+- [x] Améliorer la supervision et les métriques.
+- [x] Évaluer l'intégration d'Aion comme orchestrateur externe.
 
 ---
 
@@ -280,16 +304,21 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** distribuer et maintenir les extensions.
 
-- [ ] Définir le registre public des plugins.
-- [ ] Définir les catalogues de versions.
-- [ ] Héberger l'API Store indépendamment du Core.
-- [ ] Permettre les dépôts officiels et communautaires.
-- [ ] Vérifier provenance, intégrité et signatures.
-- [ ] Afficher permissions, tables et dépendances.
-- [ ] Ajouter la compatibilité Core / SDK / SQL.
-- [ ] Gérer les mises à jour et les demandes de nouveaux droits.
-- [ ] Ajouter les dépôts privés.
-- [ ] Garantir le fonctionnement d'Orkobi sans Store accessible.
+Guide : [PHASE_6.md](PHASE_6.md), [preuves de revue](REVIEW_PHASE_6.md).
+API indépendante exécutée localement en Docker ; aucune ouverture d’un registre
+Internet officiel ou publication npm implicite. Les racines de confiance sont
+configurées par l’opérateur, sans source distante prédéfinie.
+
+- [x] Définir le registre public des plugins.
+- [x] Définir les catalogues de versions.
+- [x] Héberger l'API Store indépendamment du Core.
+- [x] Permettre les dépôts officiels et communautaires.
+- [x] Vérifier provenance, intégrité et signatures.
+- [x] Afficher permissions, tables et dépendances.
+- [x] Ajouter la compatibilité Core / SDK / SQL.
+- [x] Gérer les mises à jour et les demandes de nouveaux droits.
+- [x] Ajouter les dépôts privés.
+- [x] Garantir le fonctionnement d'Orkobi sans Store accessible.
 
 ---
 
@@ -297,21 +326,38 @@ Les fonctionnalités métier sont apportées par des modules indépendants utili
 
 **Objectif :** transformer le Core en ERP réellement exploitable.
 
-Modules envisagés :
+Périmètre livré en expérimental : [guide Phase 7](PHASE_7.md),
+[règles, preuves et limites](REVIEW_PHASE_7.md). France et EUR confirmés par le
+porteur ; aucune plateforme agréée configurée.
 
-- [ ] CRM et gestion des clients.
-- [ ] Catalogue de produits et services.
-- [ ] Devis et facturation.
-- [ ] Gestion des stocks.
-- [ ] Gestion de projets.
-- [ ] Gestion des membres et cotisations pour associations.
-- [ ] Gestion documentaire.
-- [ ] Rapports et statistiques.
-- [ ] Ressources humaines.
+- [x] CRM : contacts, prospects/clients, coordonnées et archives.
+- [x] Catalogue : biens/services, références uniques, prix et TVA.
+- [x] Ventes : devis chiffrés, numérotés et figés, accord/refus, préparation de facture non fiscale.
+- [ ] Facturation fiscale : plateforme agréée, mentions complètes, formats, transmission et réception, avoirs et conservation à traiter.
+- [x] Stocks : entrepôts, soldes, mouvements immuables et compensation, refus du négatif.
+- [x] Projets : projets, budgets indicatifs et tâches, clôture protégée.
+- [x] Associations : adhérents, cotisations uniques par période et règlement enregistré.
+- [x] Documents : pièces SQL bornées, intégrité et téléchargement autorisé.
+- [x] Rapports : agrégats SQL complets filtrés selon les droits et modules actifs.
+- [x] RH administratif : annuaire et congés, approbation distincte ; hors paie et déclarations.
+- [x] Permissions explicites, références liées à l'organisation, révisions, idempotence,
+      audit atomique, migrations sur trois moteurs, écrans SDK UI FR/EN et recettes.
 
-Chaque module devra disposer de ses propres exigences de sécurité, règles métier, tests et contraintes réglementaires.
+Les cases cochées concernent ce premier périmètre décrit dans le guide ; elles
+n'annoncent pas des modules exhaustifs ni certifiés. S3, archivage probant,
+valorisation des stocks, comptabilité, paie et automatisation RGPD restent hors
+périmètre. Les données de test sont synthétiques dans des services SQL locaux réels.
 
-La sortie stable sera décidée à partir de la fiabilité réelle du produit, pas uniquement du nombre de fonctionnalités disponibles.
+Conditions encore ouvertes avant une première version stable :
+
+- [ ] Recette utilisateur sur des processus réels et reprise des données existantes.
+- [ ] Validation métier/réglementaire des documents, conservation et données personnelles.
+- [ ] Intégration et recette de la plateforme agréée avant toute émission fiscale.
+- [ ] Qualification de charge, sauvegarde/restauration et exploitation de l'environnement cible.
+- [ ] Décision explicite de version stable et de déploiement.
+
+La sortie stable sera décidée à partir de la fiabilité réelle du produit, pas
+uniquement du nombre de fonctionnalités disponibles.
 
 ---
 
@@ -332,13 +378,43 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Étapes techniques 0.1 et 0.2 terminées et revues ; poursuivre BFF, frontend et infrastructure.**
+**Phases 0 à 6 traitées ; premier périmètre Phase 7 livré en expérimental.**
 
-Prochain objectif concret : initialiser le BFF et le frontend React, puis PostgreSQL
-et les migrations. La 0.1.0-EXP complète reste ouverte : installation, identité,
-administration et isolation des organisations ne sont pas encore implémentées.
+La suite porte sur la recette métier et les conditions de stabilité ci-dessus,
+avec la facturation fiscale maintenue bloquée sans fournisseur.
 
-La preuve de ce lot Core et ses limites figurent dans [CORE.md](CORE.md).
-La revue des étapes 0.1/0.2 et ses validations figurent dans [REVIEW_PHASE_0.md](REVIEW_PHASE_0.md).
+La version produit est **0.3.0-dev.1**, canal de développement, sans publication stable implicite.
+Voir les [notes de version](RELEASE_0_3_0_DEV_1.md) ; les preuves historiques restent datées.
+Le [Store de Phase 6](PHASE_6.md) ajoute la distribution signée et privée ;
+les [preuves](REVIEW_PHASE_6.md) distinguent recettes locales et hébergement public.
+La [Phase 5](PHASE_5.md) fournit les moteurs alternatifs et le diagnostic ;
+son [rapport](REVIEW_PHASE_5.md) distingue les tests réels et les services étudiés.
+Le [guide Phase 3](PHASE_3.md) décrit identité et intégrations ; le
+[Job Engine](JOB_ENGINE.md) décrit cache mémoire/Redis et tâches durables.
+Le [kit UI SDK](UI_SDK.md) fixe les règles CSS natives et les icônes Papicons
+pour les futures extensions. Les [preuves de revue](REVIEW_PHASE_3.md) distinguent
+les contrôles unitaires, SQL/Redis réels, navigateur synthétique et les limites
+qui restent propres au déploiement.
+
+La [Phase 4](PHASE_4.md) fournit les extensions tierces contrôlées, la documentation
+développeur et les archives SDK locales. Les [preuves de revue](REVIEW_PHASE_4.md)
+précisent les tests, la frontière d’exécution et ses limites.
+
+Les conditions de publication sur un registre externe et de production restent distinctes.
+
+Le [guide de Phase 2](PHASE_2.md) décrit le Module Manager, le Capability
+Registry, le Data Access Manager et le module `orkobi.demo`, avec leurs tests.
+
+Les preuves et limites du Core figurent dans [CORE.md](CORE.md) et la
+[revue 0.1/0.2](REVIEW_PHASE_0.md). Le [guide frontend/BFF](FRONTEND_BFF.md)
+décrit la livraison 0.3, ses tests HTTP et navigateur, et les services métier
+qui restent indisponibles.
+
+Le [guide infrastructure](INFRASTRUCTURE.md) décrit PostgreSQL, les migrations,
+Compose et la recette réelle de redémarrage avec conservation des données.
+
+Le [guide de Phase 1](PHASE_1.md) décrit installation, identité, organisations,
+délégation et administration ; les [preuves de sécurité](PHASE_1_SECURITY.md)
+précisent l'isolation applicative et les conditions restant ouvertes.
 
 **Orkobi s'adapte à vous.**

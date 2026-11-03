@@ -1,0 +1,24 @@
+# Service de registre indépendant, sans accès au Core, SQL ou clés de signature privées.
+name: orkobi-store
+services:
+  store:
+    image: orkobi-store-local:0.3.0-dev.1
+    build: .
+    init: true
+    command: [node, apps/store/dist/main.js]
+    environment:
+      STORE_HOST: 0.0.0.0
+      STORE_PORT: 3002
+      STORE_DIRECTORY: /registry
+      STORE_REPOSITORY_ID: ${STORE_REPOSITORY_ID:?}
+      STORE_BEARER_TOKEN: ${STORE_BEARER_TOKEN:-}
+    volumes:
+      - ${STORE_DIRECTORY_HOST:?}:/registry:ro
+    ports:
+      - '127.0.0.1:${STORE_PUBLISHED_PORT:-3002}:3002'
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, 'http://127.0.0.1:3002/ready', orkobi-store]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped

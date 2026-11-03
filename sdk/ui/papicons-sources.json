@@ -1,0 +1,41 @@
+{
+  "repository": "https://github.com/PapillonApp/Papicons",
+  "license": "MIT",
+  "icons": [
+    {
+      "name": "user",
+      "path": "icons/user.svg",
+      "gitBlob": "8bc37f3a3cd45ab5775577024e861482f37ea5cb"
+    },
+    {
+      "name": "card",
+      "path": "icons/card.svg",
+      "gitBlob": "81dfdba1020778425e2620857680911b90b973a1"
+    },
+    {
+      "name": "tasks",
+      "path": "icons/tasks.svg",
+      "gitBlob": "19c30a9bd55b83df71cc30d40f5718289b688966"
+    },
+    {
+      "name": "archive",
+      "path": "icons/archive.svg",
+      "gitBlob": "9f6c8d5484c181a2ef530d0c4373a151193baafc"
+    },
+    {
+      "name": "heart",
+      "path": "icons/heart.svg",
+      "gitBlob": "191bb04652bafbd06d3fd0b9f6fdda1d4007a029"
+    },
+    {
+      "name": "folder",
+      "path": "icons/folder.svg",
+      "gitBlob": "4de6fbef8fa4e56ecc75282ee9d30d5ec520120c"
+    },
+    {
+      "name": "paper",
+      "path": "icons/paper.svg",
+      "gitBlob": "d385db0f76f9cce4766191f0d4e885cee0fe66de"
+    }
+  ]
+}

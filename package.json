@@ -1,11 +1,22 @@
 {
   "name": "orkobi",
-  "version": "0.1.0-EXP",
+  "version": "0.3.0-dev.1",
   "private": true,
   "description": "Orkobi - L'ERP qui s'adapte à vous.",
   "scripts": {
-    "dev": "node scripts/dev-core.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:core": "node scripts/dev-core.mjs core",
+    "dev:bff": "node scripts/dev-core.mjs bff",
+    "dev:web": "pnpm --filter @orkobi/web dev",
     "start:core": "pnpm --filter @orkobi/core start",
+    "start:bff": "pnpm --filter @orkobi/bff start",
+    "infra:init": "node scripts/setup-env.mjs",
+    "setup:prepare": "node scripts/prepare-installation.mjs",
+    "infra:up": "docker compose up --build --wait",
+    "infra:down": "docker compose down",
+    "infra:test": "node scripts/test-infrastructure.mjs",
+    "db:migrate": "pnpm --filter @orkobi/database... build && node --env-file-if-exists=.env scripts/database.mjs migrate",
+    "db:status": "pnpm --filter @orkobi/database... build && node --env-file-if-exists=.env scripts/database.mjs status",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build": "pnpm -r --if-present build",
@@ -13,17 +24,32 @@
     "lint": "eslint . --max-warnings 0",
     "test:types": "pnpm --filter @orkobi/contract-tests typecheck",
     "test": "pnpm build && pnpm test:types && node --test tests/*.test.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm test"
+    "check": "pnpm version:check && pnpm format:check && pnpm lint && pnpm test",
+    "bench:services": "pnpm --filter @orkobi/core... build && node scripts/benchmark-services.mjs",
+    "plugin:build": "pnpm --filter @orkobi/contracts build && node scripts/build-plugin.mjs",
+    "plugin:validate": "pnpm --filter @orkobi/core... build && node scripts/validate-plugin.mjs",
+    "sdk:pack": "pnpm build && node scripts/pack-sdk.mjs",
+    "sdk:test": "pnpm sdk:pack && node scripts/test-sdk-artifacts.mjs",
+    "sql:test": "node scripts/test-sql-engines.mjs",
+    "start:store": "pnpm --filter @orkobi/store-api start",
+    "store:keygen": "pnpm --filter @orkobi/store... build && node scripts/store-keygen.mjs",
+    "store:publish": "pnpm --filter @orkobi/store... build && node scripts/store-publish.mjs",
+    "store:test": "pnpm build && node scripts/test-store.mjs",
+    "version:check": "node scripts/check-versions.mjs"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "devDependencies": {
-    "prettier": "3.9.10",
     "@eslint/js": "10.0.1",
     "eslint": "10.13.0",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "prettier": "3.9.10",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1"
   },
   "engines": {
     "node": ">=22.22.2"
+  },
+  "orkobi": {
+    "channel": "dev"
   }
 }

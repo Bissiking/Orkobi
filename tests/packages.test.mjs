@@ -13,6 +13,7 @@ const directories = [
   'lib/events',
   'sdk/core',
   'sdk/types',
+  'sdk/ui',
 ];
 
 for (const directory of directories) {
@@ -27,7 +28,7 @@ for (const directory of directories) {
     assert.equal(typeof require(pkg.name), 'object');
     await readFile(new URL(pkg.exports['.'].types, packageUrl));
     for (const [name, version] of Object.entries(pkg.dependencies ?? {})) {
-      assert.equal(version, 'workspace:*');
+      if (name.startsWith('@orkobi/')) assert.equal(version, 'workspace:*');
       assert.ok(require.resolve(name));
     }
     assert.throws(() => require.resolve(`${pkg.name}/src/index.ts`), {

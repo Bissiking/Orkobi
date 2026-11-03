@@ -1,0 +1,108 @@
+{
+  "apiVersion": 1,
+  "sdk": ">=0.2.0-EXP <0.3.0",
+  "module": {
+    "id": "community.cards",
+    "version": "1.0.0",
+    "name": "Carnet partagé",
+    "description": "Plugin externe de démonstration : fiches isolées par organisation.",
+    "core": ">=0.2.0-EXP <0.3.0",
+    "dependencies": [],
+    "capabilities": [
+      {
+        "key": "core.modules",
+        "required": true
+      },
+      {
+        "key": "core.plugins",
+        "required": true
+      },
+      {
+        "key": "core.jobs",
+        "required": false
+      }
+    ],
+    "permissions": [
+      {
+        "key": "community.cards:read",
+        "description": "Consulter les fiches."
+      },
+      {
+        "key": "community.cards:write",
+        "description": "Créer, modifier et supprimer les fiches."
+      }
+    ],
+    "entities": [
+      {
+        "entity": "cards",
+        "table": "orkobi_ext_community_cards.cards",
+        "read": "community.cards:read",
+        "write": "community.cards:write",
+        "fields": [
+          {
+            "name": "title",
+            "type": "text",
+            "required": true,
+            "max": 120,
+            "label": {
+              "fr": "Titre",
+              "en": "Title"
+            }
+          },
+          {
+            "name": "content",
+            "type": "text",
+            "required": false,
+            "max": 4000,
+            "label": {
+              "fr": "Contenu",
+              "en": "Content"
+            }
+          }
+        ]
+      }
+    ],
+    "tasks": [
+      {
+        "key": "verify_cards",
+        "description": "Vérifier l’accès aux fiches.",
+        "permission": "community.cards:read",
+        "timeoutMs": 2000,
+        "maxAttempts": 3
+      }
+    ]
+  },
+  "dependencyVersions": {},
+  "migrations": [
+    {
+      "version": 1,
+      "entities": ["cards"]
+    }
+  ],
+  "frontend": {
+    "apiVersion": 1,
+    "pages": [
+      {
+        "key": "cards",
+        "title": {
+          "fr": "Carnet partagé",
+          "en": "Shared notebook"
+        },
+        "entity": "cards",
+        "icon": "notes"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "key": "add_card",
+      "permission": "community.cards:write",
+      "timeoutMs": 2000
+    },
+    {
+      "key": "count_cards",
+      "permission": "community.cards:read",
+      "timeoutMs": 2000
+    }
+  ]
+}

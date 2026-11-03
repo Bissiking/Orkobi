@@ -1,0 +1,72 @@
+import { readFileSync } from 'node:fs';
+
+export interface BffConfig {
+  readonly host: string;
+  readonly port: number;
+  readonly coreUrl: string;
+  readonly coreTimeoutMs: number;
+  readonly publicOrigin?: string;
+  readonly internalToken?: string;
+}
+export class BffConfigurationError extends Error {}
+
+export const productVersion: string = (
+  JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')) as {
+    version: string;
+  }
+).version;
+
+export function loadBffConfig(env: NodeJS.ProcessEnv = process.env): BffConfig {
+  const host = env.BFF_HOST ?? '127.0.0.1';
+  if (!host || host.trim() !== host || /[\s/]/u.test(host)) {
+    throw new BffConfigurationError('BFF_HOST doit être un nom d’hôte ou une adresse IP.');
+  }
+  const port = integer(env.BFF_PORT ?? '3000', 'BFF_PORT', 1, 65535);
+  const coreTimeoutMs = integer(env.CORE_TIMEOUT_MS ?? '2000', 'CORE_TIMEOUT_MS', 100, 10000);
+  if (env.INTERNAL_TOKEN && !/^[a-f0-9]{64}$/u.test(env.INTERNAL_TOKEN))
+    throw new BffConfigurationError('INTERNAL_TOKEN doit contenir 64 caractères hexadécimaux.');
+  let upstream: URL;
+  try {
+    upstream = new URL(env.CORE_URL ?? 'http://127.0.0.1:3001');
+  } catch {
+    throw new BffConfigurationError('CORE_URL doit être une origine HTTP ou HTTPS.');
+  }
+  if (
+    !['http:', 'https:'].includes(upstream.protocol) ||
+    upstream.username ||
+    upstream.password ||
+    upstream.pathname !== '/' ||
+    upstream.search ||
+    upstream.hash
+  ) {
+    throw new BffConfigurationError(
+      'CORE_URL doit être une origine HTTP ou HTTPS sans identifiants ni chemin.',
+    );
+  }
+  let publicOrigin: string | undefined;
+  if (env.PUBLIC_ORIGIN) {
+    try {
+      const origin = new URL(env.PUBLIC_ORIGIN);
+      if (!['http:', 'https:'].includes(origin.protocol) || origin.origin !== env.PUBLIC_ORIGIN)
+        throw new Error();
+      publicOrigin = origin.origin;
+    } catch {
+      throw new BffConfigurationError('PUBLIC_ORIGIN doit être une origine HTTP(S) sans chemin.');
+    }
+  }
+  return Object.freeze({
+    host,
+    port,
+    coreUrl: upstream.origin,
+    coreTimeoutMs,
+    ...(env.INTERNAL_TOKEN ? { internalToken: env.INTERNAL_TOKEN } : {}),
+    ...(publicOrigin ? { publicOrigin } : {}),
+  });
+}
+
+function integer(value: string, name: string, min: number, max: number): number {
+  if (!/^\d+$/u.test(value) || Number(value) < min || Number(value) > max) {
+    throw new BffConfigurationError(`${name} doit être un entier entre ${min} et ${max}.`);
+  }
+  return Number(value);
+}

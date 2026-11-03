@@ -1,9 +1,15 @@
-# Core HTTP — 0.1.0-EXP
+# Core HTTP — 0.3.0-dev.1
 
-Livraison locale du 29 octobre 2026 : première application NestJS dans `apps/core`,
-au-dessus des contrats ESM existants. Ce lot complète l'initialisation 0.1 de la
-phase 0. La revue et les contrats applicatifs décrits ci-dessous terminent
-l'étape technique 0.2 ; la version produit 0.1.0-EXP reste ouverte.
+> Ce guide décrit les fondations 0.2 et leur évolution SQL 0.4. La
+> [Phase 1](PHASE_1.md) fournit installation, authentification, sessions,
+> organisations, permissions, audit et services SDK persistants. La
+> [Phase 2](PHASE_2.md) ajoute le Module Manager, le Capability Registry, le
+> Data Access Manager et le module officiel `orkobi.demo`. Ces deux guides font
+> référence pour leurs contrats et conditions respectifs.
+
+Livraison locale du 31 octobre 2026 : version produit 0.2.0-EXP. Ce document
+décrit le Core NestJS de `apps/core` au-dessus des contrats ESM existants ; la
+version produit reste ouverte et non publiée.
 
 ## Exécution
 
@@ -12,10 +18,10 @@ Depuis la racine, avec Node.js >= 22.22.2 et pnpm 12.16.1 :
 ```sh
 pnpm install --frozen-lockfile
 cp .env.example .env
-pnpm dev
+pnpm dev:core
 ```
 
-Conserver son `.env` s'il existe déjà. `pnpm dev` compile les dépendances workspace
+Conserver son `.env` s'il existe déjà. `pnpm dev:core` compile les dépendances workspace
 et le Core, puis lance le serveur. Une modification des sources TypeScript dans
 `apps/core/src`, `lib/*/src`, `sdk/*/src` ou de `.env` déclenche une recompilation
 et un redémarrage. Les sorties `dist/` et `node_modules/` ne déclenchent rien.
@@ -52,7 +58,9 @@ restent génériques pour ne pas exposer d'exception brute.
 Le Core écoute uniquement sur l'interface locale par défaut. Il ne configure
 aucun CORS et ne fait pas confiance aux en-têtes de proxy. Ouvrir l'interface ou
 activer OpenAPI demande un choix explicite de l'opérateur ; aucune
-authentification n'est encore disponible pour ces routes techniques.
+authentification n'est requise pour les sondes techniques. Les routes métier de
+Phase 1 vérifient sessions et permissions côté Core ; OpenAPI demeure une
+documentation interne à n'activer que dans un réseau de confiance.
 
 Les réponses incluent CSP (`script-src 'self'`), `X-Content-Type-Options: nosniff`,
 `X-Frame-Options: SAMEORIGIN` et `Referrer-Policy: no-referrer` via
@@ -71,6 +79,11 @@ la politique HTTPS du futur déploiement reste à définir.
 
 C'est une sonde de vitalité du processus HTTP. Aucune base SQL, migration,
 authentification ou préparation métier n'est vérifiée.
+
+Depuis le [lot infrastructure 0.4](INFRASTRUCTURE.md), une sonde distincte
+`GET /health/ready` vérifie la connexion PostgreSQL et le registre des migrations.
+Elle renvoie le même corps que `/health` avec HTTP 200 si le schéma est à jour,
+sinon une erreur publique 503 `unavailable`. SQL désactivé signifie également 503. Les variables `DB_*` et les comptes sont détaillés dans le guide infrastructure.
 
 Chaque requête reçoit un UUID créé par le serveur dans `x-request-id` et
 `Cache-Control: no-store`. Un identifiant envoyé par le client n'est pas repris.
@@ -162,6 +175,7 @@ contraintes des consommateurs TypeScript.
 
 Le [changelog](../CHANGELOG.md) et la [revue 0.1/0.2](REVIEW_PHASE_0.md)
 consignent les commandes et contrôles de ce lot.
-Aucune connexion PostgreSQL, persistance, identité réelle, façade métier,
-installation initiale, isolation multi-organisation, BFF ou interface React n'est
-livré. Aucune publication ou validation de production n'est revendiquée.
+La connexion PostgreSQL et les migrations techniques sont fournies par la
+[0.4](INFRASTRUCTURE.md). La [Phase 1](PHASE_1.md) ajoute identité réelle,
+installation, permissions et isolation applicative multi-organisation.
+Le BFF et React sont désormais disponibles dans le [lot 0.3](FRONTEND_BFF.md). Aucune publication ou validation de production n'est revendiquée.

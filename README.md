@@ -1,14 +1,49 @@
 <!-- README.md -->
 
-# Orkobi — 0.1.0-EXP
+# Orkobi — 0.3.0-dev.1
 
 **Orkobi s'adapte à vous.**
 
 Fondations d'un ERP open source, modulaire et multi-organisation, indépendant de
-LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK et un premier
-Core NestJS démarrable avec ses interfaces de services sont disponibles.
-Les étapes techniques 0.1 et 0.2 de la phase 0 sont terminées. Le BFF, React, PostgreSQL et
-l'authentification restent à construire.
+LUMA et de Kyros. Les bibliothèques internes, les contrats du SDK, un Core
+NestJS, un BFF et une interface React sont disponibles. Les étapes techniques
+0.1 à 0.4, la Phase 1 et la Phase 2 sont livrées : PostgreSQL, migrations,
+installation, authentification locale, sessions, organisations, rôles,
+administration, registre de modules avec activation par organisation, catalogue
+de capabilities et premier module officiel `orkobi.demo` (notes isolées par
+organisation). La [Phase 4](DOCS/PHASE_4.md) permet maintenant d’installer des extensions tierces
+à manifeste contrôlé : code isolé, ressources bornées et pages déclaratives.
+
+La [Phase 3](DOCS/PHASE_3.md) ajoute OIDC, MFA TOTP et récupération,
+sessions enrichies, authentification BFF ↔ Core et intégrations avec scopes,
+expiration et révocation. Elle fournit aussi un [Job Engine durable](DOCS/JOB_ENGINE.md),
+un cache mémoire avec Redis optionnel et le [kit UI du SDK](DOCS/UI_SDK.md)
+en CSS natif, avec des icônes Papicons pour les applications. La version reste
+**0.3.0-dev.1**, sans publication ni déploiement automatique.
+
+La [Phase 5](DOCS/PHASE_5.md) ajoute MariaDB 11.4 et MySQL 8.4 comme alternatives
+à PostgreSQL, avec migrations propres, capabilities et diagnostic administrateur.
+Les [études NoSQL, S3 et Aion](DOCS/SERVICES_ADVANCED.md) précisent leur périmètre
+facultatif ; ces trois intégrations restent non implémentées.
+
+La [Phase 6](DOCS/PHASE_6.md) fournit un Store indépendant, des catalogues signés,
+les dépôts privés et la revue des installations/mises à jour. Les plugins installés
+fonctionnent sans Store accessible. L’ouverture d’un registre Internet reste une
+opération de déploiement distincte.
+
+La [Phase 7](DOCS/PHASE_7.md) ajoute neuf modules métier expérimentaux : CRM,
+catalogue, devis/préparations de factures, stocks, projets, associations,
+documents, rapports et RH administratif. France/EUR ; sans plateforme agréée,
+l'émission fiscale reste bloquée. Chaque module exige des permissions explicites.
+Les [preuves et limites](DOCS/REVIEW_PHASE_7.md) séparent ce périmètre d'une
+version stable et de la facturation réglementaire.
+
+Pour développer un plugin, commencer par [le guide Phase 4](DOCS/PHASE_4.md) et
+`examples/plugin-demo/`. `pnpm plugin:build`, `pnpm plugin:validate` et
+`pnpm sdk:test` construisent et vérifient les artefacts locaux sans publication distante.
+
+La [documentation](DOCS/README.md) fournit les points d’entrée pour les développeurs
+et les futures IA ; la [revue Phase 3](DOCS/REVIEW_PHASE_3.md) consigne les preuves.
 
 ## Démarrage
 
@@ -22,32 +57,58 @@ cp .env.example .env
 pnpm dev
 ```
 
-| Commande            | Action réelle                                                                                 |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm dev`          | Compile puis lance le Core ; recompile et redémarre après changement des sources ou de `.env` |
-| `pnpm start:core`   | Lance le Core déjà compilé et charge le `.env` racine                                         |
-| `pnpm build`        | Compile les sept bibliothèques/SDK et le Core dans l'ordre de leurs dépendances               |
-| `pnpm format`       | Formate les fichiers avec Prettier                                                            |
-| `pnpm format:check` | Vérifie le formatage sans modifier les fichiers                                               |
-| `pnpm lint`         | Exécute ESLint, sans avertissement accepté                                                    |
-| `pnpm typecheck`    | Compile puis vérifie les packages et les contrats publics sans émission                       |
-| `pnpm test`         | Compile, vérifie les contrats TypeScript et lance les tests Node.js                           |
-| `pnpm check`        | Vérifie le formatage, le lint et les tests, compilation comprise                              |
+| Commande            | Action réelle                                                                     |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `pnpm dev`          | Lance Core, BFF et React/Vite avec recompilation backend et rechargement frontend |
+| `pnpm dev:core`     | Lance uniquement le Core avec surveillance                                        |
+| `pnpm dev:bff`      | Lance uniquement le BFF avec surveillance                                         |
+| `pnpm dev:web`      | Lance uniquement Vite ; Core/BFF doivent être lancés séparément                   |
+| `pnpm start:bff`    | Lance le BFF compilé et sert le frontend compilé                                  |
+| `pnpm start:core`   | Lance le Core déjà compilé et charge le `.env` racine                             |
+| `pnpm build`        | Compile les bibliothèques, SDK, module démo et trois applications                 |
+| `pnpm format`       | Formate les fichiers avec Prettier                                                |
+| `pnpm format:check` | Vérifie le formatage sans modifier les fichiers                                   |
+| `pnpm lint`         | Exécute ESLint, sans avertissement accepté                                        |
+| `pnpm typecheck`    | Compile puis vérifie les packages et les contrats publics sans émission           |
+| `pnpm test`         | Compile, vérifie les contrats TypeScript et lance les tests Node.js               |
+| `pnpm check`        | Vérifie le formatage, le lint et les tests, compilation comprise                  |
 
 Les sorties `dist/` sont générées ; il faut compiler avant de consommer les packages.
+L'interface s'ouvre sur `http://127.0.0.1:5173` en développement, puis sur le port
+du BFF (`3000`) avec `pnpm build` et `pnpm start:bff`.
+Voir [le guide frontend/BFF](DOCS/FRONTEND_BFF.md) pour les routes et la configuration.
 Le Core répond par défaut sur `http://127.0.0.1:3001/health`. Ce contrôle de
 vitalité ne vérifie aucune base SQL. La documentation interne est désactivée par
 défaut ; avec `CORE_OPENAPI_ENABLED=true`, Swagger est disponible sur
 `/internal/docs` et le document JSON sur `/internal/openapi.json`.
 Voir [le guide du Core](DOCS/CORE.md) pour la configuration et les limites.
 
+Pour lancer toute la pile avec PostgreSQL et persistance :
+
+```sh
+pnpm infra:init
+pnpm setup:prepare
+pnpm infra:up
+```
+
+Ouvrir `http://127.0.0.1:3000`. `infra:init` conserve tout `.env` existant :
+dans ce cas, compléter les variables SQL manquantes. `pnpm infra:down` arrête
+la pile en conservant les données. `setup:prepare` ajoute le jeton d'installation
+si votre `.env` vient de la 0.4. Saisir le `SETUP_TOKEN` de `.env` dans l'assistant
+pour créer le premier administrateur, puis se connecter.
+`pnpm infra:test` vérifie migrations, identité, permissions, isolation,
+redémarrage et persistance dans un projet Docker isolé.
+Voir [l'installation et l'exploitation locales](DOCS/INFRASTRUCTURE.md).
+Le [guide de Phase 1](DOCS/PHASE_1.md) décrit les parcours et la délégation.
+
 ## Organisation
 
 ```text
 apps/core/             Core NestJS, services internes, vitalité, erreurs et OpenAPI
-apps/{bff,web}/         Emplacements réservés au BFF et à React
+apps/bff/              BFF NestJS, contrat HTTP et service des fichiers web compilés
+apps/web/              React/Vite, routage, thèmes et traductions FR/EN
 lib/contracts/         Identifiants, contexte, erreurs et résultats
-lib/database/          Contrats SQL et transactions internes
+lib/database/          Contrats SQL, pool PostgreSQL et migrations internes
 lib/security/          Rôles, permissions et refus par défaut
 lib/identity/          Utilisateurs, organisations, appartenances, références OIDC
 lib/events/            Contrats de publication et d'abonnement
@@ -56,6 +117,7 @@ sdk/core/              Façade des futurs services du Core
 modules/               Emplacement réservé aux fonctionnalités métier
 tests/                 Tests exécutables et tests de contrats TypeScript
 scripts/               Supervision locale de la compilation et du Core
+infra/postgres/        Initialisation des comptes SQL locaux
 DOCS/                  Roadmap, architecture, conventions SDK et rapport initial
 CHANGELOG.md           Historique des modifications et validations
 ```
@@ -68,7 +130,8 @@ Voir [l'architecture](DOCS/ARCHITECTURE.md), les [conventions SDK](DOCS/SDK.md),
 le [rapport du bootstrap](DOCS/BOOTSTRAP.md), la [roadmap](DOCS/ROADMAP.md)
 et le [changelog](CHANGELOG.md).
 La [revue des étapes 0.1/0.2](DOCS/REVIEW_PHASE_0.md) détaille les corrections
-et les preuves locales ; la version produit 0.1.0-EXP reste à construire.
+et les preuves locales de ces fondations. Les preuves actuelles figurent dans
+[la Phase 1](DOCS/PHASE_1.md) et [ses contrôles de sécurité](DOCS/PHASE_1_SECURITY.md).
 
 La [stratégie Git et de versioning](DOCS/VERSIONING.md) définit les branches,
 les Pull Requests et le cycle de publication. Le [diagnostic d'initialisation](DOCS/GIT_BOOTSTRAP.md)

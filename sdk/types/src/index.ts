@@ -46,3 +46,25 @@ export interface ModuleRequirements {
   readonly capabilities: readonly CapabilityRequirement[];
   readonly permissions: readonly PermissionDeclaration[];
 }
+export type { ModuleTaskDeclaration, JobStatus, JobSummary, ScheduleJob } from '@orkobi/contracts';
+
+export type { ModuleManifest, ModuleEntry } from '@orkobi/contracts';
+
+export type {
+  PluginArtifact,
+  PluginManifest,
+  PluginSummary,
+  PluginPage,
+  PluginMigration,
+} from '@orkobi/contracts';
+export type {
+  BusinessModuleKey,
+  BusinessLabel,
+  BusinessField,
+  BusinessEntity,
+  BusinessDefinition,
+  BusinessRecord,
+  BusinessList,
+  BusinessReport,
+  BusinessProblem,
+} from '@orkobi/contracts';

@@ -1,3 +1,4 @@
+import { RuntimeDiagnostics } from './diagnostics.js';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { NestFactory } from '@nestjs/core';
@@ -8,14 +9,18 @@ import { AppModule } from './app.module.js';
 import type { CoreConfig } from './config.js';
 import { CoreExceptionFilter } from './errors.js';
 import { JsonLogger } from './logger.js';
+import { coreVersion } from './version.js';
 
 export async function createApplication(config: CoreConfig, logger = new JsonLogger()) {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger,
-    abortOnError: false,
-    // Le parseur est enregistré après le middleware de corrélation.
-    bodyParser: false,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.register(config.database, config.platform, config.jobs, config.cache, config.store),
+    {
+      logger,
+      abortOnError: false,
+      // Le parseur est enregistré après le middleware de corrélation.
+      bodyParser: false,
+    },
+  );
   app.disable('x-powered-by');
   app.useSecurityHeaders({
     // Le transport de ce socle est HTTP local ; la politique TLS relève du déploiement futur.
@@ -29,6 +34,7 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
     response.setHeader('x-request-id', correlationId);
     response.setHeader('Cache-Control', 'no-store');
     response.once('finish', () => {
+      app.get(RuntimeDiagnostics).record(response.statusCode, performance.now() - startedAt);
       logger.event('info', 'http_request', {
         method: request.method,
         status: response.statusCode,
@@ -46,9 +52,9 @@ export async function createApplication(config: CoreConfig, logger = new JsonLog
       new DocumentBuilder()
         .setTitle('Orkobi Core — API interne')
         .setDescription(
-          'Fondations techniques ; aucune authentification ou connexion SQL disponible.',
+          'Fondations techniques ; vitalité HTTP et disponibilité SQL, identité, modules et administration.',
         )
-        .setVersion('0.1.0-EXP')
+        .setVersion(coreVersion)
         .build(),
     );
     SwaggerModule.setup('internal/docs', app, document, {

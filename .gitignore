@@ -3,6 +3,10 @@
 .agents/*
 .playwright-cli/
 output/playwright/
+output/infrastructure/
+/.impeccable/*
+!/.impeccable/config.json
+!/.impeccable/design.json
 node_modules/
 dist/
 coverage/
@@ -13,3 +17,12 @@ yarn.lock
 .env.*
 !.env.example
 *.log
+skills-lock.json
+
+output/plugins/
+output/sdk/
+
+output/sql-engines/
+
+output/store/
+output/store-keys/

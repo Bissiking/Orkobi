@@ -1,4 +1,53 @@
 // lib/contracts/src/index.ts
+import type { CoreError } from './errors.js';
+export { publicHttpError } from './errors.js';
+export type { CoreError, ErrorCode } from './errors.js';
+export { isBffBootstrap, isCoreHealth } from './http.js';
+export type { BffBootstrap, CoreAvailability, CoreHealth } from './http.js';
+export {
+  organizationPermissions,
+  modulePermissions,
+  builtinAdminPermissions,
+  integrationScopes,
+} from './platform.js';
+export type {
+  PlatformUser,
+  PlatformOrganization,
+  OrganizationRole,
+  OrganizationPermission,
+  OrganizationMembership,
+  AccessibleOrganization,
+  PlatformSession,
+  AuditEntry,
+  SessionSummary,
+  InstallationStatus,
+  IntegrationScope,
+  IntegrationTokenSummary,
+  LinkedIdentity,
+  MfaStatus,
+  OidcStatus,
+} from './platform.js';
+export {
+  isModuleManifest,
+  moduleIdPattern,
+  moduleVersionPattern,
+  moduleTablePattern,
+  permissionKeyPattern,
+  capabilityKeyPattern,
+  entityNamePattern,
+} from './modules.js';
+export type {
+  ModuleManifest,
+  ModuleSummary,
+  RegisteredModule,
+  ModuleEntry,
+  ModuleEntityDeclaration,
+  ModuleFieldDeclaration,
+  ModuleCapabilityRequirement,
+  ModulePermissionDeclaration,
+  CapabilityStatus,
+  CapabilityAvailability,
+} from './modules.js';
 
 declare const identifierBrand: unique symbol;
 
@@ -29,21 +78,42 @@ export interface OrganizationContext {
   readonly correlationId?: string;
 }
 
-export type ErrorCode =
-  | 'invalid_argument'
-  | 'unauthenticated'
-  | 'forbidden'
-  | 'not_found'
-  | 'conflict'
-  | 'rate_limited'
-  | 'unavailable'
-  | 'internal_error';
-
-export interface CoreError {
-  readonly code: ErrorCode;
-  readonly message: string;
-  readonly correlationId?: string;
-}
-
 export type Result<Value> =
   { readonly ok: true; readonly value: Value } | { readonly ok: false; readonly error: CoreError };
+export type { ModuleTaskDeclaration, JobStatus, JobSummary, ScheduleJob } from './jobs.js';
+
+export { isPluginArtifact, pluginApiVersion } from './plugins.js';
+export type {
+  PluginArtifact,
+  PluginManifest,
+  PluginSummary,
+  PluginPage,
+  PluginMigration,
+  PluginIcon,
+} from './plugins.js';
+
+export { parseVersion, satisfiesRange } from './version-range.js';
+export type {
+  StoreSqlEngine,
+  StoreRelease,
+  StoreCatalog,
+  SignedStoreCatalog,
+  StoreOrigin,
+  StoreReleaseSummary,
+  StoreRepositorySummary,
+  StoreReview,
+} from './store.js';
+export type {
+  BusinessModuleKey,
+  BusinessLabel,
+  BusinessField,
+  BusinessEntity,
+  BusinessDefinition,
+  BusinessRecord,
+  BusinessList,
+  BusinessReport,
+  BusinessProblem,
+} from './business.js';
+
+export { businessProblemCodes } from './business.js';
+export { publicBusinessDetails } from './errors.js';

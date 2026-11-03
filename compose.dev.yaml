@@ -1,0 +1,5 @@
+# Optionnel : PostgreSQL joignable par pnpm dev sur la machine locale.
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${DB_PORT:-5432}:5432'

@@ -6,7 +6,444 @@ Chaque intervention doit ajouter une entrée datée avec les fichiers concernés
 les raisons des changements, les validations exécutées et les limites restantes.
 Les modifications en cours restent dans « Non publié » jusqu'à une version décidée.
 
+## Non publié — 0.3.0-dev.1 — 2026-11-03
+
+### Versionnement du périmètre métier
+
+- Version produit et 18 manifests privés synchronisés, canal `dev` déclaré dans
+  la racine ; OpenAPI, BFF et frontend lisent cette source unique. Étiquettes
+  Docker locales alignées et vérification automatique `pnpm version:check`
+  incluse dans `pnpm check`.
+- Le protocole plugins reste API 1, les versions de leurs manifestes et les
+  migrations restent indépendantes et inchangées. Les plages de comparateurs
+  existantes acceptent cette préversion ; aucune stabilité ou publication déduite.
+- [Notes et vérifications](DOCS/RELEASE_0_3_0_DEV_1.md). Aucun tag, push,
+  publication, migration de base utilisateur ou déploiement effectué.
+
+### Phase 7 — Premier périmètre métier France / EUR — 2026-11-03
+
+- Neuf modules officiels et règles pures dans `modules/business`, port SDK public
+  de confiance, adaptateur Core autorisé et migration append-only `0011_business`
+  pour PostgreSQL/MariaDB/MySQL. Aucun port hôte ajouté au guest tiers API 1.
+- CRM, catalogue, devis figés et préparations non fiscales, stocks compensables,
+  projets/tâches, adhérents/cotisations, documents bornés, rapports SQL et RH
+  administratif. Permissions métier distinctes des droits Core, révisions,
+  idempotence et audit atomique ; pas de stock négatif ni double règlement.
+- Parcours SDK UI/Papicons, CSS natif FR/EN, thèmes, mobile, URL persistante,
+  administration des accords et impression des documents.
+- Tests unitaires et suites HTTP sur les trois moteurs, recette Chrome sur vrais
+  services locaux ; [guide](DOCS/PHASE_7.md) et [preuves](DOCS/REVIEW_PHASE_7.md).
+  Sans plateforme agréée configurée, l'émission fiscale reste bloquée. La version
+  reste expérimentale ; aucune publication ni modification de la pile existante.
+
+## Historique de développement — 0.2.0-EXP — non publié
+
+### Phase 6 — Store indépendant et distribution signée — 2026-11-03
+
+- `apps/store`, `lib/store`, scripts de clés/publication locale et Compose autonome :
+  catalogues API 1, versions immuables, paquets adressés par SHA-256, signatures
+  Ed25519, expiration, dépôts publics et bearer privé. Aucune clé privée côté serveur.
+- Core/BFF : racines de confiance configurées côté serveur, transport borné sans
+  redirection, revue/confirmation, compatibilité Core/SDK/SQL et dépendances,
+  revalidation des droits et du catalogue avant installation. Aucun réseau sous verrou SQL.
+- Migration append-only `0010_store` sur les trois moteurs : checkpoints anti-rejeu
+  et provenance. Installation manuelle marquée non vérifiée ; nouveaux droits et
+  accords dormants traités explicitement lors des mises à jour.
+- Administration → Store : recherche, versions, ressources, droits, dépendances,
+  clés et nouveaux consentements, UI SDK/Papicons FR/EN, thèmes, URL et mobile.
+- Recettes Store autonome et SQL communes, docs/opérations/consignes IA ;
+  [preuves et limites](DOCS/REVIEW_PHASE_6.md). Registre Internet et publication npm
+  restent distincts ; aucun déploiement utilisateur effectué.
+
+### Phase 5 — SQL alternatif, diagnostic et services facultatifs — 2026-11-03
+
+- `lib/database`, Core et CLI : sélection PostgreSQL/MariaDB/MySQL, dépôts communs,
+  migrations natives alternatives et verrous de tâches, sans modifier le SQL des
+  migrations PostgreSQL appliquées. Préservation UTC/JSON, lecture seule, cible
+  des upserts de rôles et audit atomique ; journal DDL partiel bloquant la readiness.
+- Capability Registry : tableaux SQL, JSON natif et DDL transactionnel ; une exigence
+  obligatoire absente bloque l’activation. NoSQL/S3/Aion restent indisponibles.
+- Diagnostic administrateur et `/system` : mémoire, boucle événementielle, compteurs
+  HTTP, cache/jobs et limites moteur ; données agrégées sans secret, UI SDK FR/EN
+  et thèmes. Aucun framework CSS ajouté.
+- `compose.mysql.yaml`, `infra/mysql`, `infra:init --engine=…` : nouvelle instance
+  distincte, comptes migrateur/runtime et secrets séparés, sans écrasement de fichier.
+- `sql:test` et suites communes Core/BFF : vrais MariaDB/MySQL isolés ; recettes
+  de migrations, droits, identité, modules, plugins, jobs et pannes/persistance.
+  PostgreSQL/Redis conserve sa recette isolée. Documentation et consignes IA
+  actualisées dans `PHASE_5.md`, `SERVICES_ADVANCED.md` et `AGENTS.md`.
+- Validations locales et limites détaillées dans [REVIEW_PHASE_5.md](DOCS/REVIEW_PHASE_5.md).
+  NoSQL, S3 et Aion évalués, sans connexion externe, publication ni déploiement utilisateur.
+
+### Phase 4 — extensions tierces et distribution SDK locale — 2026-11-03
+
+- `lib/contracts/src/plugins.ts`, `sdk/{core,types}` : paquets/manifeste API 1,
+  permissions de namespace, dépendances et plages Core/SDK, migrations et frontend
+  déclaratifs ; `PluginHandler` et `PluginSdk` pour le moteur tiers.
+- `apps/core/src/plugins` : validation QuickJS/WASM dans un worker jetable,
+  quotas mémoire/temps/RPC, pont de données et jobs avec contexte imposé et droits
+  courants. Aucun import runtime tiers dans le Core, aucun SQL/réseau/fichier exposé.
+- Migration append-only `0009_plugins` : tables logiques isolées par extension,
+  entité et organisation, registre des paquets et permissions dynamiques syntaxiquement
+  contrôlées. Aucun DDL fourni par une extension.
+- Core/BFF : installation après revue d’empreinte et confirmation, mises à jour
+  additives, droits par rôle accordés explicitement, retrait sans purge de données.
+- `apps/web/src/platform/plugins.tsx` : administration Extensions et pages CRUD
+  déclaratives FR/EN, rendu SDK UI/Papicons, confirmation des suppressions et URL.
+- `examples/plugin-demo`, scripts de build/validation/packaging/test : plugin externe
+  TypeScript, archives SDK avec SHA-256 et consommation vérifiée hors workspace.
+- Guides Phase 4 et revue, roadmap, SDK, jobs et consignes IA synchronisés.
+  Preuves et limites dans `DOCS/REVIEW_PHASE_4.md`. Version conservée `0.2.0-EXP` ;
+  aucune publication sur un registre, tag, push ou modification de l’instance existante.
+
+### Phase 3.3/3.4 et revue de la phase — 2026-11-03
+
+- `apps/core/src/{cache,jobs}`, `lib/database/src/{jobs,jobs-migration}.ts` :
+  cache mémoire borné, adaptateur Redis optionnel, planificateur et file PostgreSQL
+  durable. Jobs ponctuels/récurrents, contrôle des droits courants, timeouts,
+  retries bornés, verrous par organisation/module/tâche, historique et suspension.
+- `lib/contracts`, `sdk/{core,types}`, `modules/demo` : déclarations de tâches et
+  handlers typés ; module officiel consommant seulement les exports SDK.
+- `apps/web/src/platform/jobs.tsx`, Core et BFF : écran `/jobs` FR/EN,
+  planification, suivi, annulation, relance et métriques administrateur.
+- `sdk/ui` : extraction de Button/Field/Notice, thèmes et styles natifs ;
+  AppIcon avec sept SVG Papicons et licence/provenance conservées. Le frontend
+  consomme le package SDK ; aucun framework CSS externe ou dépendance native ajouté.
+- Corrections de revue : attribution administrative des rôles avec permissions
+  de module, bouton sans soumission implicite, liens désactivés, règles de champs
+  maintenues dans la plateforme, test de rollback SQL réellement exécuté,
+  nettoyage du Redis de recette et supervision des sources du module démo.
+- Nettoyage : retrait des anciennes copies UI et des pages de préparation
+  HomePage/OrganizationsPage sans route ; suppression des `.DS_Store` locaux.
+- Guides `DOCS/{README,UI_SDK,JOB_ENGINE,REVIEW_PHASE_3}.md`, roadmap, SDK et
+  documentation de livraison synchronisés. Validation et limites détaillées
+  dans le rapport de revue. Version conservée à `0.2.0-EXP` ; aucune publication,
+  modification de l’instance existante ou livraison stable revendiquée.
+
+### Phase 3.2-BIS — Erreurs et composants partagés — 2026-11-02
+
+- `lib/contracts/src/errors.ts` : table unifiée des erreurs HTTP publiques
+  (`ErrorCode`, `CoreError`, fonction pure `publicHttpError(status, correlationId)`
+  → payload + niveau de log). Aucune dépendance NestJS ; le BFF gagne les codes
+  405/415/422 qui retombaient en `internal_error`.
+- `apps/core/src/errors.ts`, `apps/bff/src/errors.ts` : les deux filtres Nest sont
+  devenus des wrappers fins autour de `publicHttpError` (signature et classes
+  conservées, guard `headersSent` préservé côté BFF).
+- `apps/web/src/errors.ts` : `installGlobalErrorHandlers()` (captures `error` et
+  `unhandledrejection` sans supprimer le comportement navigateur), `reportError`
+  (console structurée bornée à 500 caractères, aucun envoi réseau, 5 rapports
+  max), `errorMessage`/`errorCode` qui remplacent les mappings code → message
+  dupliqués dans `platform/components.tsx`, `platform/hooks.ts` et
+  `platform/pages.tsx`.
+- `apps/web/src/ErrorBanner.tsx` : bannière des dernières erreurs non interceptées,
+  visible en dev (`import.meta.env.DEV`) ou via `localStorage['orkobi.debugErrors']='1'`,
+  montée dans `main.tsx` ; `ErrorBoundary.componentDidCatch` alimente le même
+  reporter. Clés `errorBannerTitle`/`errorBannerDismiss` en FR/EN.
+- `apps/web/src/ui/Button.tsx`, `ui/Field.tsx`, `ui/Notice.tsx` : composants sans
+  dépendance platform/i18n (variantes `plain|primary|secondary|text|icon`, rendu
+  bouton ou `Link` selon `to` ; `Field` déplacé depuis `platform/components.tsx`
+  avec ré-export ; `Notice` rôles ARIA `alert`/`status`). Migration de ~41 usages
+  de boutons/links bruts dans `App.tsx`, `pages.tsx`, `platform/pages.tsx`,
+  `platform/advanced.tsx` et `platform/components.tsx`.
+- Vérifications : `pnpm check` (format, lint, typecheck, tests), nouveau
+  `tests/errors.test.mjs` (table, niveaux de log, expurgé des secrets, pureté),
+  suites `core`/`bff` inchangées, recette Chromium (rôles et noms accessibles
+  préservés).
+- Limites : les `catch` silencieux délibérés (stockage, bootstrap, dégradation
+  UX) restent muets — ils alimentent déjà l'état d'interface ; la bannière n'est
+  pas un canal de télémétrie.
+
+### Phase 3.1/3.2 — Identité avancée et API Access Manager — 2026-10-31
+
+- `apps/core/src/platform/identity.ts`, `totp.ts`, `oidc.ts`, `access.ts`,
+  `service.ts` et `controller.ts` : MFA TOTP avec protection anti-rejeu, challenges
+  expirants et limités, codes de récupération à usage unique, changements et resets
+  de mots de passe, révocation des sessions, OIDC avec state navigateur, nonce,
+  PKCE S256, validation JWT/JWKS et liaison d'identités sans création implicite.
+- `lib/database` : migrations append-only 0005, 0006 et 0007, dépôt MFA/OIDC,
+  métadonnées de sessions, paramètres et jetons d'intégration hashés. Aucun SQL
+  ni checksum des migrations 0001–0004 modifié.
+- `apps/core/src/platform/integration.ts`, `apps/bff/src/integration.ts` : API
+  Bearer en lecture séparée des sessions, arrêt global désactivé par défaut,
+  restrictions d'organisation, scopes fermés, expiration, révocation, audit et
+  dernière utilisation. Authentification interne optionnelle par `INTERNAL_TOKEN`,
+  fourni exclusivement par la configuration serveur du BFF.
+- `lib/contracts`, configuration et DI : types MFA/OIDC/intégrations, sessions
+  enrichies, capability OIDC configurable et capability des intégrations.
+- `apps/web/src/platform/advanced*`, `pages.tsx`, `App.tsx` : connexion MFA/OIDC,
+  callback, sécurité du profil, récupération, identités liées, resets administrateur,
+  réglages d'intégration par organisation et administration des jetons, en FR/EN.
+- `.env.example`, `compose.yaml`, scripts d'installation et de recette : variables
+  OIDC et secret interne ; préparation des secrets manquants sans remplacement ;
+  nouvelle suite d'intégration ajoutée dans l'ordre explicite des tests.
+- Vérifications : `pnpm check`, `pnpm infra:test`, vecteurs RFC et JWT signés,
+  fournisseur OIDC HTTP synthétique, restrictions et révocations réelles sur
+  PostgreSQL ; recette Chromium desktop/mobile et affichage unique des jetons.
+- Limites : 3.3/3.4 exclus, version maintenue à 0.2.0-EXP, fournisseur externe réel
+  à valider au déploiement ; secret TOTP sans chiffrement applicatif. Parcours,
+  configuration et preuves détaillés dans [PHASE_3.md](DOCS/PHASE_3.md).
+
+### Phase 2 — Module Manager, capabilities et premier module officiel
+
+- `lib/contracts/src/modules.ts` : contrats du manifeste standard de module
+  (identité, plage de compatibilité Core, dépendances, capabilities, permissions,
+  entités de données), validateur `isModuleManifest`, `ModuleSummary`,
+  `RegisteredModule`, `CapabilityStatus`, `ModuleEntry` et motifs associés.
+  `platform.ts` : permissions `modules:read`/`modules:write`, catalogue
+  `modulePermissions` (`demo:read`/`demo:write`), `builtinAdminPermissions` et
+  `InstallationStatus.modulesReady`. `http.ts` : `features.modules` variable.
+- `lib/database` : migrations additive `0003_modules` (registre
+  `orkobi_core.modules`, activations par organisation, contrainte de permissions
+  étendue, rôles builtin) et `0004_module_demo` (schéma `orkobi_demo`, table
+  `orkobi_demo.notes`, grant et permissions démo sur les rôles admin).
+  Méthodes de registre et d'activation dans `platform.ts` ; `adapter.ts` :
+  `PostgreSqlModuleAdapter` avec `validateModuleStatement` (instruction unique,
+  tables détenues uniquement, schémas `orkobi_*` non-dtenus refusés,
+  `organization_id` exigé, index de paramètres), `SET LOCAL lock_timeout` et
+  contexte d'organisation via `set_config`. Migrations marquées par leur module
+  propriétaire (`migrationsForModule`).
+- `modules/demo` : premier module officiel `orkobi.demo` (notes de démonstration,
+  permissions `demo:read`/`demo:write`, capabilities `core.identity`,
+  `core.permissions`, `core.modules`, `core.data.sql` obligatoires et `core.audit`
+  facultative, plage `>=0.2.0-EXP <0.3.0`).
+- `apps/core` : version produit `0.2.0-EXP` ; `modules/range.ts` (SemVer minimal),
+  `modules/capability-registry.ts` (catalogue honnête : available/limited/
+  unavailable), `modules/manager.ts` (synchronisation des manifestes officiels,
+  compatibilité, dépendances, activation plateforme et par organisation, audit),
+  `modules/data.ts` (accès générique borné aux entités déclarées, validation des
+  champs, audit par entité). Routes `capabilities`, `modules`,
+  `modules/:id/activate|deactivate`, données de module et `admin/modules`.
+  `modulesReady` dans le status, permissions builtin étendues à la création
+  d'organisation.
+- `apps/bff` : `features.modules: available` lorsque la base et le registre sont
+  prêts ; relais des routes modules et capabilities, contrôle d'origine inchangé.
+- `apps/web` : page `/modules` enrichie du registre réel et de l'activation par
+  organisation, nouvelle page `/modules/demo` (CRUD de notes avec confirmation),
+  permissions de module dans l'édition des rôles, audit et état des services
+  complétés, copie FR/EN.
+- `tests/modules.test.mjs` : plages de version, manifeste démo et
+  `validateModuleStatement` (refus multi-instructions, tables étrangères, schémas
+  non détenus, `organization_id` manquant, index de paramètres hors bornes, absence
+  de fuite SQL dans le message public). Correction : le motif `$n` de l'adapter
+  exigeait le flag `g` pour `matchAll`.
+- `tests/modules.integration.mjs` : scénario complet sur PostgreSQL réel
+  (capabilities, registre, activation plateforme puis organisation, CRUD de notes
+  validé, isolation inter-organisations, refus membre, conservation des données
+  après désactivation, blocage de désactivation plateforme, audit). Ajouté au
+  service Compose `test-db`.
+- `tests/platform.integration.mjs` : `modulesReady` attendu dans le status ;
+  `tests/core.test.mjs` : version OpenAPI `0.2.0-EXP`. Bump de version `0.2.0-EXP`
+  sur les treize manifests privés.
+- Validations : `pnpm check` (format, lint, build, tests unitaires),
+  `pnpm infra:test` (migrations 0001–0004, HTTP, panne SQL, redémarrage,
+  persistance) et parcours modules en conditions réelles.
+- Limites assumées : isolation applicative sans RLS (`core.data.sql` en
+  `limited`), modules tiers non supportés (manifestes embarqués uniquement),
+  `core.events` et `core.identity.oidc` indisponibles.
+
 ## Non publié — 0.1.0-EXP — 2026-10-29
+
+### Corrections d'exploitation — 2026-10-30
+
+- `infra/postgres/init.sh` : mode exécutable `100755` versionné. Sous Docker
+  Desktop/macOS, le montage en lecture seule rendait le script inéxécutable
+  (`bad interpreter : Permission denied`) : les rôles `orkobi_app` et
+  `orkobi_migrator` n'étaient jamais créés et PostgreSQL repartait sur un volume
+  à moitié initialisé en restant « sain » au regard de `pg_isready`.
+- `compose.yaml` : le healthcheck PostgreSQL exige maintenant la présence des
+  deux rôles Orkobi en plus de `pg_isready`, pour refuser un volume dont l'initialisation
+  a échoué au lieu de laisser `migrate` échouer plus tard sans contexte.
+- `apps/bff/src/errors.ts`, `tests/bff.test.mjs` : table de codes d'erreur du
+  filtre BFF alignée sur celle du Core (`401`, `403`, `409`, `429` manquants) ;
+  un refus 403 relais retournait `internal_error` au lieu de `forbidden`.
+  Test de non-régression ajouté sur l'écriture platform sans origine.
+- Validations : `pnpm check` (format, lint, build, 48 tests), `pnpm typecheck`,
+  `pnpm infra:test` (10 contrôles : migrations, rollback, concurrence, empreintes,
+  rôles, HTTP, panne SQL, redémarrage, recréation des conteneurs, persistance du
+  volume) et parcours navigateur réel (installation, connexion, reconnexion après
+  `down`/`up` complet).
+
+### Phase 1 — plateforme administrable et multi-organisation
+
+- `lib/database/src/platform-migration.ts`, migrations et dépôt : migration
+  additive `0002_platform` après la 0.4, sans changement de 0001. Utilisateurs,
+  installation unique, organisations, rôles contextualisés, appartenances,
+  sessions persistantes, modèle OIDC et audit. Requêtes paramétrées dans
+  `lib/database`, FK rôle/organisation, transactions et sérialisation des
+  changements de droits pour protéger les derniers administrateurs.
+- `apps/core/src/platform/` : assistant protégé par jeton opérateur,
+  authentification locale, scrypt avec sels individuels, sessions sous empreinte,
+  délais absolu/inactif et révocation. Cookies HttpOnly/SameSite, Secure en HTTPS,
+  protections CSRF, limite persistante de connexions par compte et borne de
+  concurrence des dérivations. Validation des entrées et refus par défaut.
+- Création des comptes et organisations par l'administrateur plateforme, selon
+  le choix confirmé ; délégation de l'administration d'organisation avec des
+  permissions exactes. Aucun accès membre implicite pour un administrateur
+  plateforme, aucune attribution ou modification au-delà des droits du délégant.
+  Désactivation et rétrogradation du dernier administrateur actif refusées,
+  y compris sous concurrence. Mutations réussies et audit atomiques.
+- `apps/core/src/services/` : raccord persistant identité/organisation/permissions
+  au SDK, contexte relu à chaque appel. La factory ne certifie toujours pas une
+  identité fournie par un appelant ; capabilities et SQL générique restent futurs.
+- `apps/bff/src/platform.ts` : proxy de routes fermé, contrôle d'origine et JSON,
+  cookies Orkobi/CSRF uniquement, délais et corps bornés, sans transfert des
+  en-têtes d'autorisation/proxy arbitraires. Bootstrap de schéma 2 : disponibilité
+  identité/organisations dérivée de l'état réel, modules toujours indisponibles.
+- `apps/web/src/platform/`, App, entrée et traductions : installation, connexion,
+  espace de travail réel, profil/sessions, administration, organisations,
+  appartenances, rôles, audit, sélection serveur et récupération après expiration.
+  FR/EN, thèmes, mobile, droits explicites et maintien du catalogue de présentation.
+  État SQL ajouté à la page des services ; la version produit reste 0.1.0-EXP.
+- Revue Impeccable indépendante : tableaux mobiles rendus lisibles par défilement
+  local, formulaires de création vidés après succès (mot de passe compris),
+  cibles de modification explicites et annulation. Vérification navigateur des
+  corrections ; les trois constats sont résolus, disposition `ship` sur ces fixes.
+- `apps/web/build.mjs` : build frontend explicitement en production, indépendant
+  du `NODE_ENV=development` du `.env` backend. La première tentative de séparation
+  par une constante Vite créait un mélange jsxDEV/runtime production ; remplacée
+  par un lancement Vite cohérent et revalidée dans Chrome.
+- `scripts/prepare-installation.mjs`, `.env.example`, Compose et scripts racine :
+  ajout non destructif du jeton opérateur à un environnement 0.4, configuration
+  des cookies/origine et intégration de la suite Phase 1 à la recette Docker.
+- `tests/platform.test.mjs`, `tests/platform.integration.mjs` et suites existantes :
+  cryptographie/configuration, installation concurrente, identités persistantes,
+  CSRF, deux organisations, accès croisés refusés, délégation bornée, expiration,
+  révocation étrangère refusée, audit sans secrets et protection concurrente du
+  dernier administrateur. `tests/browser/phase1*.mjs` : parcours réels et correctifs
+  de revue avec captures desktop/mobile, sans secrets opérateur versionnés.
+- README, PRODUCT et `DOCS/` : guide d'installation/exploitation Phase 1,
+  contrôles et preuves de sécurité, architecture, SDK, guides historiques et
+  roadmap synchronisés. La prochaine phase est la modularité 2.1.
+
+Validation locale : 48 tests Node.js, 18 tests SQL/HTTP sur PostgreSQL réel,
+contrats TypeScript, lint et formatage. Mise à niveau 0.4, panne/reprise SQL,
+redémarrage des applications et recréation complète des conteneurs vérifiés.
+Preuve de recette : `output/infrastructure/c6b49f6c1be6/result.json`.
+Chrome headless : installation jusqu'à la délégation, profil, persistance,
+FR/EN, thèmes, mobile et corrections ; captures `output/playwright/phase1-*.png`.
+Les premiers passages navigateur ont corrigé des sélecteurs de test trop stricts
+et un nom de champ mêlé à son aide. Les scénarios ont été poursuivis après
+correction ; les résultats ne sont pas présentés comme une publication distante.
+
+Limites : listes bornées sans pagination (200 entrées, sessions 100), isolation
+applicative sans RLS, TLS et authentification interservices de production non
+validés, pas de MFA/récupération de mot de passe/OIDC actif/activation de modules
+ou isolation de plugins. Les volumes de recette sont conservés. Aucun compte
+réel précréé, commit, push, tag ou déploiement de production effectué par ce lot.
+
+### Étape technique 0.4 — Infrastructure
+
+- `compose.yaml`, `compose.dev.yaml`, `Dockerfile`, `.dockerignore` et
+  `infra/postgres/init.sh` : pile locale PostgreSQL 18 → migration ponctuelle →
+  Core → BFF/React compilé. Seul le BFF est exposé sur loopback ; exposition SQL
+  locale facultative pour Vite. Applications exécutées sous `node`, signaux via
+  init, volume nommé sur `/var/lib/postgresql` et santé de chaque service durable.
+- Comptes SQL séparés : administrateur pour l'initialisation, migrateur sans
+  privilèges superutilisateur et compte Core limité à la lecture du registre.
+  Les secrets sont requis, distincts et absents des sources/images.
+- `lib/database/src/{config,migrations,postgres}.ts` : pilote `pg` 8.23.1,
+  configuration validée, pool borné et fermé à l'arrêt, première migration du
+  schéma technique. Registre avec SHA-256, ordre contrôlé, verrou transactionnel,
+  rejeu sans changement, rollback atomique et refus d'historique incompatible.
+  `pnpm-lock.yaml` mis à jour sans exemption de politique pnpm.
+- `apps/core/src/database.service.ts`, configuration, module et contrôleur :
+  injection du pool et `/health/ready`, HTTP 503 si SQL désactivé, inaccessible
+  ou migrations incompatibles. `apps/bff/src/{application,core-client}.ts` :
+  `/api/ready` vérifie cette chaîne avec le client HTTP borné existant. Les sondes
+  de vitalité et le bootstrap frontend conservent leur contrat.
+- `scripts/{database,setup-env,healthcheck,test-infrastructure}.mjs` et scripts
+  racine : initialisation de `.env` sans écrasement avec secrets aléatoires,
+  migrations/état SQL, démarrage/arrêt Compose et recette isolée reproductible.
+  Les conteneurs et secrets temporaires sont retirés après recette, les volumes
+  de test sont conservés. Les résultats locaux sont ignorés par Git.
+- `tests/database.test.mjs` : configuration, erreurs expurgées et HTTP réel
+  distinguant vitalité/disponibilité. `tests/database.integration.mjs` : tests
+  PostgreSQL réels de concurrence, rejeu, rollback DDL/registre, dérive/futur de
+  l'historique et refus des écritures/DDL sous le compte Core. Le contrôle des
+  packages accepte le pilote externe tout en vérifiant les liens workspace.
+- `.prettierrc.json` accepte les fins de ligne de la plateforme ; `.gitattributes`
+  impose LF aux scripts shell pour Docker sous Windows. Aucun changement de
+  contenu des fichiers sans rapport n'est nécessaire pour ce réglage.
+- `DOCS/INFRASTRUCTURE.md`, README, architecture, guides Core/BFF et roadmap :
+  installation, fonctionnement local, comptes, migrations, reprise, sauvegarde
+  et limites. Version commune des douze manifests conservée en `0.1.0-EXP`.
+
+Validation locale sous Windows, Node.js 22.22.2 et Docker Desktop Linux :
+`pnpm check` (formatage, lint, compilation, contrats et 46 tests),
+`pnpm typecheck`, `pnpm install --frozen-lockfile` et `pnpm peers check` réussis.
+`pnpm infra:test` : cinq tests SQL, échanges HTTP, route React directe, panne et
+reprise PostgreSQL, redémarrage Core/BFF, recréation complète des conteneurs et
+conservation d'une donnée témoin vérifiés. Le premier passage a identifié un port
+hôte aléatoire réattribué au redémarrage ; la recette relit désormais ce port et
+le passage complet suivant a réussi. Preuve locale :
+`output/infrastructure/efb9ab1b21be/result.json` (ignorée par Git).
+
+Limites : environnement local HTTP/SQL sans TLS, image contenant encore les
+outils de build, sans restauration de sauvegarde éprouvée ni déploiement de
+production. Aucun utilisateur, installation applicative, transaction métier,
+adaptateur SQL contextualisé ou isolation réelle des organisations/plugins
+n'est ajouté. Aucun commit, push ou publication ; prochaine étape : 1.1.
+
+### Étape technique 0.3 — Frontend et BFF
+
+- `apps/web/` : application React 19.3.1/Vite 8.3.5/TypeScript, React Router 8.5.1,
+  police Manrope auto-hébergée et icônes SVG Lucide. Accueil centré sur les
+  organisations et modules, selon le choix utilisateur ; tableau de bord classique
+  avec Odoo et Business Central comme repères de clarté, sans copie de marque.
+- Cinq routes : accueil, organisations, modules, préférences, état des services ;
+  404 localisée, navigation mobile par dialog natif, focus visible et réduction
+  des mouvements. Recherche et filtres de modules dans l'URL, retour/rechargement
+  conservés ; catalogue de présentation explicitement non installable.
+- Thèmes clair/sombre/système et traductions FR/EN typées. Préférences locales
+  persistantes, suivi du thème système, titre et langue du document mis à jour,
+  fonctionnement dégradé si le stockage est indisponible. Script de thème initial
+  externe, compatible avec la CSP sans script inline.
+- `apps/bff/` : BFF NestJS 12.3.2, configuration validée, `/api/health`, bootstrap
+  versionné et fichiers React compilés avec fallback des routes de page.
+  JSON d'erreur corrélé, logs structurés expurgés, en-têtes navigateur, aucun CORS
+  permissif ou transfert des cookies/jetons du navigateur.
+- `lib/contracts/src/http.ts` et contrôleur de vitalité Core : contrats HTTP
+  partagés et validateurs runtime. Sonde Core bornée (délai et 4 Ko), redirections
+  refusées et états distincts timeout/réseau/réponse invalide. Le bootstrap reste
+  utile en mode dégradé et n'annonce jamais les services métier comme disponibles.
+- `scripts/dev.mjs`, `scripts/dev-core.mjs`, scripts racine et `.env.example` :
+  lancement commun et commandes séparées, compilation backend sérialisée,
+  surveillance et arrêt des processus enfants. `pnpm dev:core` conserve le
+  lancement du Core seul ; `pnpm dev` lance désormais toute la pile locale.
+- Le contrôle Vite a révélé une incompatibilité Fast Refresh due aux exports
+  mixtes Provider/hook. Contextes/hooks séparés des composants et ErrorBoundary
+  isolée de l'entrée ; règle `react-refresh/only-export-components` ajoutée.
+  Le scénario de recompilation des contrats a ensuite passé sans erreur React,
+  en conservant route, langue, thème et récupération des services.
+- `tests/bff.test.mjs` : 8 tests principaux et 8 sous-tests couvrant vrais échanges
+  HTTP, configuration, pannes, timeouts, taille, redirection, absence d'en-têtes
+  sensibles, ressources et contrats invalides. `tests/browser/` : parcours
+  Playwright de production, Vite et rechargement à chaud reproductibles via la CLI.
+- `PRODUCT.md`, `DESIGN.md`, `.impeccable/{config,design}.json` et brief du shell :
+  contexte confirmé et système visuel documenté avec le skill Impeccable.
+  Revue visuelle indépendante des dix captures : disposition `ship` ; aucun
+  correctif matériel requis. Captures et planches temporaires ignorées par Git.
+- `DOCS/FRONTEND_BFF.md`, guides existants, README et roadmap synchronisés.
+  Douze manifests privés restent en `0.1.0-EXP` ; version BFF/web dérivée de la
+  racine, règles de synchronisation actualisées. Retrait des emplacements réservés
+  `.gitkeep` du BFF et du frontend.
+- La résolution initiale de Lucide 1.64.0 ajoutait une exemption d'âge de publication.
+  Elle a été remplacée par 1.63.0 et le lockfile régénéré puis vérifié sans exemption.
+  Les scripts de dépendances restent soumis à la politique existante.
+
+Validation locale : `pnpm check` (formatage, lint, dix compilations, contrats
+TypeScript et 43 tests, sous-tests compris), `pnpm typecheck`, installation avec
+lockfile figé et contrôle de peers réussis. Audit d'exécution sans avis connu
+signalé. Chrome headless : cinq routes, URL, filtres/recherche, FR/EN, thèmes,
+persistance, mode système, 404, reprise d'erreurs et tiroir mobile au clavier ;
+captures 1440 × 1000 et 390 × 844, sans débordement. Pannes UI simulées par
+interception, pannes BFF/Core éprouvées par serveurs HTTP jetables. Contrôle
+Vite/HMR distinct du build de production, arrêt et libération des ports vérifiés.
+
+Limites : aucun compte utilisateur, création réelle d'organisation, installation
+ou activation de module, PostgreSQL, migration, isolation SQL ou sécurité de
+production n'est fourni par ce lot. Aucune publication, opération de production,
+commit ou push effectué ; prochaine étape technique : infrastructure 0.4.
 
 ### Initialisation de la stratégie Git
 

@@ -1,3 +1,4 @@
+import { coreVersion } from '../apps/core/dist/version.js';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
@@ -31,7 +32,13 @@ test('configuration : valeurs par défaut locales, explicites et immuables', () 
       CORE_PORT: '4201',
       CORE_OPENAPI_ENABLED: 'true',
     }),
-    { environment: 'production', host: '0.0.0.0', port: 4201, openApiEnabled: true },
+    {
+      environment: 'production',
+      host: '0.0.0.0',
+      port: 4201,
+      openApiEnabled: true,
+      platform: { setupToken: '', secureCookies: true, internalToken: '', oidc: null },
+    },
   );
 });
 
@@ -147,7 +154,7 @@ test('HTTP : OpenAPI explicite décrit le vrai endpoint et sert Swagger en local
   const response = await fetch(`${url}/internal/openapi.json`);
   assert.equal(response.status, 200);
   const document = await response.json();
-  assert.equal(document.info.version, '0.1.0-EXP');
+  assert.equal(document.info.version, coreVersion);
   assert.ok(document.paths['/health'].get.responses['200']);
   assert.equal(document.components.schemas.HealthResponse.properties.status.enum[0], 'ok');
   const page = await fetch(`${url}/internal/docs`);

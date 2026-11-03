@@ -1,7 +1,7 @@
 # Orkobi — Stratégie Git et règles de versioning
 
-Règles préparées le 29 octobre 2026 après examen du dépôt.
-Version conservée : **`0.1.0-EXP`**. Ce document définit la procédure ; il ne
+Règles préparées le 29 octobre 2026, actualisées le 3 novembre 2026.
+Version préparée : **`0.3.0-dev.1`**, canal déclaré `dev` dans `package.json`. Ce document définit la procédure ; il ne
 constitue ni une publication ni la preuve d'une protection GitHub active.
 Le [diagnostic d'initialisation](GIT_BOOTSTRAP.md) distingue les actions locales
 réalisées et les actions distantes en attente.
@@ -29,8 +29,9 @@ aux versions produit 0.1.0-EXP et 0.2.0.
 
 `main` contient actuellement des fondations expérimentales : son nom ne prouve
 pas une stabilité produit. Aucune version STABLE n'est annoncée.
-Les trois nouvelles branches démarrent au même commit local que `main`.
-Elles n'ont pas de branche distante suivie avant leur premier push approuvé.
+À l'initialisation du 29 octobre, les trois branches de travail démarrent au
+même commit local que `main`, sans suivi distant avant leur premier push
+approuvé. Ce constat historique n'est pas un audit de leurs positions actuelles.
 
 `matheo` et `devops` ne fusionnent pas directement l'une dans l'autre : les
 changements partagés passent par `develop`. Une évolution volumineuse peut être
@@ -93,51 +94,60 @@ cette initialisation.
 
 ## 5. Sources de version examinées
 
-Le monorepo utilise initialement une **version fixe commune** pour dix manifests privés :
+Le `package.json` racine est la source produit. Les **18 manifests privés**
+suivent actuellement la même version : racine, `apps/*`, `lib/*`, `sdk/*`,
+`modules/*`, `examples/*` et `tests/types`. `pnpm version:check` découvre ces
+packages et refuse une différence de version ou une étiquette Docker locale
+incohérente ; ce contrôle ouvre aussi `pnpm check`.
 
-- `package.json` (source produit) ;
-- `apps/core/package.json` ;
-- `lib/{contracts,database,events,identity,security}/package.json` ;
-- `sdk/{core,types}/package.json` ;
-- `tests/types/package.json`.
+Métadonnées et représentations :
 
-Tous déclarent `0.1.0-EXP`. Le SDK n'est pas encore publié indépendamment.
-Les packages des futurs BFF/frontend rejoindront cette règle lorsqu'ils existeront.
-Les futurs modules/plugins pourront avoir leurs versions propres et devront déclarer
-la compatibilité Core/SDK ; leur numéro ne sera pas changé automatiquement avec le Core.
+- `package.json` : `version` et `orkobi.channel`, ici `dev` ; cette métadonnée
+  n'active aucun service de distribution ou de mise à jour.
+- `apps/core/src/version.ts` lit la racine pour OpenAPI et la compatibilité.
+- `apps/bff/src/config.ts` lit la même racine pour le bootstrap produit.
+- `apps/web/vite.config.ts` injecte cette version au build du frontend.
+- `compose*.yaml` emploie des étiquettes locales alignées, contrôlées par le script.
+- README, guides courants, roadmap, changelog et notes de préversion suivent la
+  livraison préparée ; les rapports de preuve conservent leur version d'exécution.
 
-Représentations actuellement maintenues explicitement :
+Le SDK reste privé et versionné avec le produit ; ses archives locales portent
+la version courante. La version du **manifeste fonctionnel** d'un module ou plugin
+reste autonome : `orkobi.demo` et les modules métier déclarent `0.1.0`, l'exemple
+`community.cards` déclare `1.0.0`. Leurs packages de développement pnpm suivent
+la version commune, pas leurs versions de manifeste.
 
-- `apps/core/src/application.ts` : version de la documentation OpenAPI ;
-- `tests/core.test.mjs` : assertion sur cette version ;
-- `README.md`, titres des guides courants et cible de `DOCS/ROADMAP.md` ;
-- `CHANGELOG.md` : section de livraison et notes associées.
-
-Le lockfile pnpm enregistre les dépendances ; sa `lockfileVersion` n'est pas
-la version du produit. Les entrées historiques du changelog et du rapport de
-bootstrap gardent leur numéro d'origine. Les numéros d'exemples sont illustratifs.
-Il n'existe pas encore de générateur commun de métadonnées de version ni de CI
-de publication ; ne pas les présenter comme disponibles.
+Les versions de migration, `pluginApiVersion:1`, migrations internes de plugins,
+plages de compatibilité, exemples SemVer et `lockfileVersion` ne sont pas des
+copies de la version produit. Ne jamais les modifier par remplacement global.
+Aucun SQL/checksum historique n'est modifié lors d'un changement de version.
 
 ## 6. Procédure de changement de version
 
-**Aucun changement de version dans l'initialisation actuelle.** Un changement
-ultérieur doit être demandé et préparé dans une PR dédiée :
+La demande de versionnement du 3 novembre 2026 prépare **0.3.0-dev.1**. Les
+[notes associées](RELEASE_0_3_0_DEV_1.md) séparent validation locale et publication.
+Pour une prochaine version :
 
-1. Choisir explicitement la version cible et le canal. Format SemVer :
-   `MAJOR.MINOR.PATCH[-dev.N|-beta.N|-rc.N][+build]`. `EXP` reste conservé pour
-   l'état courant ; avant 1.0.0, documenter toute rupture de contrat.
-2. Fixer la version racine et synchroniser les neuf autres manifests privés
-   dans le même commit. Ne pas utiliser une commande de publication automatique.
-3. Mettre à jour la version OpenAPI, son assertion et les documents courants.
-   Préserver les versions historiques et les versions indépendantes des plugins.
-4. Régénérer le lockfile avec pnpm si ses importers changent ; examiner le diff.
-5. Exécuter `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm typecheck` et
-   vérifier l'égalité des dix champs `version` avec la source racine.
-6. Faire examiner et intégrer la PR. Ne créer aucun tag avant validation de publication.
+1. Choisir la cible `MAJOR.MINOR.PATCH[-dev.N|-beta.N|-rc.N]` et le canal déclaré.
+   Avant 1.0.0, documenter toute rupture. `dev.N` appartient au canal `dev`,
+   `beta.N`/`rc.N` au canal `beta`, une finale au canal `stable`.
+2. Modifier la racine et tous les manifests privés du workspace. Ne lancer aucune
+   commande de publication ; conserver les versions propres aux manifestes plugins.
+3. Aligner les étiquettes des quatre Compose, README et documentation courante.
+   OpenAPI/BFF/frontend liront automatiquement la racine après rebuild/redémarrage.
+4. Régénérer le lockfile avec pnpm seulement si nécessaire et examiner le diff.
+   Les dépendances `workspace:*` ne changent pas lors du seul bump commun.
+5. Lancer `pnpm install --frozen-lockfile`, `pnpm version:check`, `pnpm check`,
+   `pnpm typecheck`, puis les contrôles SDK et de compatibilité concernés.
+6. Préparer et faire examiner la PR avant intégration. Un numéro dans les fichiers
+   n'est ni un tag ni une publication. Ne créer/pousser de tag qu'après autorisation
+   explicite de publication et vérification du commit retenu.
 
-Une automatisation future pourra générer les métadonnées depuis la racine et
-contrôler leur cohérence. Son ajout demandera une évolution explicite de cette procédure.
+Les tests de compatibilité utilisent les plages minimales de comparateurs du
+Core ; ce n'est pas le résolveur npm des ranges. Une préversion est inférieure
+à sa finale : les plages actuelles `>=0.2.0-EXP <0.3.0` acceptent `0.3.0-dev.1`,
+mais refuseront `0.3.0`. Avant une finale, revoir explicitement ces déclarations
+et les versions des paquets distribués ; ne pas élargir leur compatibilité en silence.
 
 ## 7. Cycle de publication
 

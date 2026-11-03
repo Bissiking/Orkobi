@@ -1,0 +1,13 @@
+{
+  "name": "@orkobi/plugin-demo-example",
+  "version": "0.3.0-dev.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@orkobi/sdk-core": "workspace:*",
+    "@orkobi/sdk-types": "workspace:*"
+  }
+}
