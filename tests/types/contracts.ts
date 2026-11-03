@@ -3,7 +3,7 @@ import { createId } from '@orkobi/contracts';
 import type { Membership } from '@orkobi/identity';
 import type { DatabaseAdapter } from '@orkobi/database';
 import type { EventPublisher } from '@orkobi/events';
-import type { CoreSdk } from '@orkobi/sdk-core';
+import type { CoreSdk, BusinessPort, PluginSdk } from '@orkobi/sdk-core';
 import type { OrganizationContext, UserId, Result, ModuleRequirements } from '@orkobi/sdk-types';
 
 const organizationId = createId<'organization'>('org-a');
@@ -66,4 +66,17 @@ export async function publish(publisher: EventPublisher): Promise<void> {
     occurredAt: '2026-10-28T00:00:00.000Z',
     payload: { contactId: 'contact-a' },
   });
+}
+
+// Le port métier officiel ne prend pas de contexte d'organisation utilisateur.
+export async function consumeBusiness(port: BusinessPort) {
+  // @ts-expect-error Aucun accès SQL brut sur le port métier.
+  void port.database;
+  // @ts-expect-error Aucun remplacement de contexte sur le port métier.
+  void port.organizationId;
+  return port.get('crm', 'contacts', '11111111-1111-4111-8111-111111111111');
+}
+export function guestCannotReceiveBusinessPort(sdk: PluginSdk) {
+  // @ts-expect-error Le guest API 1 ne reçoit pas le port hôte métier.
+  void sdk.business;
 }

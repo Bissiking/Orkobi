@@ -1,3 +1,4 @@
+import { businessDefinitions } from '@orkobi/module-business';
 import { randomUUID } from 'node:crypto';
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { isModuleManifest } from '@orkobi/contracts';
@@ -15,7 +16,10 @@ import { CapabilityRegistry } from './capability-registry.js';
 import { satisfiesRange } from './range.js';
 
 /** Registre des modules officiels livrés avec le Core. */
-export const officialModules: readonly ModuleManifest[] = Object.freeze([demoManifest]);
+export const officialModules: readonly ModuleManifest[] = Object.freeze([
+  demoManifest,
+  ...businessDefinitions.map((definition) => definition.manifest),
+]);
 
 function requireManifest(module: StoredModule): ModuleManifest {
   if (!isModuleManifest(module.manifest))

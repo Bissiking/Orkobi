@@ -1,3 +1,4 @@
+import { coreVersion } from '../apps/core/dist/version.js';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
@@ -153,7 +154,7 @@ test('HTTP : OpenAPI explicite décrit le vrai endpoint et sert Swagger en local
   const response = await fetch(`${url}/internal/openapi.json`);
   assert.equal(response.status, 200);
   const document = await response.json();
-  assert.equal(document.info.version, '0.2.0-EXP');
+  assert.equal(document.info.version, coreVersion);
   assert.ok(document.paths['/health'].get.responses['200']);
   assert.equal(document.components.schemas.HealthResponse.properties.status.enum[0], 'ok');
   const page = await fetch(`${url}/internal/docs`);

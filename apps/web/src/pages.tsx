@@ -77,6 +77,7 @@ function normalize(value: string) {
     .toLocaleLowerCase();
 }
 export function ModulesPage() {
+  const { session } = usePlatform();
   const { messages: t } = usePreferences();
   const [params, setParams] = useSearchParams();
   const audience = ['business', 'association'].includes(params.get('audience') ?? '')
@@ -98,57 +99,61 @@ export function ModulesPage() {
     <>
       <PageHeading title={t.catalogueTitle} description={t.catalogueDescription} />
       <ModulesSection />
-      <div className="catalogue-tools">
-        <div className="filter-group" role="group" aria-label={t.filter}>
-          {(['all', 'business', 'association'] as const).map((value) => (
-            <button
-              key={value}
-              aria-pressed={audience === value}
-              onClick={() => update('audience', value)}
-            >
-              {t[value]}
-            </button>
-          ))}
-        </div>
-        <label className="search-field">
-          <Search size={18} aria-hidden="true" />
-          <span className="sr-only">{t.searchModules}</span>
-          <input
-            type="search"
-            placeholder={t.searchPlaceholder}
-            value={query}
-            onChange={(event) => update('q', event.target.value)}
-          />
-          {query && (
-            <Button variant="icon" aria-label={t.clearSearch} onClick={() => update('q', '')}>
-              <X size={16} />
-            </Button>
+      {!session.user && (
+        <>
+          <div className="catalogue-tools">
+            <div className="filter-group" role="group" aria-label={t.filter}>
+              {(['all', 'business', 'association'] as const).map((value) => (
+                <button
+                  key={value}
+                  aria-pressed={audience === value}
+                  onClick={() => update('audience', value)}
+                >
+                  {t[value]}
+                </button>
+              ))}
+            </div>
+            <label className="search-field">
+              <Search size={18} aria-hidden="true" />
+              <span className="sr-only">{t.searchModules}</span>
+              <input
+                type="search"
+                placeholder={t.searchPlaceholder}
+                value={query}
+                onChange={(event) => update('q', event.target.value)}
+              />
+              {query && (
+                <Button variant="icon" aria-label={t.clearSearch} onClick={() => update('q', '')}>
+                  <X size={16} />
+                </Button>
+              )}
+            </label>
+          </div>
+          <p className="result-count" aria-live="polite">
+            {filtered.length} {filtered.length === 1 ? t.plannedModule : t.plannedModules}
+          </p>
+          {filtered.length ? (
+            <ul className="module-grid">
+              {filtered.map((module) => (
+                <ModuleItem key={module.id} module={module} />
+              ))}
+            </ul>
+          ) : (
+            <section className="empty-panel">
+              <Search size={34} aria-hidden="true" />
+              <h2>{t.noResultsTitle}</h2>
+              <p>{t.noResultsText}</p>
+              <Button variant="secondary" onClick={() => setParams({})}>
+                {t.resetFilters}
+              </Button>
+            </section>
           )}
-        </label>
-      </div>
-      <p className="result-count" aria-live="polite">
-        {filtered.length} {filtered.length === 1 ? t.plannedModule : t.plannedModules}
-      </p>
-      {filtered.length ? (
-        <ul className="module-grid">
-          {filtered.map((module) => (
-            <ModuleItem key={module.id} module={module} />
-          ))}
-        </ul>
-      ) : (
-        <section className="empty-panel">
-          <Search size={34} aria-hidden="true" />
-          <h2>{t.noResultsTitle}</h2>
-          <p>{t.noResultsText}</p>
-          <Button variant="secondary" onClick={() => setParams({})}>
-            {t.resetFilters}
-          </Button>
-        </section>
+          <p className="catalogue-note">
+            <CircleHelp size={17} aria-hidden="true" />
+            {t.catalogueNote}
+          </p>
+        </>
       )}
-      <p className="catalogue-note">
-        <CircleHelp size={17} aria-hidden="true" />
-        {t.catalogueNote}
-      </p>
     </>
   );
 }

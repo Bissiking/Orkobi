@@ -88,13 +88,13 @@ test('SQL natif : concurrence, journal, dérive, DDL partiel et privilèges', as
     const expected = [
       ...mysqlMigrations,
       {
-        id: '0011_failure_probe',
+        id: '0012_failure_probe',
         statements: ['CREATE TABLE phase5_probe(id integer)', 'SELECT * FROM missing_phase5_table'],
       },
     ];
     await assert.rejects(applyMySqlMigrations(sql, config.engine, expected));
     const [rows] = await sql.query(
-      "SELECT state FROM orkobi_infrastructure__schema_migrations WHERE id='0011_failure_probe'",
+      "SELECT state FROM orkobi_infrastructure__schema_migrations WHERE id='0012_failure_probe'",
     );
     assert.equal(rows[0].state, 'applying');
     assert.equal(await runtime.isReady(), false);
@@ -102,7 +102,7 @@ test('SQL natif : concurrence, journal, dérive, DDL partiel et privilèges', as
     // Réparation explicite du fixture jetable seulement ; jamais exécutée par le migrateur.
     await sql.query('DROP TABLE phase5_probe');
     await sql.query(
-      "DELETE FROM orkobi_infrastructure__schema_migrations WHERE id='0011_failure_probe'",
+      "DELETE FROM orkobi_infrastructure__schema_migrations WHERE id='0012_failure_probe'",
     );
     assert.equal(await runtime.isReady(), true);
   });

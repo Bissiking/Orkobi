@@ -1,6 +1,6 @@
 import { Catch, HttpException } from '@nestjs/common';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
-import { publicHttpError } from '@orkobi/contracts';
+import { publicHttpError, publicBusinessDetails } from '@orkobi/contracts';
 import type { Response } from 'express';
 import type { JsonLogger } from './logger.js';
 
@@ -14,6 +14,8 @@ export class CoreExceptionFilter implements ExceptionFilter {
     const correlationId = String(response.locals.correlationId);
     const { error, logLevel } = publicHttpError(status, correlationId);
     this.logger.event(logLevel, 'http_error', { status, code: error.code, correlationId });
-    response.status(status).json({ error });
+    const details =
+      exception instanceof HttpException ? publicBusinessDetails(exception.getResponse()) : null;
+    response.status(status).json({ error: { ...error, ...details } });
   }
 }

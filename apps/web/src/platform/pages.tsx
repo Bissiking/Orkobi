@@ -1,3 +1,5 @@
+import { usePreferences } from '../preferences-context';
+import { BusinessGrants } from './business-grants';
 import { StoreAdmin } from './store';
 import { PluginsAdmin } from './plugins';
 import {
@@ -14,6 +16,7 @@ import { ArrowRight, Building2, ShieldCheck, UserRound, LogOut } from 'lucide-re
 import { modulePermissions, organizationPermissions } from '@orkobi/contracts';
 import type {
   AuditEntry,
+  BusinessDefinition,
   ModuleEntry,
   ModuleSummary,
   OrganizationRole,
@@ -709,29 +712,40 @@ export function AdministrationPage() {
     <>
       <PlatformHeading title={t.administration} description={t.adminHelp} />
       <nav className="platform-tabs admin-tabs" aria-label={t.administration}>
-        {(['users', 'organizations', 'integrations', 'plugins', 'store', 'audit'] as const).map(
-          (key) => (
-            <button
-              key={key}
-              aria-current={tab === key ? 'page' : undefined}
-              className={tab === key ? 'active' : ''}
-              onClick={() => setParams({ tab: key })}
-            >
-              {key === 'store'
+        {(
+          [
+            'users',
+            'organizations',
+            'integrations',
+            'plugins',
+            'business',
+            'store',
+            'audit',
+          ] as const
+        ).map((key) => (
+          <button
+            key={key}
+            aria-current={tab === key ? 'page' : undefined}
+            className={tab === key ? 'active' : ''}
+            onClick={() => setParams({ tab: key })}
+          >
+            {key === 'business'
+              ? 'Modules ERP'
+              : key === 'store'
                 ? 'Store'
                 : key === 'plugins'
                   ? 'Extensions'
                   : key === 'integrations'
                     ? a.integrations
                     : t[key]}
-            </button>
-          ),
-        )}
+          </button>
+        ))}
       </nav>
       {tab === 'users' && <UsersAdmin />}
       {tab === 'organizations' && <OrganizationsAdmin />}
       {tab === 'integrations' && <IntegrationsAdmin />}
       {tab === 'plugins' && <PluginsAdmin />}
+      {tab === 'business' && <BusinessGrants />}
       {tab === 'store' && <StoreAdmin />}
       {tab === 'audit' && <AuditPanel path="admin/audit" />}
       <p className="list-note">
@@ -1018,9 +1032,14 @@ function AuditPanel({ path }: { path: string }) {
 }
 
 export function ModulesSection() {
+  const { locale } = usePreferences();
   const t = usePlatformCopy(),
     { session, post } = usePlatform(),
     [revision, setRevision] = useState(0);
+  const catalog = usePlatformResource<{ definitions: BusinessDefinition[] }>(
+    session.user ? 'business' : null,
+    revision,
+  );
   const modules = usePlatformResource<{ modules: ModuleSummary[] }>(
     session.user && session.activeOrganizationId ? 'modules' : null,
     revision,
@@ -1044,7 +1063,17 @@ export function ModulesSection() {
             <div className="role-row" key={module.id}>
               <div>
                 <h3>
-                  <AppIcon name="notes" size={20} /> {module.name} <small>v{module.version}</small>{' '}
+                  <AppIcon
+                    name={
+                      catalog.data?.definitions.find((d) => d.manifest.id === module.id)?.icon ??
+                      'notes'
+                    }
+                    size={20}
+                  />{' '}
+                  {catalog.data?.definitions.find((d) => d.manifest.id === module.id)?.label[
+                    locale
+                  ] ?? module.name}{' '}
+                  <small>v{module.version}</small>{' '}
                   <span className="small-label">
                     {module.active
                       ? t.moduleActive
@@ -1065,7 +1094,14 @@ export function ModulesSection() {
               </div>
               <div className="row-actions">
                 {module.active && module.id !== 'orkobi.demo' && (
-                  <Button variant="text" to={`/plugins/${module.id}`}>
+                  <Button
+                    variant="text"
+                    to={
+                      module.id.startsWith('orkobi.')
+                        ? `/business/${module.id.slice(7)}`
+                        : `/plugins/${module.id}`
+                    }
+                  >
                     {t.openModule}
                   </Button>
                 )}

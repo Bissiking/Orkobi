@@ -1,6 +1,6 @@
 # Phase 2 — modules, capabilities et données isolées
 
-Version produit : **0.2.0-EXP**. Les sections 2.1 à 2.4 de la roadmap correspondent
+Version produit : **0.3.0-dev.1**. Les sections 2.1 à 2.4 de la roadmap correspondent
 à cette livraison locale ; ce n'est ni une publication stable ni une autorisation de
 déploiement. La Phase 1 reste le socle : installation, identité, organisations,
 délégation et administration (voir [PHASE_1.md](PHASE_1.md)).
@@ -15,7 +15,7 @@ délégation et administration (voir [PHASE_1.md](PHASE_1.md)).
   manifeste → activation → données isolées → désactivation sans perte.
 
 La version du Core (`apps/core/src/version.ts`) sert de référence de compatibilité
-pour les manifestes. Le bundle produit suit la même version (`0.2.0-EXP`).
+pour les manifestes. Le bundle produit suit la même version (`0.3.0-dev.1`).
 
 ## Mise à niveau
 

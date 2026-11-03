@@ -6,7 +6,37 @@ Chaque intervention doit ajouter une entrée datée avec les fichiers concernés
 les raisons des changements, les validations exécutées et les limites restantes.
 Les modifications en cours restent dans « Non publié » jusqu'à une version décidée.
 
-## Non publié — 0.2.0-EXP — 2026-10-31
+## Non publié — 0.3.0-dev.1 — 2026-11-03
+
+### Versionnement du périmètre métier
+
+- Version produit et 18 manifests privés synchronisés, canal `dev` déclaré dans
+  la racine ; OpenAPI, BFF et frontend lisent cette source unique. Étiquettes
+  Docker locales alignées et vérification automatique `pnpm version:check`
+  incluse dans `pnpm check`.
+- Le protocole plugins reste API 1, les versions de leurs manifestes et les
+  migrations restent indépendantes et inchangées. Les plages de comparateurs
+  existantes acceptent cette préversion ; aucune stabilité ou publication déduite.
+- [Notes et vérifications](DOCS/RELEASE_0_3_0_DEV_1.md). Aucun tag, push,
+  publication, migration de base utilisateur ou déploiement effectué.
+
+### Phase 7 — Premier périmètre métier France / EUR — 2026-11-03
+
+- Neuf modules officiels et règles pures dans `modules/business`, port SDK public
+  de confiance, adaptateur Core autorisé et migration append-only `0011_business`
+  pour PostgreSQL/MariaDB/MySQL. Aucun port hôte ajouté au guest tiers API 1.
+- CRM, catalogue, devis figés et préparations non fiscales, stocks compensables,
+  projets/tâches, adhérents/cotisations, documents bornés, rapports SQL et RH
+  administratif. Permissions métier distinctes des droits Core, révisions,
+  idempotence et audit atomique ; pas de stock négatif ni double règlement.
+- Parcours SDK UI/Papicons, CSS natif FR/EN, thèmes, mobile, URL persistante,
+  administration des accords et impression des documents.
+- Tests unitaires et suites HTTP sur les trois moteurs, recette Chrome sur vrais
+  services locaux ; [guide](DOCS/PHASE_7.md) et [preuves](DOCS/REVIEW_PHASE_7.md).
+  Sans plateforme agréée configurée, l'émission fiscale reste bloquée. La version
+  reste expérimentale ; aucune publication ni modification de la pile existante.
+
+## Historique de développement — 0.2.0-EXP — non publié
 
 ### Phase 6 — Store indépendant et distribution signée — 2026-11-03
 

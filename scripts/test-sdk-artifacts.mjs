@@ -46,6 +46,20 @@ try {
     await readFile('examples/plugin-demo/plugin.ts', 'utf8'),
   );
   await writeFile(
+    resolve(directory, 'business.ts'),
+    `
+import type { BusinessPort, PluginSdk } from '@orkobi/sdk-core';
+import type { BusinessRecord } from '@orkobi/sdk-types';
+export function readContact(port: BusinessPort): Promise<BusinessRecord> {
+  return port.get('crm', 'contacts', '11111111-1111-4111-8111-111111111111');
+}
+export function guest(sdk: PluginSdk) {
+  // @ts-expect-error Le guest API 1 ne reçoit pas de port hôte métier.
+  void sdk.business;
+}
+`,
+  );
+  await writeFile(
     resolve(directory, 'tsconfig.json'),
     JSON.stringify({
       compilerOptions: {
@@ -56,7 +70,7 @@ try {
         moduleResolution: 'NodeNext',
         types: [],
       },
-      include: ['plugin.ts'],
+      include: ['plugin.ts', 'business.ts'],
     }),
   );
   await execute(process.execPath, [

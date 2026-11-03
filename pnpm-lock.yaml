@@ -233,6 +233,9 @@ importers:
       '@orkobi/database':
         specifier: workspace:*
         version: link:../../lib/database
+      '@orkobi/module-business':
+        specifier: workspace:*
+        version: link:../../modules/business
       '@orkobi/module-demo':
         specifier: workspace:*
         version: link:../../modules/demo
@@ -378,6 +381,15 @@ importers:
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
+
+  modules/business:
+    dependencies:
+      '@orkobi/sdk-core':
+        specifier: workspace:*
+        version: link:../../sdk/core
+      '@orkobi/sdk-types':
+        specifier: workspace:*
+        version: link:../../sdk/types
 
   modules/demo:
     dependencies:

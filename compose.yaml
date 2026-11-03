@@ -1,7 +1,7 @@
 name: orkobi
 
 x-app: &app
-  image: orkobi-local:0.2.0-exp
+  image: orkobi-local:0.3.0-dev.1
   build: .
   init: true
 
@@ -129,7 +129,7 @@ services:
       [
         sh,
         -c,
-        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs && node --test tests/store.integration.mjs && node --test tests/cache.integration.mjs && node scripts/benchmark-services.mjs && REDIS_URL=redis://redis:6379 node scripts/benchmark-services.mjs',
+        'node --test tests/database.integration.mjs && node --test tests/platform.integration.mjs && node --test tests/modules.integration.mjs && node --test tests/phase3.integration.mjs && node --test tests/jobs.integration.mjs && node --test tests/plugins.integration.mjs && node --test tests/store.integration.mjs && node --test tests/business.integration.mjs && node --test tests/cache.integration.mjs && node scripts/benchmark-services.mjs && REDIS_URL=redis://redis:6379 node scripts/benchmark-services.mjs',
       ]
     environment:
       TEST_REDIS_URL: redis://redis:6379

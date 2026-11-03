@@ -57,3 +57,14 @@ export type {
   PluginPage,
   PluginMigration,
 } from '@orkobi/contracts';
+export type {
+  BusinessModuleKey,
+  BusinessLabel,
+  BusinessField,
+  BusinessEntity,
+  BusinessDefinition,
+  BusinessRecord,
+  BusinessList,
+  BusinessReport,
+  BusinessProblem,
+} from '@orkobi/contracts';

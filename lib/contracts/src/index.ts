@@ -103,3 +103,17 @@ export type {
   StoreRepositorySummary,
   StoreReview,
 } from './store.js';
+export type {
+  BusinessModuleKey,
+  BusinessLabel,
+  BusinessField,
+  BusinessEntity,
+  BusinessDefinition,
+  BusinessRecord,
+  BusinessList,
+  BusinessReport,
+  BusinessProblem,
+} from './business.js';
+
+export { businessProblemCodes } from './business.js';
+export { publicBusinessDetails } from './errors.js';

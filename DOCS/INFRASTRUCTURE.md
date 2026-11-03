@@ -1,6 +1,6 @@
 # Infrastructure — étape technique 0.4
 
-La version produit est **0.2.0-EXP**. Ce lot fournit PostgreSQL, les migrations,
+La version produit est **0.3.0-dev.1**. Ce lot fournit PostgreSQL, les migrations,
 la pile Docker Compose locale et des contrôles de disponibilité. L'assistant,
 les comptes et l'isolation applicative des organisations sont ajoutés par la
 [Phase 1](PHASE_1.md) ; le registre de modules, ses migrations propres

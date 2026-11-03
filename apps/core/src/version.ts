@@ -1,2 +1,7 @@
-/** Version du Core, alignée sur apps/core/package.json ; utilisée pour la compatibilité des modules. */
-export const coreVersion = '0.2.0-EXP';
+import { readFileSync } from 'node:fs';
+/** Source produit unique, commune à OpenAPI et au contrôle de compatibilité. */
+export const coreVersion: string = (
+  JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')) as {
+    version: string;
+  }
+).version;

@@ -3,7 +3,7 @@
 # Orkobi — Roadmap de développement
 
 **Slogan :** Orkobi s'adapte à vous.  
-**Version cible :** 0.2.0-EXP<br>
+**Version cible :** 0.3.0-dev.1<br>
 **Statut :** Développement initial  
 **Architecture :** ERP modulaire, multi-organisation  
 **Projet :** Indépendant de LUMA
@@ -326,21 +326,38 @@ configurées par l’opérateur, sans source distante prédéfinie.
 
 **Objectif :** transformer le Core en ERP réellement exploitable.
 
-Modules envisagés :
+Périmètre livré en expérimental : [guide Phase 7](PHASE_7.md),
+[règles, preuves et limites](REVIEW_PHASE_7.md). France et EUR confirmés par le
+porteur ; aucune plateforme agréée configurée.
 
-- [ ] CRM et gestion des clients.
-- [ ] Catalogue de produits et services.
-- [ ] Devis et facturation.
-- [ ] Gestion des stocks.
-- [ ] Gestion de projets.
-- [ ] Gestion des membres et cotisations pour associations.
-- [ ] Gestion documentaire.
-- [ ] Rapports et statistiques.
-- [ ] Ressources humaines.
+- [x] CRM : contacts, prospects/clients, coordonnées et archives.
+- [x] Catalogue : biens/services, références uniques, prix et TVA.
+- [x] Ventes : devis chiffrés, numérotés et figés, accord/refus, préparation de facture non fiscale.
+- [ ] Facturation fiscale : plateforme agréée, mentions complètes, formats, transmission et réception, avoirs et conservation à traiter.
+- [x] Stocks : entrepôts, soldes, mouvements immuables et compensation, refus du négatif.
+- [x] Projets : projets, budgets indicatifs et tâches, clôture protégée.
+- [x] Associations : adhérents, cotisations uniques par période et règlement enregistré.
+- [x] Documents : pièces SQL bornées, intégrité et téléchargement autorisé.
+- [x] Rapports : agrégats SQL complets filtrés selon les droits et modules actifs.
+- [x] RH administratif : annuaire et congés, approbation distincte ; hors paie et déclarations.
+- [x] Permissions explicites, références liées à l'organisation, révisions, idempotence,
+      audit atomique, migrations sur trois moteurs, écrans SDK UI FR/EN et recettes.
 
-Chaque module devra disposer de ses propres exigences de sécurité, règles métier, tests et contraintes réglementaires.
+Les cases cochées concernent ce premier périmètre décrit dans le guide ; elles
+n'annoncent pas des modules exhaustifs ni certifiés. S3, archivage probant,
+valorisation des stocks, comptabilité, paie et automatisation RGPD restent hors
+périmètre. Les données de test sont synthétiques dans des services SQL locaux réels.
 
-La sortie stable sera décidée à partir de la fiabilité réelle du produit, pas uniquement du nombre de fonctionnalités disponibles.
+Conditions encore ouvertes avant une première version stable :
+
+- [ ] Recette utilisateur sur des processus réels et reprise des données existantes.
+- [ ] Validation métier/réglementaire des documents, conservation et données personnelles.
+- [ ] Intégration et recette de la plateforme agréée avant toute émission fiscale.
+- [ ] Qualification de charge, sauvegarde/restauration et exploitation de l'environnement cible.
+- [ ] Décision explicite de version stable et de déploiement.
+
+La sortie stable sera décidée à partir de la fiabilité réelle du produit, pas
+uniquement du nombre de fonctionnalités disponibles.
 
 ---
 
@@ -361,9 +378,13 @@ La sortie stable sera décidée à partir de la fiabilité réelle du produit, p
 
 # Prochaine étape
 
-**Phases 0 à 6 traitées et vérifiées localement ; prochaine étape : Phase 7.**
+**Phases 0 à 6 traitées ; premier périmètre Phase 7 livré en expérimental.**
 
-La version produit reste **0.2.0-EXP**, sans publication stable implicite.
+La suite porte sur la recette métier et les conditions de stabilité ci-dessus,
+avec la facturation fiscale maintenue bloquée sans fournisseur.
+
+La version produit est **0.3.0-dev.1**, canal de développement, sans publication stable implicite.
+Voir les [notes de version](RELEASE_0_3_0_DEV_1.md) ; les preuves historiques restent datées.
 Le [Store de Phase 6](PHASE_6.md) ajoute la distribution signée et privée ;
 les [preuves](REVIEW_PHASE_6.md) distinguent recettes locales et hébergement public.
 La [Phase 5](PHASE_5.md) fournit les moteurs alternatifs et le diagnostic ;

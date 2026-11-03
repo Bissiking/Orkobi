@@ -1,8 +1,8 @@
 {
   "name": "orkobi",
-  "version": "0.2.0-EXP",
+  "version": "0.3.0-dev.1",
   "private": true,
-  "description": "Orkobi - L'ERP qui s'adapte \u00e0 vous.",
+  "description": "Orkobi - L'ERP qui s'adapte à vous.",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:core": "node scripts/dev-core.mjs core",
@@ -24,7 +24,7 @@
     "lint": "eslint . --max-warnings 0",
     "test:types": "pnpm --filter @orkobi/contract-tests typecheck",
     "test": "pnpm build && pnpm test:types && node --test tests/*.test.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm test",
+    "check": "pnpm version:check && pnpm format:check && pnpm lint && pnpm test",
     "bench:services": "pnpm --filter @orkobi/core... build && node scripts/benchmark-services.mjs",
     "plugin:build": "pnpm --filter @orkobi/contracts build && node scripts/build-plugin.mjs",
     "plugin:validate": "pnpm --filter @orkobi/core... build && node scripts/validate-plugin.mjs",
@@ -34,7 +34,8 @@
     "start:store": "pnpm --filter @orkobi/store-api start",
     "store:keygen": "pnpm --filter @orkobi/store... build && node scripts/store-keygen.mjs",
     "store:publish": "pnpm --filter @orkobi/store... build && node scripts/store-publish.mjs",
-    "store:test": "pnpm build && node scripts/test-store.mjs"
+    "store:test": "pnpm build && node scripts/test-store.mjs",
+    "version:check": "node scripts/check-versions.mjs"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "devDependencies": {
@@ -47,5 +48,8 @@
   },
   "engines": {
     "node": ">=22.22.2"
+  },
+  "orkobi": {
+    "channel": "dev"
   }
 }

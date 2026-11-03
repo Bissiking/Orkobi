@@ -1,5 +1,7 @@
 // sdk/core/src/index.ts
 import type {
+  BusinessModuleKey,
+  BusinessRecord,
   CapabilityKey,
   OrganizationContext,
   OrganizationSummary,
@@ -96,3 +98,45 @@ export interface PluginSdk {
 }
 /** Fonctions ES Module synchrones et sans imports runtime ; les types SDK sont effacés au build. */
 export type PluginHandler = (sdk: PluginSdk, input: Readonly<Record<string, unknown>>) => unknown;
+
+/** Port réservé aux modules officiels compilés ; absent du guest PluginSdk API 1.
+ * L'organisation et l'identité sont établies par le Core, jamais par le module.
+ */
+export interface BusinessPort {
+  readonly today: string;
+  uuid(): string;
+  canRead(module: BusinessModuleKey): Promise<boolean>;
+  get(module: BusinessModuleKey, entity: string, id: string): Promise<BusinessRecord>;
+  byReference(
+    module: BusinessModuleKey,
+    entity: string,
+    reference: string,
+  ): Promise<BusinessRecord | undefined>;
+  related(
+    module: BusinessModuleKey,
+    entity: string,
+    parentId: string,
+  ): Promise<readonly BusinessRecord[]>;
+  put(
+    entity: string,
+    input: {
+      id: string;
+      data: Record<string, unknown>;
+      state: string;
+      reference?: string | null;
+      parentId?: string | null;
+      revision?: number;
+    },
+  ): Promise<BusinessRecord>;
+  number(series: string): Promise<string>;
+  stockHeld(productId: string, warehouseId?: string): Promise<boolean>;
+  prepareFile(value: unknown): Promise<BusinessAttachment>;
+  attach(id: string, file: BusinessAttachment): Promise<void>;
+}
+export interface BusinessAttachment {
+  readonly fileName: string;
+  readonly mediaType: string;
+  readonly contentBase64: string;
+  readonly sha256: string;
+  readonly size: number;
+}

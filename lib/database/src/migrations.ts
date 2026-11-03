@@ -7,6 +7,7 @@ import { identityAdvancedMigration } from './identity-advanced-migration.js';
 import { apiAccessMigration } from './api-access-migration.js';
 import { identityHardeningMigration } from './identity-hardening-migration.js';
 import { pluginsMigration } from './plugins-migration.js';
+import { businessMigration } from './business-migration.js';
 import { storeMigration } from './store-migration.js';
 import { jobsMigration } from './jobs-migration.js';
 
@@ -32,6 +33,7 @@ export const migrations: readonly Migration[] = Object.freeze([
   Object.freeze(jobsMigration),
   Object.freeze(pluginsMigration),
   Object.freeze(storeMigration),
+  Object.freeze(businessMigration),
 ]);
 
 /** Sous-ensemble des migrations appartenant à un module officiel. */

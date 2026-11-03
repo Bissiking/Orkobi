@@ -6,7 +6,7 @@ par QuickJS compilé en WebAssembly dans un worker jetable. Le frontend rend des
 pages déclaratives avec le kit UI du SDK ; aucun JavaScript tiers ne tourne dans
 le navigateur de l’utilisateur ou dans le moteur JavaScript du Core.
 
-La version produit et celle des packages restent `0.2.0-EXP`. Les contrats sont
+La version produit et celle des packages sont `0.3.0-dev.1`. Les contrats sont
 exportés et distribuables sous forme d’archives locales. **Aucune publication sur
 un registre npm ni aucun déploiement ne sont effectués. Le [Store de Phase 6](PHASE_6.md)
 complète maintenant la distribution locale décrite ici.** Le canal,

@@ -2,7 +2,7 @@
 name: orkobi-store
 services:
   store:
-    image: orkobi-store-local:0.2.0-exp
+    image: orkobi-store-local:0.3.0-dev.1
     build: .
     init: true
     command: [node, apps/store/dist/main.js]

@@ -1,3 +1,4 @@
+import { publicBusinessDetails } from '@orkobi/contracts';
 import {
   Controller,
   Get,
@@ -45,6 +46,9 @@ export class BffPlatformController {
         path,
       ) &&
       !/^admin\/store(?:\/(?:review|install))?$/u.test(path) &&
+      !/^(?:business(?:\/[a-z]+(?:\/[a-z_]+(?:\/[a-f0-9-]{36}(?:\/[a-z_]+)?)?)?)?|admin\/business\/grants)$/u.test(
+        path,
+      ) &&
       !pathPattern.test(path) &&
       !/^(?:jobs(?:\/[a-f0-9-]{36}\/(?:retry|cancel))?|admin\/runtime)$/u.test(path)
     )
@@ -72,7 +76,18 @@ export class BffPlatformController {
         headers['x-csrf-token'] = request.headers['x-csrf-token'];
     }
     try {
-      const upstream = await fetch(new URL(`/platform/${path}`, this.config.coreUrl), {
+      const target = new URL(`/platform/${path}`, this.config.coreUrl);
+      if (method === 'GET' && path.startsWith('business/') && request.query.cursor !== undefined) {
+        if (
+          typeof request.query.cursor !== 'string' ||
+          !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/u.test(request.query.cursor)
+        ) {
+          const { BadRequestException } = await import('@nestjs/common');
+          throw new BadRequestException();
+        }
+        target.searchParams.set('cursor', request.query.cursor);
+      }
+      const upstream = await fetch(target, {
         method,
         headers,
         ...(method === 'POST' ? { body: JSON.stringify(request.body) } : {}),
@@ -106,7 +121,12 @@ export class BffPlatformController {
         // Le BFF conserve sa propre corrélation et son filtre d'erreurs expurgé.
         const { HttpException } = await import('@nestjs/common');
         throw new HttpException(
-          'Opération refusée.',
+          (path.startsWith('business') &&
+          payload &&
+          typeof payload === 'object' &&
+          'error' in payload
+            ? publicBusinessDetails(payload.error)
+            : null) ?? 'Opération refusée.',
           [400, 401, 403, 404, 409, 429, 503].includes(upstream.status) ? upstream.status : 503,
         );
       }

@@ -1,6 +1,6 @@
 # Phase 5 — Compatibilité SQL et services avancés
 
-Version produit : **0.2.0-EXP**. PostgreSQL reste le moteur de référence.
+Version produit : **0.3.0-dev.1**. PostgreSQL reste le moteur de référence.
 Cette phase fournit deux moteurs alternatifs du Core, le diagnostic administrateur
 et des décisions documentées sur les services facultatifs. Voir les
 [preuves de validation](REVIEW_PHASE_5.md) et les [études de services](SERVICES_ADVANCED.md).

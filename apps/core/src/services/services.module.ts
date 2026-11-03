@@ -1,3 +1,4 @@
+import { BusinessService } from '../business/service.js';
 import { StoreService } from '../store/service.js';
 import { STORE_CONFIG } from '../store/config.js';
 import type { StoreRepositoryConfig } from '@orkobi/store';
@@ -63,6 +64,7 @@ export class CoreServicesModule {
         CapabilityRegistry,
         ModuleManager,
         ModuleDataService,
+        BusinessService,
         PluginManager,
         StoreService,
         { provide: STORE_CONFIG, useValue: store },

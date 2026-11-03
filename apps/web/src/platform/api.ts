@@ -1,5 +1,11 @@
+import { publicBusinessDetails } from '@orkobi/contracts';
+import type { BusinessProblem } from '@orkobi/contracts';
 export class PlatformApiError extends Error {
-  constructor(readonly code: string) {
+  constructor(
+    readonly code: string,
+    readonly reason?: BusinessProblem,
+    readonly field?: string,
+  ) {
     super(code);
   }
 }
@@ -32,6 +38,8 @@ export async function platformRequest<T>(
       error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
         ? error.code
         : 'unknown',
+      publicBusinessDetails(error)?.reason,
+      publicBusinessDetails(error)?.field,
     );
   }
   return value as T;

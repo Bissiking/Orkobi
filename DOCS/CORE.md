@@ -1,4 +1,4 @@
-# Core HTTP — 0.2.0-EXP
+# Core HTTP — 0.3.0-dev.1
 
 > Ce guide décrit les fondations 0.2 et leur évolution SQL 0.4. La
 > [Phase 1](PHASE_1.md) fournit installation, authentification, sessions,

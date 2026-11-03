@@ -1,3 +1,4 @@
+import { BusinessService } from '../business/service.js';
 import { StoreService } from '../store/service.js';
 import { RuntimeDiagnostics } from '../diagnostics.js';
 import { databaseProfile } from '@orkobi/database';
@@ -40,6 +41,7 @@ import { TechnicalCache } from '../cache/service.js';
 
 type Body = Record<string, unknown>;
 export interface PlatformRequest {
+  readonly cursor?: string;
   token: string;
   csrf: string;
   /** Agent utilisateur capturé à la création de la session (affichage des sessions). */
@@ -124,6 +126,7 @@ export class PlatformService {
     @Inject(IntegrationAccessService) private readonly integrations: IntegrationAccessService,
     @Inject(JobEngine) private readonly jobs: JobEngine,
     @Inject(StoreService) private readonly store: StoreService,
+    @Inject(BusinessService) private readonly business: BusinessService,
     @Inject(PluginManager) private readonly plugins: PluginManager,
     @Inject(TechnicalCache) private readonly cache: TechnicalCache,
     @Inject(RuntimeDiagnostics) private readonly diagnostics: RuntimeDiagnostics,
@@ -332,6 +335,17 @@ export class PlatformService {
         }
         if (method === 'GET' && path === 'capabilities')
           return { data: await this.capabilities.status() };
+        if (path === 'business' || path.startsWith('business/'))
+          return {
+            data: await this.business.execute(
+              repo,
+              user.id,
+              session.activeOrganizationId,
+              method,
+              path,
+              method === 'GET' && request.cursor ? { cursor: request.cursor } : body,
+            ),
+          };
         if (method === 'GET' && path === 'modules') {
           const orgId = session.activeOrganizationId;
           if (!orgId) throw new BadRequestException();
@@ -433,6 +447,8 @@ export class PlatformService {
             /^admin\/plugins\/([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)+)\/remove$/u.exec(path);
           if (method === 'POST' && removePlugin)
             return { data: await this.plugins.remove(repo, user.id, removePlugin[1]!, body) };
+          if (method === 'POST' && path === 'admin/business/grants')
+            return { data: await this.business.grant(repo, user.id, body) };
           if (method === 'GET' && path === 'admin/runtime')
             return {
               data: {

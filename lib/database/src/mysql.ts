@@ -21,7 +21,7 @@ const booleans = new Set([
   'integrations_enabled',
   'value',
 ]);
-const json = new Set(['manifest', 'permissions', 'artifact', 'values', 'scopes']);
+const json = new Set(['manifest', 'permissions', 'artifact', 'values', 'scopes', 'data', 'result']);
 function normalize(row: Record<string, unknown>) {
   for (const [key, value] of Object.entries(row)) {
     if (key.endsWith('_at') && typeof value === 'string')

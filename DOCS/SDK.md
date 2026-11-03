@@ -1,6 +1,6 @@
 <!-- DOCS/SDK.md -->
 
-# Conventions SDK — 0.2.0-EXP
+# Conventions SDK — 0.3.0-dev.1
 
 Le SDK est expérimental, privé et susceptible d'évoluer. Il est indépendant de
 NestJS et de PostgreSQL. Le SDK ne fournit pas de client HTTP distant. Le Core applicatif fonctionne
@@ -127,3 +127,18 @@ Le SDK guest garde son périmètre sans réseau, fichiers, SQL ou API administra
 Les nouveaux DTO de catalogue/revue et les comparateurs de version sont dans les
 contrats publics ; ils n'accordent aucun accès Store au plugin. Les archives locales
 SDK restent distinctes d'une publication npm, et le Store ne les publie pas.
+
+## Modules métier officiels (Phase 7)
+
+`BusinessPort` et `BusinessAttachment` sont des interfaces publiques de SDK Core
+pour les modules officiels de confiance ; les DTO et déclarations sont réexportés
+par SDK Types. `modules/business` consomme ces seuls exports publics pour ses
+règles pures. Le Core fournit le port dans une transaction autorisée : l'appelant
+ne choisit aucune organisation. Les permissions utilisent `orkobi.<module>:…`
+afin de rester distinctes des appartenances `members:*` du Core.
+
+Ce port n'est pas exposé au guest `PluginSdk` API 1. Ne jamais transmettre ces
+objets hôte à QuickJS ni contourner ses quotas. Les manifestes officiels métier
+n'exposent pas de CRUD générique ; les écritures passent par les transitions,
+révisions, clés d'idempotence et audits. Voir [PHASE_7.md](PHASE_7.md) pour les
+routes, règles, plafonds, limites fiscales et consignes des futurs prompts.

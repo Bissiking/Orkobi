@@ -1,3 +1,5 @@
+import { businessProblemCodes } from './business.js';
+import type { BusinessProblem } from './business.js';
 export type ErrorCode =
   | 'invalid_argument'
   | 'unauthenticated'
@@ -11,6 +13,8 @@ export type ErrorCode =
 export interface CoreError {
   readonly code: ErrorCode;
   readonly message: string;
+  readonly reason?: BusinessProblem;
+  readonly field?: string;
   readonly correlationId?: string;
 }
 
@@ -42,5 +46,22 @@ export function publicHttpError(
     status,
     error: { code, message, correlationId },
     logLevel: status >= 500 ? 'error' : 'warn',
+  };
+}
+
+/** Métadonnées métier en liste fermée, sans texte d'exception ni valeur utilisateur. */
+export function publicBusinessDetails(
+  value: unknown,
+): { reason: BusinessProblem; field?: string } | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const raw = value as Record<string, unknown>,
+    reason = raw.businessReason ?? raw.reason;
+  if (typeof reason !== 'string' || !businessProblemCodes.some((key) => key === reason))
+    return null;
+  return {
+    reason: reason as BusinessProblem,
+    ...(typeof raw.field === 'string' && /^[a-z][a-zA-Z0-9_]{0,59}$/u.test(raw.field)
+      ? { field: raw.field }
+      : {}),
   };
 }

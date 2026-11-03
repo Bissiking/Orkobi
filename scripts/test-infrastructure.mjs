@@ -86,6 +86,24 @@ try {
   assert.match(await page.text(), /<div id="root">/u);
   assert.equal((await (await probe(url, '/api/bootstrap', 200)).json()).core.status, 'ok');
 
+  if (process.env.PHASE7_BROWSER === 'true') {
+    await new Promise((resolve, reject) => {
+      const browser = spawn(process.execPath, ['tests/browser/phase7.mjs'], {
+        cwd: root,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          BUSINESS_BROWSER_URL: url,
+          BUSINESS_BROWSER_OUTPUT: fileURLToPath(new URL('browser/', directory)),
+        },
+      });
+      browser.once('error', reject);
+      browser.once('close', (code) =>
+        code === 0 ? resolve() : reject(new Error('Recette navigateur Phase 7 en échec.')),
+      );
+    });
+  }
+
   // Une donnée témoin technique ; aucune donnée métier ni accès à une base existante.
   await compose([
     'exec',

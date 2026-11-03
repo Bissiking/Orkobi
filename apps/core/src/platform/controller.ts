@@ -68,6 +68,7 @@ export class PlatformController {
               .slice(0, 200) || null
           : null,
       body: request.body as unknown,
+      ...(typeof request.query.cursor === 'string' ? { cursor: request.query.cursor } : {}),
     };
     if (
       method === 'POST' &&

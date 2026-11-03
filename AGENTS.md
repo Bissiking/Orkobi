@@ -79,3 +79,26 @@ nettoyer les accords dormants lors d'un changement de déclarations.
 Vérifier `pnpm store:test` et `tests/store.integration.mjs` dans les recettes SQL,
 en plus des vérifications SDK et plugins. Ne pas publier un dépôt Internet, ajouter
 une racine de confiance ou modifier une configuration utilisateur implicitement.
+
+## Modules métier (Phase 7)
+
+Lire [DOCS/PHASE_7.md](DOCS/PHASE_7.md) et sa revue. France/EUR ; aucune plateforme
+agréée configurée : émission fiscale bloquée, préparations explicitement non
+fiscales. Ne pas annoncer de stabilité, paie ou certification. Permissions
+`orkobi.<module>:read/write` explicites, séparées de `members:*` du Core ; décision
+RH avec `orkobi.hr:approve`. Le port SDK métier est réservé aux modules officiels
+et absent du guest QuickJS API 1. Conserver schémas fermés, organisation serveur,
+révisions, idempotence, calculs entiers, mouvements compensatoires et audit
+atomique. Les trois recettes SQL incluent `tests/business.integration.mjs`.
+La recette navigateur optionnelle `PHASE7_BROWSER=true pnpm infra:test` utilise
+Chrome/Puppeteer sur la pile PostgreSQL isolée, sans base existante. Voir la revue
+pour les variables d'exécutable et les preuves. Aucun déploiement implicite.
+
+## Versionnement
+
+Le numéro produit vient du `package.json` racine ; `orkobi.channel` déclare le
+canal sans activer de publication. Lire [DOCS/VERSIONING.md](DOCS/VERSIONING.md).
+Les manifests privés suivent la même version ; lancer `pnpm version:check`
+(inclus dans `pnpm check`). Ne pas modifier par remplacement global les versions
+propres aux manifestes de plugins, les plages de compatibilité, les migrations,
+les rapports historiques ou les numéros d'API. Aucun tag/push/publication implicite.

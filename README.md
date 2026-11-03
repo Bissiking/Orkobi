@@ -1,6 +1,6 @@
 <!-- README.md -->
 
-# Orkobi — 0.2.0-EXP
+# Orkobi — 0.3.0-dev.1
 
 **Orkobi s'adapte à vous.**
 
@@ -19,7 +19,7 @@ sessions enrichies, authentification BFF ↔ Core et intégrations avec scopes,
 expiration et révocation. Elle fournit aussi un [Job Engine durable](DOCS/JOB_ENGINE.md),
 un cache mémoire avec Redis optionnel et le [kit UI du SDK](DOCS/UI_SDK.md)
 en CSS natif, avec des icônes Papicons pour les applications. La version reste
-**0.2.0-EXP**, sans publication ni déploiement automatique.
+**0.3.0-dev.1**, sans publication ni déploiement automatique.
 
 La [Phase 5](DOCS/PHASE_5.md) ajoute MariaDB 11.4 et MySQL 8.4 comme alternatives
 à PostgreSQL, avec migrations propres, capabilities et diagnostic administrateur.
@@ -30,6 +30,13 @@ La [Phase 6](DOCS/PHASE_6.md) fournit un Store indépendant, des catalogues sign
 les dépôts privés et la revue des installations/mises à jour. Les plugins installés
 fonctionnent sans Store accessible. L’ouverture d’un registre Internet reste une
 opération de déploiement distincte.
+
+La [Phase 7](DOCS/PHASE_7.md) ajoute neuf modules métier expérimentaux : CRM,
+catalogue, devis/préparations de factures, stocks, projets, associations,
+documents, rapports et RH administratif. France/EUR ; sans plateforme agréée,
+l'émission fiscale reste bloquée. Chaque module exige des permissions explicites.
+Les [preuves et limites](DOCS/REVIEW_PHASE_7.md) séparent ce périmètre d'une
+version stable et de la facturation réglementaire.
 
 Pour développer un plugin, commencer par [le guide Phase 4](DOCS/PHASE_4.md) et
 `examples/plugin-demo/`. `pnpm plugin:build`, `pnpm plugin:validate` et

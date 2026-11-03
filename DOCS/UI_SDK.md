@@ -134,3 +134,14 @@ un SVG amont, d’actualiser cette provenance et le catalogue typé, puis de vé
 le rendu. Ne pas injecter un SVG/HTML fourni par un plugin avec `dangerouslySetInnerHTML`.
 La licence MIT complète est conservée dans `sdk/ui/PAPICONS_LICENSE.txt`, incluse
 dans le package SDK et copiée dans le build web à `/licenses/papicons.txt`.
+
+## Écrans métier de Phase 7
+
+Les surfaces `/business/:module/:entity?/:id?` emploient les déclarations de champs
+FR/EN du Core, les composants de ce kit et `business.css` natif. Les règles restent
+dans le module et sont revérifiées côté serveur. Les références sont paginées et
+exigent la lecture du module cible ; ne jamais transformer un identifiant libre
+en contexte autorisé. Les formulaires gardent révision et clé d'idempotence.
+Les lignes de devis ont une clé stable à la suppression. L'impression inclut le
+statut non fiscal des préparations et ne rend aucun fichier déposé activement.
+Conserver ces avertissements métier dans tout futur prompt de refonte.

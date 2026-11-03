@@ -172,6 +172,27 @@ export const mysqlMigrations: readonly MySqlMigration[] = Object.freeze([
       ),
     ],
   },
+  {
+    id: '0011_business',
+    statements: [
+      table(
+        'orkobi_business__records',
+        `id ${uuid} PRIMARY KEY,organization_id ${uuid} NOT NULL,module_id ${key} NOT NULL,entity varchar(60) NOT NULL,data json NOT NULL,state varchar(30) NOT NULL,reference_key varchar(200) CHARACTER SET ascii COLLATE ascii_bin,amount_minor bigint NOT NULL DEFAULT 0,parent_id ${uuid},revision integer NOT NULL DEFAULT 1,created_by ${uuid} NOT NULL,created_at ${created},updated_at ${created},UNIQUE(organization_id,id),UNIQUE(organization_id,module_id,entity,reference_key),INDEX business_scope(organization_id,module_id,entity,id),INDEX business_parent(organization_id,parent_id,state),FOREIGN KEY(organization_id) REFERENCES orkobi_core__organizations(id),FOREIGN KEY(module_id) REFERENCES orkobi_core__modules(id),FOREIGN KEY(created_by) REFERENCES orkobi_core__users(id),FOREIGN KEY(organization_id,parent_id) REFERENCES orkobi_business__records(organization_id,id),CHECK(revision>0),CHECK(JSON_TYPE(data)='OBJECT')`,
+      ),
+      table(
+        'orkobi_business__counters',
+        `organization_id ${uuid} NOT NULL,series varchar(40) NOT NULL,counter integer NOT NULL,PRIMARY KEY(organization_id,series),FOREIGN KEY(organization_id) REFERENCES orkobi_core__organizations(id),CHECK(counter>0)`,
+      ),
+      table(
+        'orkobi_business__operations',
+        `organization_id ${uuid} NOT NULL,user_id ${uuid} NOT NULL,operation_key ${uuid} NOT NULL,request_hash char(64) NOT NULL,result json NOT NULL,PRIMARY KEY(organization_id,user_id,operation_key),FOREIGN KEY(organization_id) REFERENCES orkobi_core__organizations(id),FOREIGN KEY(user_id) REFERENCES orkobi_core__users(id)`,
+      ),
+      table(
+        'orkobi_business__attachments',
+        `record_id ${uuid} PRIMARY KEY,organization_id ${uuid} NOT NULL,content_base64 longtext NOT NULL,sha256 char(64) NOT NULL,size integer NOT NULL,media_type varchar(80) NOT NULL,FOREIGN KEY(organization_id,record_id) REFERENCES orkobi_business__records(organization_id,id),CHECK(size BETWEEN 1 AND 49152)`,
+      ),
+    ],
+  },
 ]);
 export const mysqlChecksum = (migration: MySqlMigration) =>
   createHash('sha256').update(JSON.stringify(migration.statements)).digest('hex');
@@ -256,8 +277,13 @@ export async function applyMySqlMigrations(
       for (const sql of migration.statements) {
         const name = /^CREATE TABLE (\w+)/u.exec(sql)?.[1];
         if (!name || reads.includes(name)) continue;
-        const rights =
-          name === 'orkobi_core__audit_events' ? 'SELECT, INSERT' : 'SELECT, INSERT, UPDATE';
+        const rights = [
+          'orkobi_core__audit_events',
+          'orkobi_business__operations',
+          'orkobi_business__attachments',
+        ].includes(name)
+          ? 'SELECT, INSERT'
+          : 'SELECT, INSERT, UPDATE';
         await client.query(
           `GRANT ${rights} ON \`${client.config.database}\`.\`${name}\` TO 'orkobi_app'@'%'`,
         );

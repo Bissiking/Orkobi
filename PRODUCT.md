@@ -9,7 +9,7 @@ web
 ## Stack
 
 React avec Vite et TypeScript ; BFF NestJS séparé du Core NestJS, conformément
-à la roadmap technique 0.3. Monorepo pnpm privé, version 0.2.0-EXP.
+à la roadmap technique 0.3. Monorepo pnpm privé, version 0.3.0-dev.1.
 
 ## Users
 

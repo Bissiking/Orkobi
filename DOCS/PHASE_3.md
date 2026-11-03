@@ -1,7 +1,7 @@
 # Phase 3 — identité, intégrations, services et tâches
 
 La Phase 3 comprend désormais 3.1, 3.2, 3.2-BIS, 3.3 et 3.4. Le produit reste
-**0.2.0-EXP** : cette livraison locale ne constitue pas une publication stable.
+**0.3.0-dev.1** : cette livraison locale ne constitue pas une publication stable.
 
 - [Services optionnels et Job Engine](JOB_ENGINE.md) : cache mémoire/Redis,
   file PostgreSQL durable, tâches des modules et exploitation.

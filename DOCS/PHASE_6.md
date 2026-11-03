@@ -1,6 +1,6 @@
 # Phase 6 — Orkobi Store
 
-Version **0.2.0-EXP**. Le Store distribue des paquets de plugins versionnés depuis
+Version **0.3.0-dev.1**. Le Store distribue des paquets de plugins versionnés depuis
 un service indépendant du Core. L’interface se trouve dans **Administration → Store**,
 également accessible depuis Extensions. Les [preuves locales](REVIEW_PHASE_6.md)
 distinguent service Docker, parcours SQL réels et navigateur avec API synthétiques.

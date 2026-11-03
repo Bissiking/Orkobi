@@ -1,3 +1,4 @@
+import { BusinessRepository } from './business.js';
 import type { PluginArtifact, ModuleEntry, StoreOrigin } from '@orkobi/contracts';
 import { randomUUID } from 'node:crypto';
 import type { SqlPool as Pool, SqlClient as PoolClient } from './connection.js';
@@ -74,6 +75,10 @@ export interface StoredIntegrationToken {
 
 /** Requêtes privées au Core. Aucune identité reçue de ce dépôt ne vaut autorisation. */
 export class PlatformTransaction {
+  business() {
+    return new BusinessRepository(this.client);
+  }
+
   /** Métadonnées bornées du registre, sans charger le code des paquets du Store. */
   async storeModules() {
     return (

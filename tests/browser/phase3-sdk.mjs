@@ -1,3 +1,4 @@
+import { productVersion } from '../../apps/bff/dist/config.js';
 /* global document, window, localStorage */
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
@@ -57,7 +58,7 @@ try {
     if (path === '/api/bootstrap')
       body = {
         schemaVersion: 2,
-        product: { name: 'Orkobi', version: '0.2.0-EXP' },
+        product: { name: 'Orkobi', version: productVersion },
         core: { status: 'ok' },
         features: { identity: 'available', organizations: 'available', modules: 'available' },
         checkedAt: new Date().toISOString(),

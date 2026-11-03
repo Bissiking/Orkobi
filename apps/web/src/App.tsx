@@ -1,3 +1,4 @@
+import { BusinessPage } from './platform/business';
 import { PluginPage } from './platform/plugins';
 import { JobsPage } from './platform/jobs';
 import { OidcCallbackPage } from './platform/advanced';
@@ -97,7 +98,11 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
               end={to === '/'}
               onClick={onNavigate}
               className={
-                to === '/modules' && location.pathname.startsWith('/plugins/') ? 'active' : ''
+                to === '/modules' &&
+                (location.pathname.startsWith('/plugins/') ||
+                  location.pathname.startsWith('/business/'))
+                  ? 'active'
+                  : ''
               }
             >
               <Icon size={18} />
@@ -176,7 +181,8 @@ export default function App() {
               ? p.organizations
               : location.pathname === '/modules/demo'
                 ? p.demoTitle
-                : location.pathname.startsWith('/plugins/')
+                : location.pathname.startsWith('/plugins/') ||
+                    location.pathname.startsWith('/business/')
                   ? t.modules
                   : t.notFoundTitle;
   useEffect(() => {
@@ -284,6 +290,10 @@ export default function App() {
               <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
               <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
               <Route path="/plugins/:id/:page?" element={<PluginPage key={moduleContext} />} />
+              <Route
+                path="/business/:module/:entity?/:id?"
+                element={<BusinessPage key={`${moduleContext}:${location.pathname}`} />}
+              />
               <Route path="/jobs" element={<JobsPage key={moduleContext} />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/system" element={<StatusPage />} />
