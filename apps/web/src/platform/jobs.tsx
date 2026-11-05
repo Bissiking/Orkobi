@@ -4,7 +4,8 @@ import type { JobSummary, ModuleSummary } from '@orkobi/contracts';
 import { usePreferences } from '../preferences-context';
 import { usePlatform } from './context';
 import { usePlatformResource } from './hooks';
-import { PlatformHeading, ResourceNotice, TaskForm } from './components';
+import { PageHeading, ResourceNotice, TaskForm } from './components';
+import { DataTable, Th } from '@orkobi/sdk-ui';
 
 export function JobsPage() {
   const { locale } = usePreferences(),
@@ -34,7 +35,7 @@ export function JobsPage() {
   };
   return (
     <>
-      <PlatformHeading
+      <PageHeading
         title={fr ? 'Tâches planifiées' : 'Scheduled tasks'}
         description={
           fr
@@ -69,101 +70,94 @@ export function JobsPage() {
               <p>{fr ? 'Aucune tâche pour le moment.' : 'No tasks yet.'}</p>
             )}
             {resource.data && resource.data.jobs.length > 0 && (
-              <div
-                className="table-scroll"
-                role="region"
-                aria-label={fr ? 'Liste des tâches' : 'Task list'}
-                tabIndex={0}
-              >
-                <table>
-                  <thead>
-                    <tr>
-                      {(fr
-                        ? ['Tâche', 'État', 'Prochaine exécution', 'Tentatives', 'Actions']
-                        : ['Task', 'Status', 'Next execution', 'Attempts', 'Actions']
-                      ).map((title) => (
-                        <th key={title}>{title}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resource.data.jobs.map((job) => (
-                      <tr key={job.id}>
-                        <td>
-                          {job.task === 'verify_notes'
-                            ? fr
-                              ? 'Vérification des notes'
-                              : 'Note verification'
-                            : job.task}
-                          <small className="job-module">
-                            {job.moduleId}
-                            {job.intervalSeconds ? ` · ${job.intervalSeconds}s` : ''}
-                          </small>
-                        </td>
-                        <td>
-                          {statuses[job.status]}
-                          {job.lastError && (
-                            <small className="job-module">
-                              {job.lastError === 'timeout'
-                                ? fr
-                                  ? 'Délai dépassé'
-                                  : 'Timed out'
-                                : job.lastError === 'module_disabled'
-                                  ? fr
-                                    ? 'Module désactivé'
-                                    : 'Module disabled'
-                                  : job.lastError}
-                            </small>
-                          )}
-                        </td>
-                        <td>
-                          <time dateTime={new Date(job.runAt).toISOString()}>
-                            {new Date(job.runAt).toLocaleString(locale)}
-                          </time>
-                        </td>
-                        <td>{job.attempts}</td>
-                        <td>
-                          {org.permissions.includes('modules:write') &&
-                            ['pending', 'running', 'suspended', 'failed'].includes(job.status) && (
-                              <TaskForm
-                                submit={
-                                  ['failed', 'suspended'].includes(job.status)
-                                    ? fr
-                                      ? 'Relancer'
-                                      : 'Retry'
-                                    : fr
-                                      ? 'Annuler'
-                                      : 'Cancel'
-                                }
-                                onSave={async () => {
-                                  await post(
-                                    `jobs/${job.id}/${['failed', 'suspended'].includes(job.status) ? 'retry' : 'cancel'}`,
-                                    {},
-                                  );
-                                  refresh();
-                                }}
-                              >
-                                <span className="sr-only">{job.task}</span>
-                              </TaskForm>
-                            )}
-                          {org.permissions.includes('modules:write') &&
-                            job.status === 'suspended' && (
-                              <TaskForm
-                                submit={fr ? 'Annuler' : 'Cancel'}
-                                onSave={async () => {
-                                  await post(`jobs/${job.id}/cancel`, {});
-                                  refresh();
-                                }}
-                              >
-                                <span className="sr-only">{job.task}</span>
-                              </TaskForm>
-                            )}
-                        </td>
-                      </tr>
+              <DataTable label={fr ? 'Liste des tâches' : 'Task list'}>
+                <thead>
+                  <tr>
+                    {(fr
+                      ? ['Tâche', 'État', 'Prochaine exécution', 'Tentatives', 'Actions']
+                      : ['Task', 'Status', 'Next execution', 'Attempts', 'Actions']
+                    ).map((title) => (
+                      <Th key={title}>{title}</Th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resource.data.jobs.map((job) => (
+                    <tr key={job.id}>
+                      <td>
+                        {job.task === 'verify_notes'
+                          ? fr
+                            ? 'Vérification des notes'
+                            : 'Note verification'
+                          : job.task}
+                        <small className="job-module">
+                          {job.moduleId}
+                          {job.intervalSeconds ? ` · ${job.intervalSeconds}s` : ''}
+                        </small>
+                      </td>
+                      <td>
+                        {statuses[job.status]}
+                        {job.lastError && (
+                          <small className="job-module">
+                            {job.lastError === 'timeout'
+                              ? fr
+                                ? 'Délai dépassé'
+                                : 'Timed out'
+                              : job.lastError === 'module_disabled'
+                                ? fr
+                                  ? 'Module désactivé'
+                                  : 'Module disabled'
+                                : job.lastError}
+                          </small>
+                        )}
+                      </td>
+                      <td>
+                        <time dateTime={new Date(job.runAt).toISOString()}>
+                          {new Date(job.runAt).toLocaleString(locale)}
+                        </time>
+                      </td>
+                      <td>{job.attempts}</td>
+                      <td>
+                        {org.permissions.includes('modules:write') &&
+                          ['pending', 'running', 'suspended', 'failed'].includes(job.status) && (
+                            <TaskForm
+                              submit={
+                                ['failed', 'suspended'].includes(job.status)
+                                  ? fr
+                                    ? 'Relancer'
+                                    : 'Retry'
+                                  : fr
+                                    ? 'Annuler'
+                                    : 'Cancel'
+                              }
+                              onSave={async () => {
+                                await post(
+                                  `jobs/${job.id}/${['failed', 'suspended'].includes(job.status) ? 'retry' : 'cancel'}`,
+                                  {},
+                                );
+                                refresh();
+                              }}
+                            >
+                              <span className="sr-only">{job.task}</span>
+                            </TaskForm>
+                          )}
+                        {org.permissions.includes('modules:write') &&
+                          job.status === 'suspended' && (
+                            <TaskForm
+                              submit={fr ? 'Annuler' : 'Cancel'}
+                              onSave={async () => {
+                                await post(`jobs/${job.id}/cancel`, {});
+                                refresh();
+                              }}
+                            >
+                              <span className="sr-only">{job.task}</span>
+                            </TaskForm>
+                          )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </DataTable>
             )}
           </section>
           {canSchedule && (

@@ -145,3 +145,28 @@ en contexte autorisé. Les formulaires gardent révision et clé d'idempotence.
 Les lignes de devis ont une clé stable à la suppression. L'impression inclut le
 statut non fiscal des préparations et ne rend aucun fichier déposé activement.
 Conserver ces avertissements métier dans tout futur prompt de refonte.
+
+## Primitives UX partagées — 5 novembre 2026
+
+Les motifs validés dans l’application sont désormais exportés par le SDK :
+
+| Export               | Contrat                                                                                                                                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataTable`, `Th`    | Région nommée via `label`, scroll clavier, table HTML native. `tableClassName` adapte la présentation ; chaque `Th` fournit `scope="col"`. Les cellules et données restent fournies par l’application.                                               |
+| `EmptyState`         | `title`, `description`, icône et actions facultatives ; aucun appel réseau.                                                                                                                                                                          |
+| `StatusPill`         | Libellé obligatoire par `children`, tons `positive`, `pending`, `muted` ; non interactif.                                                                                                                                                            |
+| `SearchField`        | `label`, `value`, `onChange`, `placeholder` et `maxLength`. Effacement avec `onClear` et `clearLabel` fournis par le consommateur.                                                                                                                   |
+| `Tabs`               | Navigation de sections pilotée par `items`, `value` et `onChange`. Le consommateur inscrit la section dans l’URL ; `aria-current="page"` marque le bouton courant. Aucun faux rôle `tab`.                                                            |
+| `Select`, `TextArea` | Attributs natifs contrôlés ou non contrôlés, `label`, `help`, `error` ; identifiants associés, descriptions et `aria-invalid`. Aucune règle métier implicite.                                                                                        |
+| `CheckField`         | Checkbox native, `label` React et attributs natifs ; état contrôlé ou `defaultChecked`.                                                                                                                                                              |
+| `ConfirmDialog`      | `open`, `title`, `message`, `confirmLabel`, `cancelLabel`, `onConfirm`, `onCancel`, `danger` facultatif. Dialogue natif modal ; focus initial sur Annuler, Échap/voile annulent, restauration native du focus. Tous les libellés viennent de l’hôte. |
+
+Les styles correspondants sont livrés dans `@orkobi/sdk-ui/styles.css`, y compris
+les contrôles clavier, les thèmes, l’aide au lecteur d’écran et les cibles de
+40 px minimum. Les tables restent limitées à `.table-scroll` ; aucun style de
+table global n’est ajouté. Les adaptations métier/mobile et l’impression restent
+applicatives. Le SDK n’importe ni contexte plateforme ni registre de traduction.
+`ConfirmProvider`, le blocage de navigation, les règles du wrapper `Field`, les
+révisions et les requêtes restent dans `apps/web/src/platform`.
+
+Voir [la revue UX](REVIEW_UX.md) pour les preuves et leurs limites.

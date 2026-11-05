@@ -10,6 +10,7 @@ ni publication ni déploiement.
 
 | Besoin                                                                 | Référence                                                                        |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Reprise UX, composants partagés et preuves navigateur                  | [../ROADMAP_UX.md](../ROADMAP_UX.md), [REVIEW_UX.md](REVIEW_UX.md)               |
 | Préversion courante et contrôles de version                            | [RELEASE_0_3_0_DEV_1.md](RELEASE_0_3_0_DEV_1.md), [VERSIONING.md](VERSIONING.md) |
 | Modules métier, France/EUR, règles et consignes IA                     | [PHASE_7.md](PHASE_7.md)                                                         |
 | Preuves et limites du périmètre métier                                 | [REVIEW_PHASE_7.md](REVIEW_PHASE_7.md)                                           |

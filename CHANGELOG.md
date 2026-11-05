@@ -8,6 +8,22 @@ Les modifications en cours restent dans « Non publié » jusqu'à une version d
 
 ## Non publié — 0.3.0-dev.1 — 2026-11-03
 
+### Reprise UX — 2026-11-05
+
+- Poursuite du travail OpenCode dans `apps/web/src/platform/business/` :
+  liste/fiche/édition distinctes, garde asynchrone des modifications, confirmations
+  clavier, retours de sauvegarde temporaires et résumé d’erreur focalisé.
+- Catalogue métier partagé par contexte utilisateur/organisation, titres issus
+  des déclarations bilingues, routes typées et fil d’Ariane navigable ; conservation
+  des données pendant l’actualisation, filtres et pagination préservés dans l’URL.
+- Primitives répétées promues dans `sdk/ui`, sans contexte applicatif ni nouveau
+  kit CSS. Sémantique des tableaux, noms d’actions, focus et tailles responsive
+  harmonisés ; textes métier et erreur de route déplacés vers leurs registres.
+- Conservation de l’ajout Core commencé pour les unités/motifs TVA du catalogue,
+  couvert par les recettes métier. Les règles fiscales et les permissions restent
+  côté serveur. [Roadmap](ROADMAP_UX.md), [preuves et limites](DOCS/REVIEW_UX.md).
+  Aucun tag, push, publication ou déploiement.
+
 ### Versionnement du périmètre métier
 
 - Version produit et 18 manifests privés synchronisés, canal `dev` déclaré dans

@@ -39,7 +39,10 @@ try {
     'add',
     ...packages.map((p) => resolve('output/sdk', p.file)),
     'react@19.3.1',
+    'react-dom@19.3.1',
+    '@types/react-dom@19.3.0',
     'react-router@8.5.1',
+    '@types/react@19.3.0',
   ]);
   await writeFile(
     resolve(directory, 'plugin.ts'),
@@ -60,6 +63,19 @@ export function guest(sdk: PluginSdk) {
 `,
   );
   await writeFile(
+    resolve(directory, 'ui.ts'),
+    `
+import { DataTable, Select, CheckField, TextArea, ConfirmDialog } from '@orkobi/sdk-ui';
+import type { ConfirmDialogProps } from '@orkobi/sdk-ui';
+export const table: Parameters<typeof DataTable>[0] = { label: 'Records', children: null };
+export const select: Parameters<typeof Select>[0] = { label: 'Module', name: 'module', defaultValue: 'crm' };
+export const check: Parameters<typeof CheckField>[0] = { label: 'Archived', checked: false, onChange() {} };
+export const notes: Parameters<typeof TextArea>[0] = { label: 'Notes', name: 'notes', maxLength: 160 };
+export const dialog: ConfirmDialogProps = { open: false, title: 'Confirm', message: 'Continue?', confirmLabel: 'Continue', cancelLabel: 'Cancel', onConfirm() {}, onCancel() {} };
+void ConfirmDialog;
+`,
+  );
+  await writeFile(
     resolve(directory, 'tsconfig.json'),
     JSON.stringify({
       compilerOptions: {
@@ -70,7 +86,7 @@ export function guest(sdk: PluginSdk) {
         moduleResolution: 'NodeNext',
         types: [],
       },
-      include: ['plugin.ts', 'business.ts'],
+      include: ['plugin.ts', 'business.ts', 'ui.ts'],
     }),
   );
   await execute(process.execPath, [
@@ -81,7 +97,7 @@ export function guest(sdk: PluginSdk) {
   await execute(process.execPath, [
     '--input-type=module',
     '-e',
-    "const {Button,AppIcon}=await import('@orkobi/sdk-ui'); if(typeof Button!=='function'||typeof AppIcon!=='function')process.exit(1); await import('@orkobi/sdk-core');",
+    "const ui=await import('@orkobi/sdk-ui'); for(const name of ['Button','AppIcon','DataTable','Th','EmptyState','StatusPill','SearchField','Tabs','Select','CheckField','TextArea','ConfirmDialog']) if(typeof ui[name]!=='function') throw new Error('Missing UI export: '+name); await import('@orkobi/sdk-core');",
   ]);
   process.stdout.write('Archives SDK consommées hors workspace : imports et typage réussis.\n');
 } finally {

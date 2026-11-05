@@ -165,7 +165,7 @@ La hiérarchie repose sur les graisses, la taille et des approches légèrement 
 - **Title** : titres de section, rôle `title`. Les titres du contenu principal d’organisation sont plus grands ; les titres de cartes et de lignes sont plus compacts selon leur importance.
 - **Body** : descriptions courantes (12 px, interligne 1.75). Les paragraphes ont une largeur maximale générale (70 ch), resserrée dans certains panneaux.
 - **Label** : boutons et contrôles compacts, rôle `label`. Les titres de cartes utilisent une graisse plus marquée (750).
-- **Métadonnées** : tailles observées plus petites (9–11 px) pour les badges, le pied de page et les informations secondaires. Elles décrivent la densité actuelle, sans fixer un minimum de lecture pour les futurs écrans. Les versions, nombres de résultats et heures de vérification utilisent des chiffres tabulaires.
+- **Métadonnées** : tailles secondaires de 11 px minimum pour les badges, le pied de page et les informations secondaires. Elles décrivent la densité actuelle, sans fixer un minimum de lecture pour les futurs écrans. Les versions, nombres de résultats et heures de vérification utilisent des chiffres tabulaires.
 
 ## Layout
 
@@ -249,3 +249,25 @@ Les icônes d’applications et du module démo utilisent une sélection SVG Pap
 sous licence MIT, avec `currentColor`. Les icônes de navigation et d’actions existantes
 restent dans Lucide. Le [guide UI SDK](DOCS/UI_SDK.md) porte les contrats et la provenance.
 Le système visuel existant et ses tailles de champs 13/14 px sont conservés.
+
+## Parcours métier et primitives UX (5 novembre 2026)
+
+Les listes, fiches et formulaires utilisent des surfaces de travail distinctes.
+Le titre décrit la tâche ; le module et l’entité sont retrouvables par le fil
+d’Ariane navigable, le sélecteur de module et la navigation de sections. Le titre
+du document suit une table de routes typée et les déclarations bilingues du Core.
+
+Les confirmations utilisent un dialogue natif avec Annuler au focus initial,
+Échap et voile pour annuler. Un badge ambre nomme les modifications non
+enregistrées. Le message de sauvegarde est unique dans l’espace métier, annoncé
+et fermable, puis retiré après six secondes ; le résumé d’erreur est placé avant
+les champs et focalisé. L’actualisation conserve les données visibles et expose
+`aria-busy`, tandis qu’un premier chargement montre un squelette respectant le
+mouvement réduit. Les actions tactiles mesurent au moins 40 px.
+
+`DataTable`, `Th`, `EmptyState`, `StatusPill`, `SearchField`, `Tabs`, `Select`,
+`CheckField`, `TextArea` et `ConfirmDialog` sont désormais partagés dans le SDK UI,
+avec leurs styles natifs. Les breakpoints métier suivent 620 / 879 / 1180 / 1600 ;
+les mises en page spécifiques et l’impression restent dans l’application. Sous
+620 px, l’en-tête emploie une grille : menu et contrôles sur la première ligne,
+contexte courant sur la seconde, sans couper les mots.

@@ -12,7 +12,8 @@ import type {
 import { usePreferences } from '../preferences-context';
 import { usePlatform } from './context';
 import { usePlatformResource } from './hooks';
-import { PlatformHeading, ResourceNotice, TaskForm } from './components';
+import { PageHeading, ResourceNotice, TaskForm } from './components';
+import { DataTable, Th } from '@orkobi/sdk-ui';
 
 interface InstalledPlugin {
   id: string;
@@ -387,7 +388,7 @@ function PluginEntity({
   const refresh = () => setRevision((value) => value + 1);
   return (
     <>
-      <PlatformHeading title={page.title[locale]} />
+      <PageHeading title={page.title[locale]} />
       <section className="platform-panel plugin-entity">
         <h2>
           <AppIcon name={page.icon} size={22} /> {page.title[locale]}
@@ -397,51 +398,49 @@ function PluginEntity({
           <p>{fr ? 'Aucune entrée pour le moment.' : 'No entries yet.'}</p>
         )}
         {resource.data && resource.data.entries.length > 0 && (
-          <div className="table-scroll" role="region" tabIndex={0} aria-label={page.title[locale]}>
-            <table>
-              <thead>
-                <tr>
-                  {entity.fields.map((f) => (
-                    <th key={f.name}>{f.label?.[locale] ?? f.name}</th>
-                  ))}
-                  {writable && <th>{fr ? 'Actions' : 'Actions'}</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {resource.data.entries.map((entry) => (
-                  <tr key={entry.id}>
-                    {entity.fields.map((f) => (
-                      <td key={f.name}>{entry.values[f.name] || '—'}</td>
-                    ))}
-                    {writable && (
-                      <td>
-                        <div className="row-actions">
-                          <Button
-                            variant="text"
-                            onClick={() => {
-                              setSelected(entry);
-                              setRemove(null);
-                            }}
-                          >
-                            {fr ? 'Modifier' : 'Edit'}
-                          </Button>
-                          <Button
-                            variant="text"
-                            onClick={() => {
-                              setRemove(entry);
-                              setSelected(null);
-                            }}
-                          >
-                            {fr ? 'Supprimer' : 'Delete'}
-                          </Button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
+          <DataTable label={page.title[locale]}>
+            <thead>
+              <tr>
+                {entity.fields.map((f) => (
+                  <Th key={f.name}>{f.label?.[locale] ?? f.name}</Th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                {writable && <Th>{fr ? 'Actions' : 'Actions'}</Th>}
+              </tr>
+            </thead>
+            <tbody>
+              {resource.data.entries.map((entry) => (
+                <tr key={entry.id}>
+                  {entity.fields.map((f) => (
+                    <td key={f.name}>{entry.values[f.name] || '—'}</td>
+                  ))}
+                  {writable && (
+                    <td>
+                      <div className="row-actions">
+                        <Button
+                          variant="text"
+                          onClick={() => {
+                            setSelected(entry);
+                            setRemove(null);
+                          }}
+                        >
+                          {fr ? 'Modifier' : 'Edit'}
+                        </Button>
+                        <Button
+                          variant="text"
+                          onClick={() => {
+                            setRemove(entry);
+                            setSelected(null);
+                          }}
+                        >
+                          {fr ? 'Supprimer' : 'Delete'}
+                        </Button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </DataTable>
         )}
       </section>
       {remove && (

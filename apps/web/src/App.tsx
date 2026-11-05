@@ -1,8 +1,7 @@
-import { BusinessPage } from './platform/business';
-import { PluginPage } from './platform/plugins';
-import { JobsPage } from './platform/jobs';
-import { OidcCallbackPage } from './platform/advanced';
-import { useEffect, useRef, useState } from 'react';
+import { BusinessCatalogProvider } from './platform/business/catalog';
+import { useBusinessCatalog } from './platform/business/catalog-context';
+import { routeBreadcrumbs, isModulesRoute } from './platform/routes';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
 import {
   Building2,
@@ -19,23 +18,59 @@ import {
 } from 'lucide-react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
-import { ModulesPage, SettingsPage, StatusPage, NotFoundPage } from './pages';
-import {
-  PlatformGate,
-  InstallationPage,
-  LoginPage,
-  WorkspacePage,
-  ManagedOrganizationsPage,
-  OrganizationDetailPage,
-  ProfilePage,
-  AdministrationPage,
-  DemoNotesPage,
-  AccountControls,
-  OrganizationSelector,
-} from './platform/pages';
+import { PlatformGate, AccountControls, OrganizationSelector } from './platform/shell';
+import { Skeleton } from './platform/components';
 import { usePlatform } from './platform/context';
 import { usePlatformCopy } from './platform/hooks';
 import { Button } from '@orkobi/sdk-ui';
+
+const BusinessPage = lazy(() =>
+  import('./platform/business').then((module) => ({ default: module.BusinessPage })),
+);
+const PluginPage = lazy(() =>
+  import('./platform/plugins').then((module) => ({ default: module.PluginPage })),
+);
+const JobsPage = lazy(() =>
+  import('./platform/jobs').then((module) => ({ default: module.JobsPage })),
+);
+
+const InstallationPage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.InstallationPage })),
+);
+const WorkspacePage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.WorkspacePage })),
+);
+const ManagedOrganizationsPage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.ManagedOrganizationsPage })),
+);
+const OrganizationDetailPage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.OrganizationDetailPage })),
+);
+const ProfilePage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.ProfilePage })),
+);
+const AdministrationPage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.AdministrationPage })),
+);
+const DemoNotesPage = lazy(() =>
+  import('./platform/pages').then((module) => ({ default: module.DemoNotesPage })),
+);
+const ModulesPage = lazy(() =>
+  import('./pages').then((module) => ({ default: module.ModulesPage })),
+);
+const SettingsPage = lazy(() =>
+  import('./pages').then((module) => ({ default: module.SettingsPage })),
+);
+const StatusPage = lazy(() => import('./pages').then((module) => ({ default: module.StatusPage })));
+const NotFoundPage = lazy(() =>
+  import('./pages').then((module) => ({ default: module.NotFoundPage })),
+);
+const LoginPage = lazy(() =>
+  import('./platform/advanced').then((module) => ({ default: module.AdvancedLoginPage })),
+);
+const OidcCallbackPage = lazy(() =>
+  import('./platform/advanced').then((module) => ({ default: module.OidcCallbackPage })),
+);
 
 const navigation = [
   { to: '/', label: 'overview', icon: House },
@@ -91,24 +126,25 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       </div>
       <nav aria-label={t.navigation} className="navigation">
         <div className="nav-group">
-          {navigation.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              onClick={onNavigate}
-              className={
-                to === '/modules' &&
-                (location.pathname.startsWith('/plugins/') ||
-                  location.pathname.startsWith('/business/'))
-                  ? 'active'
-                  : ''
-              }
-            >
-              <Icon size={18} />
-              {t[label]}
-            </NavLink>
-          ))}
+          {navigation.map(({ to, label, icon: Icon }) =>
+            to === '/modules' ? (
+              <Link
+                key={to}
+                to={to}
+                onClick={onNavigate}
+                className={isModulesRoute(location.pathname) ? 'active' : ''}
+                aria-current={isModulesRoute(location.pathname) ? 'page' : undefined}
+              >
+                <Icon size={18} />
+                {t[label]}
+              </Link>
+            ) : (
+              <NavLink key={to} to={to} end={to === '/'} onClick={onNavigate}>
+                <Icon size={18} />
+                {t[label]}
+              </NavLink>
+            ),
+          )}
         </div>
         <div className="nav-group nav-secondary">
           {session.user?.platformAdmin && (
@@ -157,6 +193,15 @@ function ConnectionNotice() {
   );
 }
 export default function App() {
+  const { session } = usePlatform();
+  const context = `${session.user?.id ?? ''}:${session.activeOrganizationId ?? ''}`;
+  return (
+    <BusinessCatalogProvider key={context}>
+      <AppShell />
+    </BusinessCatalogProvider>
+  );
+}
+function AppShell() {
   const { messages: t, locale, setLocale, setTheme } = usePreferences();
   const { session } = usePlatform();
   const moduleContext = `${session.user?.id ?? ''}:${session.activeOrganizationId ?? ''}`;
@@ -164,35 +209,27 @@ export default function App() {
   const location = useLocation();
   const drawer = useRef<HTMLDialogElement>(null);
   const main = useRef<HTMLElement>(null);
-  const previousPath = useRef(location.pathname);
+  const focusPath = `${location.pathname}:${new URLSearchParams(location.search).get('edit') === '1'}`;
+  const previousPath = useRef(focusPath);
   const [menuOpen, setMenuOpen] = useState(false);
-  const page = [...navigation, ...secondary].find((item) => item.to === location.pathname)?.label;
-  const pageTitle = page
-    ? t[page]
-    : location.pathname === '/admin'
-      ? p.administration
-      : location.pathname === '/profile'
-        ? p.profile
-        : location.pathname === '/setup'
-          ? p.setup
-          : location.pathname === '/login' || location.pathname === '/oidc/callback'
-            ? p.signIn
-            : location.pathname.startsWith('/organizations/')
-              ? p.organizations
-              : location.pathname === '/modules/demo'
-                ? p.demoTitle
-                : location.pathname.startsWith('/plugins/') ||
-                    location.pathname.startsWith('/business/')
-                  ? t.modules
-                  : t.notFoundTitle;
+  const catalog = useBusinessCatalog();
+  const breadcrumbs = routeBreadcrumbs(
+    location.pathname,
+    locale,
+    t,
+    p,
+    catalog.data?.definitions ?? [],
+    session,
+  );
+  const pageTitle = breadcrumbs.at(-1)?.label ?? t.notFoundTitle;
   useEffect(() => {
     document.title = `${pageTitle} · Orkobi`;
-    if (previousPath.current !== location.pathname) {
+    if (previousPath.current !== focusPath) {
       main.current?.focus();
       window.scrollTo(0, 0);
-      previousPath.current = location.pathname;
+      previousPath.current = focusPath;
     }
-  }, [location.pathname, pageTitle]);
+  }, [focusPath, pageTitle]);
   useEffect(() => {
     const media = matchMedia('(min-width: 880px)');
     const close = () => {
@@ -245,11 +282,20 @@ export default function App() {
           >
             <Menu size={21} />
           </Button>
-          <div className="breadcrumbs">
-            <span>{t.workspace}</span>
-            <ChevronRight size={14} aria-hidden="true" />
-            <strong>{pageTitle}</strong>
-          </div>
+          <nav className="breadcrumbs" aria-label={p.breadcrumb}>
+            <ol>
+              {breadcrumbs.map((item, index) => (
+                <li key={`${item.to}/${index}`}>
+                  {index > 0 && <ChevronRight size={14} aria-hidden="true" />}
+                  {index === breadcrumbs.length - 1 ? (
+                    <strong aria-current="page">{item.label}</strong>
+                  ) : (
+                    <Link to={item.to}>{item.label}</Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
           <div className="topbar-controls">
             <OrganizationSelector />
             <AccountControls />
@@ -278,27 +324,29 @@ export default function App() {
         <main id="main" ref={main} tabIndex={-1} className="main-content">
           <ConnectionNotice />
           <PlatformGate>
-            <Routes>
-              <Route path="/" element={<WorkspacePage />} />
-              <Route path="/setup" element={<InstallationPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/oidc/callback" element={<OidcCallbackPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/admin" element={<AdministrationPage />} />
-              <Route path="/organizations" element={<ManagedOrganizationsPage />} />
-              <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
-              <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
-              <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
-              <Route path="/plugins/:id/:page?" element={<PluginPage key={moduleContext} />} />
-              <Route
-                path="/business/:module/:entity?/:id?"
-                element={<BusinessPage key={`${moduleContext}:${location.pathname}`} />}
-              />
-              <Route path="/jobs" element={<JobsPage key={moduleContext} />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/system" element={<StatusPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <Suspense fallback={<Skeleton status={p.loading} />}>
+              <Routes>
+                <Route path="/" element={<WorkspacePage />} />
+                <Route path="/setup" element={<InstallationPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/oidc/callback" element={<OidcCallbackPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={<AdministrationPage />} />
+                <Route path="/organizations" element={<ManagedOrganizationsPage />} />
+                <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
+                <Route path="/modules" element={<ModulesPage key={moduleContext} />} />
+                <Route path="/modules/demo" element={<DemoNotesPage key={moduleContext} />} />
+                <Route path="/plugins/:id/:page?" element={<PluginPage key={moduleContext} />} />
+                <Route
+                  path="/business/:module/:entity?/:id?"
+                  element={<BusinessPage key={moduleContext} />}
+                />
+                <Route path="/jobs" element={<JobsPage key={moduleContext} />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/system" element={<StatusPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
           </PlatformGate>
           <footer className="page-footer">
             <span>Orkobi</span>

@@ -33,3 +33,86 @@ test('SDK UI : Papicons accessibles et décoratives via le catalogue public', ()
   assert.match(render(createElement(AppIcon, { name: 'notes', label: 'Notes' })), /role="img"/u);
   assert.match(render(createElement(AppIcon, { name: 'documents' })), /aria-hidden="true"/u);
 });
+
+test('SDK UI : tables, états et contrôles sans contexte applicatif', async () => {
+  const {
+    DataTable,
+    Th,
+    EmptyState,
+    StatusPill,
+    SearchField,
+    Tabs,
+    Select,
+    CheckField,
+    TextArea,
+    ConfirmDialog,
+  } = await import('../sdk/ui/dist/index.js');
+  const table = render(
+    createElement(
+      DataTable,
+      { label: 'Contacts' },
+      createElement('thead', null, createElement('tr', null, createElement(Th, null, 'Nom'))),
+    ),
+  );
+  assert.match(table, /role="region" aria-label="Contacts" tabindex="0"/u);
+  assert.match(table, /<th scope="col">Nom<\/th>/u);
+  assert.doesNotMatch(table, /role="table"/u);
+  const tabs = render(
+    createElement(Tabs, {
+      label: 'Sections',
+      items: [
+        { key: 'a', label: 'A' },
+        { key: 'b', label: 'B' },
+      ],
+      value: 'b',
+      onChange() {},
+    }),
+  );
+  assert.equal((tabs.match(/aria-current="page"/gu) ?? []).length, 1);
+  const select = render(
+    createElement(
+      Select,
+      { label: 'Choix', name: 'choice', error: 'Indisponible', help: 'Choisissez une valeur' },
+      createElement('option', { value: 'one' }, 'Un'),
+    ),
+  );
+  assert.match(select, /aria-invalid="true"/u);
+  assert.match(select, /aria-describedby="[^"]+-help [^"]+-error"/u);
+  assert.match(
+    render(createElement(CheckField, { label: 'Archives', checked: true, onChange() {} })),
+    /type="checkbox"/u,
+  );
+  assert.match(
+    render(createElement(TextArea, { label: 'Notes', name: 'notes', maxLength: 160 })),
+    /<textarea[^>]+maxLength="160"/iu,
+  );
+  assert.match(render(createElement(StatusPill, { tone: 'positive' }, 'Actif')), /Actif/u);
+  assert.match(
+    render(createElement(EmptyState, { title: 'Aucune fiche', description: 'Ajoutez une fiche' })),
+    /<h2>Aucune fiche<\/h2>/u,
+  );
+  const search = render(
+    createElement(SearchField, {
+      label: 'Rechercher',
+      value: 'test',
+      onChange() {},
+      onClear() {},
+      clearLabel: 'Effacer',
+    }),
+  );
+  assert.match(search, /type="search"/u);
+  assert.match(search, /aria-label="Effacer"/u);
+  const dialog = render(
+    createElement(ConfirmDialog, {
+      open: true,
+      title: 'Confirmer',
+      message: 'Abandonner ?',
+      confirmLabel: 'Continuer',
+      cancelLabel: 'Annuler',
+      onConfirm() {},
+      onCancel() {},
+    }),
+  );
+  assert.match(dialog, /<dialog[^>]+aria-describedby=/u);
+  assert.match(dialog, /<button[^>]+autofocus=""[^>]*>Annuler<\/button>/u);
+});

@@ -1,21 +1,13 @@
 import { DiagnosticsPanel } from './platform/diagnostics';
 import { useSearchParams } from 'react-router';
-import {
-  ArrowRight,
-  Check,
-  CircleHelp,
-  Monitor,
-  Moon,
-  RefreshCw,
-  Search,
-  Sun,
-  X,
-} from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ArrowRight, Check, CircleHelp, Monitor, Moon, RefreshCw, Search, Sun } from 'lucide-react';
 import { usePreferences } from './preferences-context';
 import { useBootstrap } from './bootstrap-context';
 import { usePlatform } from './platform/context';
-import { ModulesSection } from './platform/pages';
+import { ModulesSection } from './platform/module-directory';
+import { PageHeading } from './platform/components';
+import { SearchField, EmptyState } from '@orkobi/sdk-ui';
+import { normalizeSearch } from './platform/business/presentation';
 import { Button, AppIcon } from '@orkobi/sdk-ui';
 import type { AppIconName } from '@orkobi/sdk-ui';
 import type { TranslationKey } from './i18n';
@@ -34,25 +26,6 @@ const modules: readonly PlannedModule[] = [
   { id: 'members', description: 'membersDescription', icon: 'members', audience: 'association' },
   { id: 'documents', description: 'documentsDescription', icon: 'documents', audience: 'all' },
 ];
-function PageHeading({
-  title,
-  description,
-  action,
-}: {
-  title: string;
-  description: string;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="page-heading">
-      <div>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-      {action}
-    </div>
-  );
-}
 function ModuleItem({ module, compact = false }: { module: PlannedModule; compact?: boolean }) {
   const { messages: t } = usePreferences();
   return (
@@ -70,19 +43,13 @@ function ModuleItem({ module, compact = false }: { module: PlannedModule; compac
     </li>
   );
 }
-function normalize(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/gu, '')
-    .toLocaleLowerCase();
-}
 export function ModulesPage() {
   const { session } = usePlatform();
-  const { messages: t } = usePreferences();
+  const { messages: t, locale } = usePreferences();
   const [params, setParams] = useSearchParams();
-  const audience = ['business', 'association'].includes(params.get('audience') ?? '')
-    ? params.get('audience')!
-    : 'all';
+  const audienceParam = params.get('audience');
+  const audience =
+    audienceParam === 'business' || audienceParam === 'association' ? audienceParam : 'all';
   const query = params.get('q') ?? '';
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -90,15 +57,18 @@ export function ModulesPage() {
     else next.set(key, value);
     setParams(next, { replace: key === 'q' });
   };
+  if (session.user) return <ModulesSection />;
   const filtered = modules.filter(
     (module) =>
       (audience === 'all' || module.audience === 'all' || module.audience === audience) &&
-      normalize(`${t[module.id]} ${t[module.description]}`).includes(normalize(query)),
+      normalizeSearch(`${t[module.id]} ${t[module.description]}`).includes(normalizeSearch(query)),
   );
   return (
     <>
       <PageHeading title={t.catalogueTitle} description={t.catalogueDescription} />
-      <ModulesSection />
+      <Button variant="secondary" to="/login">
+        {locale === 'en' ? 'Sign in to use modules' : 'Se connecter pour utiliser les modules'}
+      </Button>
       {!session.user && (
         <>
           <div className="catalogue-tools">
@@ -113,21 +83,15 @@ export function ModulesPage() {
                 </button>
               ))}
             </div>
-            <label className="search-field">
-              <Search size={18} aria-hidden="true" />
-              <span className="sr-only">{t.searchModules}</span>
-              <input
-                type="search"
-                placeholder={t.searchPlaceholder}
-                value={query}
-                onChange={(event) => update('q', event.target.value)}
-              />
-              {query && (
-                <Button variant="icon" aria-label={t.clearSearch} onClick={() => update('q', '')}>
-                  <X size={16} />
-                </Button>
-              )}
-            </label>
+            <SearchField
+              className="search-field"
+              label={t.searchModules}
+              value={query}
+              placeholder={t.searchPlaceholder}
+              onChange={(value) => update('q', value)}
+              onClear={() => update('q', '')}
+              clearLabel={t.clearSearch}
+            />
           </div>
           <p className="result-count" aria-live="polite">
             {filtered.length} {filtered.length === 1 ? t.plannedModule : t.plannedModules}
@@ -139,14 +103,16 @@ export function ModulesPage() {
               ))}
             </ul>
           ) : (
-            <section className="empty-panel">
-              <Search size={34} aria-hidden="true" />
-              <h2>{t.noResultsTitle}</h2>
-              <p>{t.noResultsText}</p>
+            <EmptyState
+              className="empty-panel"
+              icon={<Search size={34} aria-hidden="true" />}
+              title={t.noResultsTitle}
+              description={t.noResultsText}
+            >
               <Button variant="secondary" onClick={() => setParams({})}>
                 {t.resetFilters}
               </Button>
-            </section>
+            </EmptyState>
           )}
           <p className="catalogue-note">
             <CircleHelp size={17} aria-hidden="true" />

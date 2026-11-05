@@ -6,6 +6,7 @@ import { usePreferences } from '../preferences-context';
 import { usePlatform } from './context';
 import { usePlatformResource } from './hooks';
 import { ResourceNotice, TaskForm } from './components';
+import { DataTable, Th } from '@orkobi/sdk-ui';
 export function StoreAdmin() {
   const { locale } = usePreferences(),
     fr = locale === 'fr',
@@ -151,87 +152,83 @@ export function StoreAdmin() {
                   : 'No versions match your search.'}
               </p>
             ) : (
-              <div
-                className="table-scroll"
-                role="region"
-                aria-label={fr ? 'Versions du Store' : 'Store versions'}
-                tabIndex={0}
+              <DataTable
+                label={fr ? 'Versions du Store' : 'Store versions'}
+                tableClassName="store-catalog"
               >
-                <table className="store-catalog">
-                  <thead>
-                    <tr>
-                      {(fr
-                        ? ['Extension', 'Version', 'Compatibilité', 'Installation', 'Action']
-                        : ['Extension', 'Version', 'Compatibility', 'Installation', 'Action']
-                      ).map((label) => (
-                        <th key={label}>{label}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {releases.map((release) => (
-                      <tr key={`${release.id}@${release.version}`}>
-                        <td>
-                          <div className="store-extension">
-                            <AppIcon name={release.icon} size={24} />
-                            <div>
-                              <strong>{release.name}</strong>
-                              <small className="job-module">{release.id}</small>
-                              <p>{release.description}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td data-label={fr ? 'Version' : 'Version'}>{release.version}</td>
-                        <td data-label={fr ? 'Compatibilité' : 'Compatibility'}>
-                          {release.compatible
-                            ? fr
-                              ? 'Compatible'
-                              : 'Compatible'
-                            : release.reasons.map(reason).join(' · ')}
-                        </td>
-                        <td data-label={fr ? 'Installation' : 'Installation'}>
-                          {release.installedVersion
-                            ? release.update
-                              ? fr
-                                ? 'Mise à jour disponible'
-                                : 'Update available'
-                              : (fr ? 'Installée : ' : 'Installed: ') + release.installedVersion
-                            : fr
-                              ? 'Non installée'
-                              : 'Not installed'}
-                        </td>
-                        <td>
-                          <TaskForm
-                            submit={fr ? 'Examiner' : 'Review'}
-                            onSave={async () => {
-                              const key = `${repository.id}/${release.id}/${release.version}`;
-                              setParams({
-                                tab: 'store',
-                                repository: repository.id,
-                                plugin: release.id,
-                                version: release.version,
-                              });
-                              setSuccess(false);
-                              const value = await post<StoreReview>('admin/store/review', {
-                                repositoryId: repository.id,
-                                id: release.id,
-                                version: release.version,
-                                digest: release.digest,
-                              });
-                              setReviewed({ selection: key, value });
-                              return false;
-                            }}
-                          >
-                            <span className="sr-only">
-                              {release.name} {release.version}
-                            </span>
-                          </TaskForm>
-                        </td>
-                      </tr>
+                <thead>
+                  <tr>
+                    {(fr
+                      ? ['Extension', 'Version', 'Compatibilité', 'Installation', 'Action']
+                      : ['Extension', 'Version', 'Compatibility', 'Installation', 'Action']
+                    ).map((label) => (
+                      <Th key={label}>{label}</Th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {releases.map((release) => (
+                    <tr key={`${release.id}@${release.version}`}>
+                      <td>
+                        <div className="store-extension">
+                          <AppIcon name={release.icon} size={24} />
+                          <div>
+                            <strong>{release.name}</strong>
+                            <small className="job-module">{release.id}</small>
+                            <p>{release.description}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td data-label={fr ? 'Version' : 'Version'}>{release.version}</td>
+                      <td data-label={fr ? 'Compatibilité' : 'Compatibility'}>
+                        {release.compatible
+                          ? fr
+                            ? 'Compatible'
+                            : 'Compatible'
+                          : release.reasons.map(reason).join(' · ')}
+                      </td>
+                      <td data-label={fr ? 'Installation' : 'Installation'}>
+                        {release.installedVersion
+                          ? release.update
+                            ? fr
+                              ? 'Mise à jour disponible'
+                              : 'Update available'
+                            : (fr ? 'Installée : ' : 'Installed: ') + release.installedVersion
+                          : fr
+                            ? 'Non installée'
+                            : 'Not installed'}
+                      </td>
+                      <td>
+                        <TaskForm
+                          submit={fr ? 'Examiner' : 'Review'}
+                          onSave={async () => {
+                            const key = `${repository.id}/${release.id}/${release.version}`;
+                            setParams({
+                              tab: 'store',
+                              repository: repository.id,
+                              plugin: release.id,
+                              version: release.version,
+                            });
+                            setSuccess(false);
+                            const value = await post<StoreReview>('admin/store/review', {
+                              repositoryId: repository.id,
+                              id: release.id,
+                              version: release.version,
+                              digest: release.digest,
+                            });
+                            setReviewed({ selection: key, value });
+                            return false;
+                          }}
+                        >
+                          <span className="sr-only">
+                            {release.name} {release.version}
+                          </span>
+                        </TaskForm>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </DataTable>
             )}
           </>
         )}

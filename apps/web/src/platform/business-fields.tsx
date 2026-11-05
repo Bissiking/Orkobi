@@ -1,109 +1,83 @@
-import { useEffect, useState, useId } from 'react';
-import type { ChangeEvent } from 'react';
-import { Button, Field, Notice } from '@orkobi/sdk-ui';
-import type { BusinessField, BusinessRecord, BusinessList } from '@orkobi/contracts';
+import { businessUi } from './business-copy';
+import { useState, useId, useMemo } from 'react';
+import { Button, Notice } from '@orkobi/sdk-ui';
+import { Field } from './components';
+import { Select, TextArea } from '@orkobi/sdk-ui';
+import { Plus, Trash2 } from 'lucide-react';
+import type { BusinessField, BusinessModuleKey, BusinessRecord } from '@orkobi/contracts';
+import { quoteLine, quoteTotals } from '@orkobi/module-business';
 import { usePreferences } from '../preferences-context';
-import { platformRequest } from './api';
+import { useReference } from './business/use-reference';
+import { formatMinor } from './business-copy';
 export function BusinessReference({
   field,
+  reference,
   name,
   initial = '',
+  initialLabel,
   value,
   onChange,
+  invalid = false,
 }: {
   field: BusinessField;
+  reference: { readonly module: BusinessModuleKey; readonly entity: string };
   name: string;
   initial?: string;
+  initialLabel?: string;
   value?: string;
   onChange?: (value: string) => void;
+  invalid?: boolean;
 }) {
   const { locale } = usePreferences(),
-    fr = locale === 'fr',
-    reference = field.reference!;
-  const [selection, setSelection] = useState(initial);
-  const [records, setRecords] = useState<BusinessRecord[]>([]),
-    [cursor, setCursor] = useState<string | null>(null),
-    [loading, setLoading] = useState(true),
-    [failed, setFailed] = useState(false);
-  const load = async (next?: string) => {
-    setLoading(true);
-    setFailed(false);
-    try {
-      const page = await platformRequest<BusinessList>(
-        `business/${reference.module}/${reference.entity}${next ? `?cursor=${encodeURIComponent(next)}` : ''}`,
-      );
-      setRecords((old) => (next ? [...old, ...page.records] : [...page.records]));
-      setCursor(page.nextCursor);
-    } catch {
-      setFailed(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    let live = true;
-    setLoading(true);
-    void platformRequest<BusinessList>(`business/${reference.module}/${reference.entity}`)
-      .then((page) => {
-        if (live) {
-          setRecords([...page.records]);
-          setCursor(page.nextCursor);
-          setFailed(false);
-        }
-      })
-      .catch(() => {
-        if (live) setFailed(true);
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [reference.module, reference.entity]);
-  const selectId = useId();
-  const existing = initial && !records.some((record) => record.id === initial);
+    id = useId(),
+    resource = useReference(reference.module, reference.entity),
+    [selection, setSelection] = useState(initial);
+  const available = resource.records.filter(
+    (record) => !['archived', 'done'].includes(record.state),
+  );
+  const current = value ?? selection,
+    existing = current && !available.some((record) => record.id === current);
   return (
     <div className="platform-field">
-      <label htmlFor={selectId}>
+      <label htmlFor={id}>
         {field.label[locale]}
         {field.required ? ' *' : ''}
       </label>
       <select
-        id={selectId}
+        id={id}
         name={name}
         required={field.required}
-        value={value ?? selection}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+        value={current}
+        aria-invalid={invalid || undefined}
+        aria-describedby={resource.error ? `${id}-error` : undefined}
+        onChange={(event) => {
           setSelection(event.target.value);
           onChange?.(event.target.value);
         }}
       >
         <option value="">
-          {loading ? (fr ? 'Chargement…' : 'Loading…') : fr ? 'Sélectionner' : 'Select'}
+          {resource.loading && !resource.records.length
+            ? businessUi.loading[locale]
+            : businessUi.select[locale]}
         </option>
-        {existing && <option value={initial}>{initial}</option>}
-        {records
-          .filter((record) => record.state !== 'archived')
-          .map((record) => (
-            <option key={record.id} value={record.id}>
-              {String(record.data.name ?? record.data.title ?? record.data.number ?? record.id)}
-              {record.data.sku ? ` · ${String(record.data.sku)}` : ''}
-            </option>
-          ))}
+        {existing && <option value={current}>{initialLabel || current}</option>}
+        {available.map((record) => (
+          <option key={record.id} value={record.id}>
+            {String(record.data.name ?? record.data.title ?? record.data.number ?? record.id)}
+            {record.data.sku ? ` · ${String(record.data.sku)}` : ''}
+          </option>
+        ))}
       </select>
-      {cursor && (
-        <Button variant="text" onClick={() => void load(cursor)} disabled={loading}>
-          {fr ? 'Charger d’autres références' : 'Load more references'}
+      {resource.cursor && (
+        <Button variant="text" onClick={() => void resource.more()} disabled={resource.loading}>
+          {resource.loading ? businessUi.loading[locale] : businessUi.loadMoreReferences[locale]}
         </Button>
       )}
-      {failed && (
+      {resource.error && (
         <Notice tone="error">
-          {fr
-            ? 'Références indisponibles : vérifiez les modules actifs et vos droits.'
-            : 'References unavailable: check active modules and your permissions.'}
-          <Button variant="text" onClick={() => void load()}>
-            {fr ? 'Réessayer' : 'Retry'}
+          <p id={`${id}-error`}>{businessUi.referencesUnavailable[locale]}</p>
+          <Button variant="text" onClick={() => void resource.retry()}>
+            {businessUi.retry[locale]}
           </Button>
         </Notice>
       )}
@@ -113,73 +87,83 @@ export function BusinessReference({
 export function BusinessInput({
   field,
   record,
+  invalid = false,
 }: {
   field: BusinessField;
   record: BusinessRecord | null;
+  invalid?: boolean;
 }) {
-  const { locale } = usePreferences();
-  const raw = record?.data[field.key];
-  const defaults: Record<string, string> = {
-    country: 'FR',
-    unit: locale === 'fr' ? 'unité' : 'unit',
-    vatRate: '20',
-    quantity: '1.000',
-    kind: 'company',
-    stage: 'prospect',
-  };
-  const value = typeof raw === 'string' ? raw : (defaults[field.key] ?? '');
-  if (field.type === 'reference')
-    return <BusinessReference field={field} name={field.key} initial={value} />;
+  const { locale } = usePreferences(),
+    raw = record?.data[field.key],
+    defaults: Record<string, string> = {
+      country: 'FR',
+      unit: businessUi.unit[locale],
+      vatRate: '20',
+      quantity: '1.000',
+      kind: 'company',
+      stage: 'prospect',
+    },
+    value = typeof raw === 'string' ? raw : (defaults[field.key] ?? ''),
+    label = `${field.label[locale]}${field.required ? ' *' : ''}`;
+  if (field.type === 'reference' && field.reference)
+    return (
+      <BusinessReference
+        field={field}
+        reference={field.reference}
+        name={field.key}
+        initial={value}
+        initialLabel={String(record?.data[field.key.replace(/Id$/u, 'Name')] ?? '')}
+        invalid={invalid}
+      />
+    );
   if (field.type === 'select')
     return (
-      <label className="platform-field">
-        <span>
-          {field.label[locale]}
-          {field.required ? ' *' : ''}
-        </span>
-        <select
-          name={field.key}
-          required={field.required}
-          defaultValue={
-            field.options?.some((option) => option.value === value)
-              ? value
-              : field.options?.[0]?.value
-          }
-        >
-          {field.options?.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label[locale]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label={label}
+        name={field.key}
+        required={field.required}
+        aria-invalid={invalid || undefined}
+        defaultValue={
+          field.options?.some((option) => option.value === value)
+            ? value
+            : field.options?.[0]?.value
+        }
+      >
+        {field.options?.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label[locale]}
+          </option>
+        ))}
+      </Select>
     );
   if (field.type === 'textarea')
     return (
-      <label className="platform-field">
-        <span>
-          {field.label[locale]}
-          {field.required ? ' *' : ''}
-        </span>
-        <textarea
-          name={field.key}
-          required={field.required}
-          maxLength={field.max ?? 160}
-          defaultValue={value}
-          rows={4}
-        />
-      </label>
+      <TextArea
+        label={label}
+        name={field.key}
+        required={field.required}
+        maxLength={field.max ?? 160}
+        defaultValue={value}
+        rows={field.key === 'legalTerms' ? 5 : 3}
+        aria-invalid={invalid || undefined}
+      />
     );
   return (
     <Field
-      label={field.label[locale]}
+      label={label}
       name={field.key}
       required={field.required ?? false}
       value={value}
       type={field.type === 'money' || field.type === 'quantity' ? 'text' : field.type}
       maxLength={field.max ?? 160}
+      aria-invalid={invalid || undefined}
       {...(field.type === 'money' || field.type === 'quantity'
-        ? { inputMode: 'decimal' as const, placeholder: '0.00' }
+        ? { inputMode: 'decimal' as const, placeholder: businessUi.decimalPlaceholder[locale] }
+        : {})}
+      {...(field.key === 'exemption'
+        ? {
+            help: businessUi.requiredForAZeroVATRate[locale],
+          }
         : {})}
     />
   );
@@ -190,78 +174,122 @@ interface QuoteRow {
   quantity: string;
   price: string;
 }
-export function QuoteLines({ record }: { record: BusinessRecord | null }) {
+const productField = {
+  key: 'productId',
+  label: { fr: 'Produit / service', en: 'Product / service' },
+  type: 'reference',
+  required: true,
+  reference: { module: 'products', entity: 'products' },
+} as const satisfies BusinessField;
+export function QuoteLines({
+  record,
+  onDirty,
+}: {
+  record: BusinessRecord | null;
+  onDirty: () => void;
+}) {
   const { locale } = usePreferences(),
-    fr = locale === 'fr';
-  const source = Array.isArray(record?.data.lines) ? (record.data.lines as QuoteRow[]) : [];
-  const [lines, setLines] = useState<QuoteRow[]>(
+    products = useReference('products', 'products');
+  const source = Array.isArray(record?.data.lines)
+    ? (record.data.lines as Record<string, unknown>[])
+    : [];
+  const [lines, setLines] = useState<QuoteRow[]>(() =>
     source.length
       ? source.map((line) => ({
           rowKey: crypto.randomUUID(),
-          productId: line.productId,
-          quantity: line.quantity,
-          price: line.price,
+          productId: String(line.productId),
+          quantity: String(line.quantity),
+          price: String(line.price),
         }))
       : [{ rowKey: crypto.randomUUID(), productId: '', quantity: '1.000', price: '' }],
   );
-  const product: BusinessField = {
-    key: 'productId',
-    label: { fr: 'Produit / service', en: 'Product / service' },
-    type: 'reference',
-    required: true,
-    reference: { module: 'products', entity: 'products' },
-  };
+  const productMap = useMemo(
+    () => new Map(products.records.map((product) => [product.id, product.data])),
+    [products.records],
+  );
+  const calculation = useMemo(() => {
+    try {
+      const estimated = lines.map((line) => {
+        const product =
+          productMap.get(line.productId) ??
+          source.find((item) => item.productId === line.productId);
+        if (!product) throw new Error();
+        return quoteLine({
+          productId: line.productId,
+          name: String(product.name),
+          unit: String(product.unit ?? ''),
+          quantity: line.quantity,
+          price: line.price || String(product.price),
+          vatRate: String(product.vatRate),
+          exemption: String(product.exemption ?? ''),
+        });
+      });
+      return quoteTotals(estimated);
+    } catch {
+      return null;
+    }
+  }, [lines, productMap, record]);
+  const change = (rowKey: string, values: Partial<QuoteRow>) =>
+    setLines((old) => old.map((line) => (line.rowKey === rowKey ? { ...line, ...values } : line)));
   return (
     <section className="business-lines">
-      <h3>{fr ? 'Lignes du devis' : 'Quote lines'}</h3>
-      {lines.map((line, index) => (
-        <div className="business-line" key={line.rowKey}>
-          <BusinessReference
-            field={product}
-            name={`product_${index}`}
-            initial={line.productId}
-            value={line.productId}
-            onChange={(value) =>
-              setLines((old) =>
-                old.map((item, i) => (i === index ? { ...item, productId: value } : item)),
-              )
-            }
-          />
-          <Field
-            label={fr ? 'Quantité' : 'Quantity'}
-            name={`quantity_${index}`}
-            value={line.quantity}
-            required
-            inputMode="decimal"
-            onChange={(event) =>
-              setLines((old) =>
-                old.map((item, i) =>
-                  i === index ? { ...item, quantity: event.target.value } : item,
-                ),
-              )
-            }
-          />
-          <Field
-            label={fr ? 'Prix HT EUR (vide = catalogue)' : 'Price excl. VAT EUR (blank = catalog)'}
-            name={`price_${index}`}
-            value={line.price}
-            required={false}
-            inputMode="decimal"
-            onChange={(event) =>
-              setLines((old) =>
-                old.map((item, i) => (i === index ? { ...item, price: event.target.value } : item)),
-              )
-            }
-          />
-          <Button
-            variant="text"
-            disabled={lines.length === 1}
-            onClick={() => setLines((old) => old.filter((_, i) => i !== index))}
-          >
-            {fr ? 'Retirer la ligne' : 'Remove line'}
-          </Button>
-        </div>
-      ))}
+      <div className="business-subheading">
+        <h2>{businessUi.quoteLines[locale]}</h2>
+        <span>{lines.length} / 50</span>
+      </div>
+      {lines.map((line, index) => {
+        const product = productMap.get(line.productId),
+          initialLabel = String(
+            product?.name ?? source.find((item) => item.productId === line.productId)?.name ?? '',
+          );
+        return (
+          <div className="business-line" key={line.rowKey}>
+            <BusinessReference
+              field={productField}
+              reference={productField.reference}
+              name={`product_${index}`}
+              initial={line.productId}
+              initialLabel={initialLabel}
+              value={line.productId}
+              onChange={(productId) => change(line.rowKey, { productId, price: '' })}
+            />
+            <label className="platform-field">
+              <span>{businessUi.quantityRequired[locale]}</span>
+              <input
+                name={`quantity_${index}`}
+                value={line.quantity}
+                required
+                inputMode="decimal"
+                maxLength={20}
+                onChange={(event) => change(line.rowKey, { quantity: event.target.value })}
+              />
+            </label>
+            <label className="platform-field">
+              <span>{businessUi.priceExclVATEUR[locale]}</span>
+              <input
+                name={`price_${index}`}
+                value={line.price}
+                placeholder={String(product?.price ?? businessUi.catalogPrice[locale])}
+                inputMode="decimal"
+                maxLength={20}
+                onChange={(event) => change(line.rowKey, { price: event.target.value })}
+              />
+              <small>{businessUi.blankCatalogPrice[locale]}</small>
+            </label>
+            <Button
+              variant="icon"
+              disabled={lines.length === 1}
+              aria-label={`${businessUi.removeLine[locale]} ${index + 1}`}
+              onClick={() => {
+                onDirty();
+                setLines((old) => old.filter((item) => item.rowKey !== line.rowKey));
+              }}
+            >
+              <Trash2 size={18} />
+            </Button>
+          </div>
+        );
+      })}
       <input
         type="hidden"
         name="quoteLines"
@@ -269,18 +297,40 @@ export function QuoteLines({ record }: { record: BusinessRecord | null }) {
           lines.map(({ productId, quantity, price }) => ({ productId, quantity, price })),
         )}
       />
-      <Button
-        variant="secondary"
-        disabled={lines.length >= 50}
-        onClick={() =>
-          setLines((old) => [
-            ...old,
-            { rowKey: crypto.randomUUID(), productId: '', quantity: '1.000', price: '' },
-          ])
-        }
-      >
-        {fr ? 'Ajouter une ligne' : 'Add line'}
-      </Button>
+      <div className="business-quote-footer">
+        <Button
+          variant="secondary"
+          disabled={lines.length >= 50}
+          onClick={() => {
+            onDirty();
+            setLines((old) => [
+              ...old,
+              { rowKey: crypto.randomUUID(), productId: '', quantity: '1.000', price: '' },
+            ]);
+          }}
+        >
+          <Plus size={16} />
+          {businessUi.addLine[locale]}
+        </Button>
+        <div className="business-quote-estimate" aria-live="polite">
+          {calculation ? (
+            <>
+              <span>
+                {businessUi.exclVAT[locale]} {formatMinor(calculation.netMinor, locale)}
+              </span>
+              <span>
+                {businessUi.vat[locale]} {formatMinor(calculation.vatMinor, locale)}
+              </span>
+              <strong>
+                {businessUi.totalInclVAT[locale]} {formatMinor(calculation.totalMinor, locale)}
+              </strong>
+              <small>{businessUi.estimateNotice[locale]}</small>
+            </>
+          ) : (
+            <small>{businessUi.estimateIncomplete[locale]}</small>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

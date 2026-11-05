@@ -1,7 +1,5 @@
+import { ModulesSection } from './module-directory';
 import { usePreferences } from '../preferences-context';
-import { BusinessGrants } from './business-grants';
-import { StoreAdmin } from './store';
-import { PluginsAdmin } from './plugins';
 import {
   AccountSecurity,
   AdvancedLoginPage,
@@ -10,13 +8,12 @@ import {
   PasswordResetForm,
 } from './advanced';
 import { useAdvancedCopy } from './advanced-copy';
-import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
-import { ArrowRight, Building2, ShieldCheck, UserRound, LogOut } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { ArrowRight, Building2, ShieldCheck, UserRound } from 'lucide-react';
 import { modulePermissions, organizationPermissions } from '@orkobi/contracts';
 import type {
   AuditEntry,
-  BusinessDefinition,
   ModuleEntry,
   ModuleSummary,
   OrganizationRole,
@@ -26,13 +23,23 @@ import type {
   SessionSummary,
 } from '@orkobi/contracts';
 import { usePlatform } from './context';
-import { Field, PlatformHeading, TaskForm, ResourceNotice } from './components';
+import { confirmContextChange } from './unsaved-changes';
+import { useConfirm } from './confirm-context';
+import { Field, PageHeading, Skeleton, TaskForm, ResourceNotice } from './components';
 import { usePlatformCopy, usePlatformResource } from './hooks';
 import { errorCode, errorMessage } from '../errors';
-import { Button, AppIcon } from '@orkobi/sdk-ui';
+import { Button } from '@orkobi/sdk-ui';
 import { Notice } from '@orkobi/sdk-ui';
-import type { ReactNode } from 'react';
+import { DataTable, Tabs, Th } from '@orkobi/sdk-ui';
 import type { PlatformCopy } from './copy';
+
+const BusinessGrants = lazy(() =>
+  import('./business-grants').then((module) => ({ default: module.BusinessGrants })),
+);
+const StoreAdmin = lazy(() => import('./store').then((module) => ({ default: module.StoreAdmin })));
+const PluginsAdmin = lazy(() =>
+  import('./plugins').then((module) => ({ default: module.PluginsAdmin })),
+);
 
 const roleName = (role: OrganizationRole, t: PlatformCopy) =>
   role.builtin === 'admin'
@@ -41,39 +48,6 @@ const roleName = (role: OrganizationRole, t: PlatformCopy) =>
       ? t.memberRole
       : role.name;
 
-export function PlatformGate({ children }: { children: ReactNode }) {
-  const { loading, error, status, session, refresh } = usePlatform(),
-    t = usePlatformCopy(),
-    location = useLocation();
-  if (['/settings', '/system', '/modules'].includes(location.pathname)) return children;
-  if (loading || error)
-    return (
-      <section className="platform-panel">
-        <ResourceNotice loading={loading} error={error} onRetry={() => void refresh()} />
-      </section>
-    );
-  if (!status?.databaseReady)
-    return (
-      <section className="platform-panel">
-        <PlatformHeading title="Orkobi" description={t.databaseMissing} />
-        <Button variant="secondary" onClick={() => void refresh()}>
-          {t.retry}
-        </Button>
-        <Button variant="text" to="/system">
-          {t.status}
-        </Button>
-      </section>
-    );
-  if (location.pathname === '/oidc/callback') return children;
-  if (!status.initialized && location.pathname !== '/setup')
-    return <Navigate to="/setup" replace />;
-  if (status.initialized && location.pathname === '/setup')
-    return <Navigate to={session.user ? '/' : '/login'} replace />;
-  if (status.initialized && !session.user && location.pathname !== '/login')
-    return <Navigate to="/login" replace />;
-  if (session.user && location.pathname === '/login') return <Navigate to="/" replace />;
-  return children;
-}
 export function InstallationPage() {
   const t = usePlatformCopy(),
     { post, refresh } = usePlatform(),
@@ -112,11 +86,11 @@ export function WorkspacePage() {
     { session } = usePlatform();
   return (
     <>
-      <PlatformHeading
+      <PageHeading
         title={`${t.overview}${session.user ? ` · ${session.user.name}` : ''}`}
         description={t.welcome}
       />
-      <OrganizationList />
+      {session.activeOrganizationId ? <ModulesSection compact /> : <OrganizationList />}
       <section className="workspace-tools">
         <Link className="platform-link-row" to="/profile">
           <UserRound size={22} />
@@ -175,6 +149,7 @@ function OrganizationList() {
               <TaskForm
                 submit={t.select}
                 onSave={async () => {
+                  if (!(await confirmContextChange())) return false;
                   await post(`organizations/${org.id}/select`, {});
                   await refresh();
                   navigate(`/organizations/${org.id}`);
@@ -193,7 +168,7 @@ export function ManagedOrganizationsPage() {
   const t = usePlatformCopy();
   return (
     <>
-      <PlatformHeading title={t.organizations} description={t.organizationsHelp} />
+      <PageHeading title={t.organizations} description={t.organizationsHelp} />
       <OrganizationList />
     </>
   );
@@ -231,8 +206,8 @@ export function OrganizationDetailPage() {
   if (!org)
     return (
       <>
-        <PlatformHeading title={t.organizations} />
-        <p role="alert">{t.forbidden}</p>
+        <PageHeading title={t.organizations} />
+        <Notice tone="error">{t.forbidden}</Notice>
         <Button variant="text" to="/organizations">
           {t.back}
         </Button>
@@ -246,7 +221,7 @@ function OrganizationDetail({ org }: { org: PlatformOrganization }) {
     [revision, setRevision] = useState(0),
     [params, setParams] = useSearchParams();
   const permissions = session.organizations.find((item) => item.id === org.id)?.permissions ?? [];
-  const tab = params.get('tab') ?? 'settings',
+  const tab = (params.get('tab') ?? 'settings') as 'settings' | 'members' | 'roles' | 'audit',
     base = `organizations/${org.id}`;
   const update = async () => {
     setRevision((value) => value + 1);
@@ -257,27 +232,26 @@ function OrganizationDetail({ org }: { org: PlatformOrganization }) {
       <Button variant="text" to="/organizations">
         {t.back}
       </Button>
-      <PlatformHeading title={org.name} description={`${t[org.kind]} · ${org.timezone}`} />
-      <nav className="platform-tabs" aria-label={org.name}>
-        {(['settings', 'members', 'roles', 'audit'] as const)
-          .filter(
-            (item) =>
-              item === 'settings' ||
-              (item === 'audit'
-                ? permissions.includes('audit:read')
-                : permissions.includes('members:read')),
-          )
-          .map((item) => (
-            <button
-              key={item}
-              className={tab === item ? 'active' : ''}
-              aria-current={tab === item ? 'page' : undefined}
-              onClick={() => setParams({ tab: item })}
-            >
-              {t[item]}
-            </button>
-          ))}
-      </nav>
+      <PageHeading title={org.name} description={`${t[org.kind]} · ${org.timezone}`} />
+      <Tabs
+        label={org.name}
+        value={tab}
+        onChange={(key) => setParams({ tab: key })}
+        items={(
+          [
+            { key: 'settings', label: t.settings },
+            { key: 'members', label: t.members },
+            { key: 'roles', label: t.roles },
+            { key: 'audit', label: t.audit },
+          ] as const
+        ).filter(
+          (item) =>
+            item.key === 'settings' ||
+            (item.key === 'audit'
+              ? permissions.includes('audit:read')
+              : permissions.includes('members:read')),
+        )}
+      />
       {tab === 'settings' && (
         <section className="platform-panel">
           {permissions.includes('organization:write') ? (
@@ -338,6 +312,7 @@ function MembershipPanel({
 }) {
   const t = usePlatformCopy(),
     { post } = usePlatform(),
+    confirm = useConfirm(),
     [selected, setSelected] = useState<OrganizationMembership | null>(null);
   const members = usePlatformResource<OrganizationMembership[]>(`${base}/members`, revision),
     roles = usePlatformResource<OrganizationRole[]>(`${base}/roles`, revision);
@@ -349,45 +324,47 @@ function MembershipPanel({
         error={members.error || roles.error}
         onRetry={() => void update()}
       />
-      <div className="table-scroll" role="region" aria-label={t.members} tabIndex={0}>
-        <table>
-          <thead>
-            <tr>
-              <th>{t.name}</th>
-              <th>{t.email}</th>
-              <th>{t.role}</th>
-              <th>{t.status}</th>
+      <DataTable label={t.members}>
+        <thead>
+          <tr>
+            <Th>{t.name}</Th>
+            <Th>{t.email}</Th>
+            <Th>{t.role}</Th>
+            <Th>{t.status}</Th>
+            {canWrite && (
+              <Th>
+                <span className="sr-only">{t.edit}</span>
+              </Th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {members.data?.map((member) => (
+            <tr key={member.userId}>
+              <td>{member.name}</td>
+              <td>{member.email}</td>
+              <td>
+                {(() => {
+                  const role = roles.data?.find((role) => role.id === member.roleId);
+                  return role ? roleName(role, t) : '—';
+                })()}
+              </td>
+              <td>{member.active ? t.active : t.inactive}</td>
               {canWrite && (
-                <th>
-                  <span className="sr-only">{t.edit}</span>
-                </th>
+                <td>
+                  <Button
+                    variant="text"
+                    aria-label={`${t.edit} ${member.name}`}
+                    onClick={() => setSelected(member)}
+                  >
+                    {t.edit}
+                  </Button>
+                </td>
               )}
             </tr>
-          </thead>
-          <tbody>
-            {members.data?.map((member) => (
-              <tr key={member.userId}>
-                <td>{member.name}</td>
-                <td>{member.email}</td>
-                <td>
-                  {(() => {
-                    const role = roles.data?.find((role) => role.id === member.roleId);
-                    return role ? roleName(role, t) : '—';
-                  })()}
-                </td>
-                <td>{member.active ? t.active : t.inactive}</td>
-                {canWrite && (
-                  <td>
-                    <Button variant="text" onClick={() => setSelected(member)}>
-                      {t.edit}
-                    </Button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DataTable>
       {canWrite && roles.data && (
         <TaskForm
           key={selected?.userId ?? 'new'}
@@ -395,7 +372,8 @@ function MembershipPanel({
           reset={!selected}
           onSave={async (data) => {
             const active = data.get('active') === 'on';
-            if (selected?.active && !active && !window.confirm(t.confirmDisable)) return false;
+            if (selected?.active && !active && !(await confirm(t.confirmDisable, { danger: true })))
+              return false;
             await post(`${base}/members`, { ...Object.fromEntries(data), active });
             setSelected(null);
             await update();
@@ -567,7 +545,7 @@ export function ProfilePage() {
     sessions = usePlatformResource<SessionSummary[]>('sessions', revision);
   return (
     <>
-      <PlatformHeading title={t.profile} description={session.user?.email} />
+      <PageHeading title={t.profile} description={session.user?.email} />
       <div className="platform-split">
         <section className="platform-panel">
           <TaskForm
@@ -624,130 +602,42 @@ export function ProfilePage() {
     </>
   );
 }
-export function AccountControls() {
-  const t = usePlatformCopy(),
-    { session, post, refresh } = usePlatform(),
-    navigate = useNavigate(),
-    [error, setError] = useState(false),
-    [pending, setPending] = useState(false);
-  if (!session.user) return null;
-  return (
-    <div className="account-controls">
-      <Link to="/profile" className="account-link">
-        <UserRound size={16} />
-        <span>{session.user.name}</span>
-      </Link>
-      <Button
-        variant="icon"
-        disabled={pending}
-        aria-label={t.signOut}
-        title={t.signOut}
-        onClick={() => {
-          setPending(true);
-          setError(false);
-          void post('logout', {})
-            .then(async () => {
-              await refresh();
-              navigate('/login');
-            })
-            .catch(() => setError(true))
-            .finally(() => setPending(false));
-        }}
-      >
-        <LogOut size={17} />
-      </Button>
-      {error && <span role="alert">{t.unknown}</span>}
-    </div>
-  );
-}
-export function OrganizationSelector() {
-  const t = usePlatformCopy(),
-    { session, post, refresh } = usePlatform(),
-    navigate = useNavigate(),
-    [pending, setPending] = useState(false),
-    [error, setError] = useState(false);
-  if (!session.user || !session.organizations.length) return null;
-  return (
-    <label className="organization-selector">
-      <span className="sr-only">{t.chooseOrganization}</span>
-      <select
-        aria-label={t.chooseOrganization}
-        value={session.activeOrganizationId ?? ''}
-        disabled={pending}
-        onChange={(event) => {
-          const id = event.target.value;
-          if (!id) return;
-          setPending(true);
-          setError(false);
-          void post(`organizations/${id}/select`, {})
-            .then(async () => {
-              await refresh();
-              navigate(`/organizations/${id}`);
-            })
-            .catch(() => setError(true))
-            .finally(() => setPending(false));
-        }}
-      >
-        <option value="" disabled>
-          {t.chooseOrganization}
-        </option>
-        {session.organizations.map((org) => (
-          <option key={org.id} value={org.id}>
-            {org.name}
-          </option>
-        ))}
-      </select>
-      {error && <small role="alert">{t.forbidden}</small>}
-    </label>
-  );
-}
 export function AdministrationPage() {
+  const { locale } = usePreferences();
   const a = useAdvancedCopy();
   const t = usePlatformCopy(),
     { session } = usePlatform(),
     [params, setParams] = useSearchParams(),
-    tab = params.get('tab') ?? 'users';
-  if (!session.user?.platformAdmin) return <p role="alert">{t.forbidden}</p>;
+    tab = (params.get('tab') ?? 'users') as
+      'users' | 'organizations' | 'integrations' | 'plugins' | 'business' | 'store' | 'audit';
+  if (!session.user?.platformAdmin) return <Notice tone="error">{t.forbidden}</Notice>;
   return (
     <>
-      <PlatformHeading title={t.administration} description={t.adminHelp} />
-      <nav className="platform-tabs admin-tabs" aria-label={t.administration}>
-        {(
-          [
-            'users',
-            'organizations',
-            'integrations',
-            'plugins',
-            'business',
-            'store',
-            'audit',
-          ] as const
-        ).map((key) => (
-          <button
-            key={key}
-            aria-current={tab === key ? 'page' : undefined}
-            className={tab === key ? 'active' : ''}
-            onClick={() => setParams({ tab: key })}
-          >
-            {key === 'business'
-              ? 'Modules ERP'
-              : key === 'store'
-                ? 'Store'
-                : key === 'plugins'
-                  ? 'Extensions'
-                  : key === 'integrations'
-                    ? a.integrations
-                    : t[key]}
-          </button>
-        ))}
-      </nav>
-      {tab === 'users' && <UsersAdmin />}
-      {tab === 'organizations' && <OrganizationsAdmin />}
-      {tab === 'integrations' && <IntegrationsAdmin />}
-      {tab === 'plugins' && <PluginsAdmin />}
-      {tab === 'business' && <BusinessGrants />}
-      {tab === 'store' && <StoreAdmin />}
-      {tab === 'audit' && <AuditPanel path="admin/audit" />}
+      <PageHeading title={t.administration} description={t.adminHelp} />
+      <Tabs
+        className="admin-tabs"
+        label={t.administration}
+        value={tab}
+        onChange={(key) => setParams({ tab: key })}
+        items={[
+          { key: 'users', label: t.users },
+          { key: 'organizations', label: t.organizations },
+          { key: 'integrations', label: a.integrations },
+          { key: 'plugins', label: 'Extensions' },
+          { key: 'business', label: locale === 'fr' ? 'Modules ERP' : 'Business modules' },
+          { key: 'store', label: 'Store' },
+          { key: 'audit', label: t.audit },
+        ]}
+      />
+      <Suspense fallback={<Skeleton status={t.loading} />}>
+        {tab === 'users' && <UsersAdmin />}
+        {tab === 'organizations' && <OrganizationsAdmin />}
+        {tab === 'integrations' && <IntegrationsAdmin />}
+        {tab === 'plugins' && <PluginsAdmin />}
+        {tab === 'business' && <BusinessGrants />}
+        {tab === 'store' && <StoreAdmin />}
+        {tab === 'audit' && <AuditPanel path="admin/audit" />}
+      </Suspense>
       <p className="list-note">
         {t.limit} · {t.version} {__APP_VERSION__}
       </p>
@@ -757,6 +647,7 @@ export function AdministrationPage() {
 function UsersAdmin() {
   const t = usePlatformCopy(),
     { post, refresh } = usePlatform(),
+    confirm = useConfirm(),
     [revision, setRevision] = useState(0),
     users = usePlatformResource<PlatformUser[]>('admin/users', revision),
     [selected, setSelected] = useState<PlatformUser | null>(null);
@@ -768,36 +659,38 @@ function UsersAdmin() {
         error={users.error}
         onRetry={() => setRevision((value) => value + 1)}
       />
-      <div className="table-scroll" role="region" aria-label={t.users} tabIndex={0}>
-        <table>
-          <thead>
-            <tr>
-              <th>{t.name}</th>
-              <th>{t.email}</th>
-              <th>{t.role}</th>
-              <th>{t.status}</th>
-              <th>
-                <span className="sr-only">{t.edit}</span>
-              </th>
+      <DataTable label={t.users}>
+        <thead>
+          <tr>
+            <Th>{t.name}</Th>
+            <Th>{t.email}</Th>
+            <Th>{t.role}</Th>
+            <Th>{t.status}</Th>
+            <Th>
+              <span className="sr-only">{t.edit}</span>
+            </Th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.data?.map((user) => (
+            <tr key={user.id}>
+              <td>{user.name}</td>
+              <td>{user.email}</td>
+              <td>{user.platformAdmin ? t.platformAdmin : t.user}</td>
+              <td>{user.active ? t.active : t.inactive}</td>
+              <td>
+                <Button
+                  variant="text"
+                  aria-label={`${t.edit} ${user.name}`}
+                  onClick={() => setSelected(user)}
+                >
+                  {t.edit}
+                </Button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {users.data?.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.platformAdmin ? t.platformAdmin : t.user}</td>
-                <td>{user.active ? t.active : t.inactive}</td>
-                <td>
-                  <Button variant="text" onClick={() => setSelected(user)}>
-                    {t.edit}
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DataTable>
       <TaskForm
         key={selected?.id ?? 'new'}
         title={selected ? t.edit : t.createUser}
@@ -805,7 +698,8 @@ function UsersAdmin() {
         submit={selected ? t.save : t.createUser}
         onSave={async (data) => {
           const active = data.get('active') === 'on';
-          if (selected?.active && !active && !window.confirm(t.confirmDisable)) return false;
+          if (selected?.active && !active && !(await confirm(t.confirmDisable, { danger: true })))
+            return false;
           await post(selected ? `admin/users/${selected.id}` : 'admin/users', {
             ...Object.fromEntries(data),
             active,
@@ -851,6 +745,7 @@ function UsersAdmin() {
 function OrganizationsAdmin() {
   const t = usePlatformCopy(),
     { post, refresh } = usePlatform(),
+    confirm = useConfirm(),
     [revision, setRevision] = useState(0),
     orgs = usePlatformResource<PlatformOrganization[]>('admin/organizations', revision),
     users = usePlatformResource<PlatformUser[]>('admin/users', revision),
@@ -868,34 +763,36 @@ function OrganizationsAdmin() {
           error={orgs.error || users.error}
           onRetry={() => void update()}
         />
-        <div className="table-scroll" role="region" aria-label={t.organizations} tabIndex={0}>
-          <table>
-            <thead>
-              <tr>
-                <th>{t.organizationName}</th>
-                <th>{t.kind}</th>
-                <th>{t.status}</th>
-                <th>
-                  <span className="sr-only">{t.manage}</span>
-                </th>
+        <DataTable label={t.organizations}>
+          <thead>
+            <tr>
+              <Th>{t.organizationName}</Th>
+              <Th>{t.kind}</Th>
+              <Th>{t.status}</Th>
+              <Th>
+                <span className="sr-only">{t.manage}</span>
+              </Th>
+            </tr>
+          </thead>
+          <tbody>
+            {orgs.data?.map((org) => (
+              <tr key={org.id}>
+                <td>{org.name}</td>
+                <td>{t[org.kind]}</td>
+                <td>{org.active ? t.active : t.inactive}</td>
+                <td>
+                  <Button
+                    variant="text"
+                    aria-label={`${t.manage} ${org.name}`}
+                    onClick={() => setSelected(org)}
+                  >
+                    {t.manage}
+                  </Button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {orgs.data?.map((org) => (
-                <tr key={org.id}>
-                  <td>{org.name}</td>
-                  <td>{t[org.kind]}</td>
-                  <td>{org.active ? t.active : t.inactive}</td>
-                  <td>
-                    <Button variant="text" onClick={() => setSelected(org)}>
-                      {t.manage}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </DataTable>
         {users.data && (
           <TaskForm
             key={selected?.id ?? 'new'}
@@ -904,7 +801,12 @@ function OrganizationsAdmin() {
             submit={selected ? t.save : t.createOrganization}
             onSave={async (data) => {
               const active = data.get('active') === 'on';
-              if (selected?.active && !active && !window.confirm(t.confirmDisable)) return false;
+              if (
+                selected?.active &&
+                !active &&
+                !(await confirm(t.confirmDisable, { danger: true }))
+              )
+                return false;
               await post(selected ? `admin/organizations/${selected.id}` : 'admin/organizations', {
                 ...Object.fromEntries(data),
                 active,
@@ -1005,136 +907,34 @@ function AuditPanel({ path }: { path: string }) {
         onRetry={() => setRevision((value) => value + 1)}
       />
       {audit.data?.length === 0 && <p>{t.noAudit}</p>}
-      <div className="table-scroll" role="region" aria-label={t.audit} tabIndex={0}>
-        <table>
-          <thead>
-            <tr>
-              <th>{t.date}</th>
-              <th>{t.event}</th>
-              <th>{t.actor}</th>
-              <th>{t.target}</th>
+      <DataTable label={t.audit}>
+        <thead>
+          <tr>
+            <Th>{t.date}</Th>
+            <Th>{t.event}</Th>
+            <Th>{t.actor}</Th>
+            <Th>{t.target}</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {audit.data?.map((entry) => (
+            <tr key={entry.id}>
+              <td>{new Date(entry.createdAt).toLocaleString()}</td>
+              <td>{events[entry.event] ?? entry.event}</td>
+              <td>{entry.actorName ?? '—'}</td>
+              <td>{entry.targetName ?? '—'}</td>
             </tr>
-          </thead>
-          <tbody>
-            {audit.data?.map((entry) => (
-              <tr key={entry.id}>
-                <td>{new Date(entry.createdAt).toLocaleString()}</td>
-                <td>{events[entry.event] ?? entry.event}</td>
-                <td>{entry.actorName ?? '—'}</td>
-                <td>{entry.targetName ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </DataTable>
     </section>
   );
 }
 
-export function ModulesSection() {
-  const { locale } = usePreferences();
-  const t = usePlatformCopy(),
-    { session, post } = usePlatform(),
-    [revision, setRevision] = useState(0);
-  const catalog = usePlatformResource<{ definitions: BusinessDefinition[] }>(
-    session.user ? 'business' : null,
-    revision,
-  );
-  const modules = usePlatformResource<{ modules: ModuleSummary[] }>(
-    session.user && session.activeOrganizationId ? 'modules' : null,
-    revision,
-  );
-  const permissions =
-    session.organizations.find((org) => org.id === session.activeOrganizationId)?.permissions ?? [];
-  return (
-    <section className="platform-panel" aria-busy={modules.loading}>
-      <h2>{t.modulesTitle}</h2>
-      <p>{t.modulesHelp}</p>
-      {!session.user && <p>{t.modulesSignIn}</p>}
-      {session.user && !session.activeOrganizationId && <p>{t.selectOrganizationModules}</p>}
-      <ResourceNotice
-        loading={modules.loading}
-        error={modules.error}
-        onRetry={() => setRevision((value) => value + 1)}
-      />
-      {modules.data && (
-        <div className="role-list">
-          {modules.data.modules.map((module) => (
-            <div className="role-row" key={module.id}>
-              <div>
-                <h3>
-                  <AppIcon
-                    name={
-                      catalog.data?.definitions.find((d) => d.manifest.id === module.id)?.icon ??
-                      'notes'
-                    }
-                    size={20}
-                  />{' '}
-                  {catalog.data?.definitions.find((d) => d.manifest.id === module.id)?.label[
-                    locale
-                  ] ?? module.name}{' '}
-                  <small>v{module.version}</small>{' '}
-                  <span className="small-label">
-                    {module.active
-                      ? t.moduleActive
-                      : module.enabled
-                        ? t.moduleInactive
-                        : t.moduleUnavailable}
-                  </span>
-                </h3>
-                <p>{module.description}</p>
-                {module.missingCapabilities.length > 0 && (
-                  <p className="form-error">
-                    {t.moduleUnavailable} : {module.missingCapabilities.join(', ')}
-                  </p>
-                )}
-                {module.unsatisfiedDependencies.length > 0 && (
-                  <p>{module.unsatisfiedDependencies.join(', ')}</p>
-                )}
-              </div>
-              <div className="row-actions">
-                {module.active && module.id !== 'orkobi.demo' && (
-                  <Button
-                    variant="text"
-                    to={
-                      module.id.startsWith('orkobi.')
-                        ? `/business/${module.id.slice(7)}`
-                        : `/plugins/${module.id}`
-                    }
-                  >
-                    {t.openModule}
-                  </Button>
-                )}
-                {module.active && module.id === 'orkobi.demo' && (
-                  <Button variant="text" to="/modules/demo">
-                    {t.openModule}
-                  </Button>
-                )}
-                {permissions.includes('modules:write') && module.enabled && (
-                  <TaskForm
-                    submit={module.active ? t.deactivate : t.activate}
-                    onSave={async () => {
-                      await post(
-                        `modules/${module.id}/${module.active ? 'deactivate' : 'activate'}`,
-                        {},
-                      );
-                      setRevision((value) => value + 1);
-                    }}
-                  >
-                    <span className="sr-only">{module.name}</span>
-                  </TaskForm>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
 export function DemoNotesPage() {
   const t = usePlatformCopy(),
     { session, post } = usePlatform(),
+    confirm = useConfirm(),
     [revision, setRevision] = useState(0),
     [selected, setSelected] = useState<ModuleEntry | null>(null),
     [deleting, setDeleting] = useState<string | null>(null),
@@ -1154,7 +954,7 @@ export function DemoNotesPage() {
   );
   const update = () => setRevision((value) => value + 1);
   const deleteNote = async (note: ModuleEntry) => {
-    if (deleting || !window.confirm(t.confirmDeleteNote)) return;
+    if (deleting || !(await confirm(t.confirmDeleteNote, { danger: true }))) return;
     setDeleting(note.id);
     setDeleteError(false);
     try {
@@ -1172,14 +972,14 @@ export function DemoNotesPage() {
       <Button variant="text" to="/modules">
         {t.modulesTitle}
       </Button>
-      <PlatformHeading title={t.demoTitle} description={t.demoHelp} />
+      <PageHeading title={t.demoTitle} description={t.demoHelp} />
       {!session.activeOrganizationId ? (
-        <p role="alert">{t.selectOrganizationModules}</p>
+        <Notice>{t.selectOrganizationModules}</Notice>
       ) : !summary && (modules.loading || modules.error) ? (
         <ResourceNotice loading={modules.loading} error={modules.error} onRetry={update} />
       ) : !summary?.active ? (
         <section className="platform-panel">
-          <p role="alert">{t.demoInactive}</p>
+          <Notice>{t.demoInactive}</Notice>
           <Button variant="secondary" to="/modules">
             {t.modulesTitle}
           </Button>
@@ -1188,52 +988,50 @@ export function DemoNotesPage() {
         <>
           <ResourceNotice loading={notes.loading} error={notes.error} onRetry={update} />
           {deleteError && <Notice tone="error">{errorMessage(deleteError, t, 'unknown')}</Notice>}
-          {!canRead && <p role="alert">{t.forbidden}</p>}
+          {!canRead && <Notice tone="error">{t.forbidden}</Notice>}
           {notes.data?.entries.length === 0 && <p>{t.demoNoteEmpty}</p>}
           {notes.data && notes.data.entries.length > 0 && (
-            <div className="table-scroll" role="region" aria-label={t.demoTitle} tabIndex={0}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t.demoNoteTitle}</th>
-                    <th>{t.created}</th>
-                    <th>{t.noteUpdated}</th>
+            <DataTable label={t.demoTitle}>
+              <thead>
+                <tr>
+                  <Th>{t.demoNoteTitle}</Th>
+                  <Th>{t.created}</Th>
+                  <Th>{t.noteUpdated}</Th>
+                  {canWrite && (
+                    <Th>
+                      <span className="sr-only">{t.edit}</span>
+                    </Th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {notes.data.entries.map((note) => (
+                  <tr key={note.id}>
+                    <td>{note.values.title}</td>
+                    <td>{new Date(note.createdAt).toLocaleString()}</td>
+                    <td>{new Date(note.updatedAt).toLocaleString()}</td>
                     {canWrite && (
-                      <th>
-                        <span className="sr-only">{t.edit}</span>
-                      </th>
+                      <td>
+                        <Button
+                          variant="text"
+                          disabled={deleting !== null}
+                          onClick={() => setSelected(note)}
+                        >
+                          {t.edit}
+                        </Button>{' '}
+                        <Button
+                          variant="text"
+                          disabled={deleting !== null}
+                          onClick={() => void deleteNote(note)}
+                        >
+                          {deleting === note.id ? t.saving : t.deleteNote}
+                        </Button>
+                      </td>
                     )}
                   </tr>
-                </thead>
-                <tbody>
-                  {notes.data.entries.map((note) => (
-                    <tr key={note.id}>
-                      <td>{note.values.title}</td>
-                      <td>{new Date(note.createdAt).toLocaleString()}</td>
-                      <td>{new Date(note.updatedAt).toLocaleString()}</td>
-                      {canWrite && (
-                        <td>
-                          <Button
-                            variant="text"
-                            disabled={deleting !== null}
-                            onClick={() => setSelected(note)}
-                          >
-                            {t.edit}
-                          </Button>{' '}
-                          <Button
-                            variant="text"
-                            disabled={deleting !== null}
-                            onClick={() => void deleteNote(note)}
-                          >
-                            {deleting === note.id ? t.saving : t.deleteNote}
-                          </Button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
           )}
           <p>{t.notesLimit}</p>
           {canWrite && (

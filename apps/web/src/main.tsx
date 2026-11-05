@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router';
+import { createBrowserRouter, RouterProvider } from 'react-router';
+import { RouteFailure } from './RouteFailure';
 import '@fontsource-variable/manrope';
 import App from './App';
 import { PreferencesProvider } from './preferences';
@@ -9,11 +10,16 @@ import AppErrorBoundary from './ErrorBoundary';
 import ErrorBanner from './ErrorBanner';
 import { installGlobalErrorHandlers } from './errors';
 import { PlatformProvider } from './platform/provider';
+import { ConfirmProvider } from './platform/confirm';
 import '@orkobi/sdk-ui/styles.css';
 import './platform/styles.css';
 import './styles.css';
+import './platform/business.css';
 
 installGlobalErrorHandlers();
+const router = createBrowserRouter([
+  { path: '*', element: <App />, errorElement: <RouteFailure /> },
+]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -21,11 +27,11 @@ createRoot(document.getElementById('root')!).render(
       <PreferencesProvider>
         <ErrorBanner />
         <BootstrapProvider>
-          <BrowserRouter>
-            <PlatformProvider>
-              <App />
-            </PlatformProvider>
-          </BrowserRouter>
+          <PlatformProvider>
+            <ConfirmProvider>
+              <RouterProvider router={router} />
+            </ConfirmProvider>
+          </PlatformProvider>
         </BootstrapProvider>
       </PreferencesProvider>
     </AppErrorBoundary>

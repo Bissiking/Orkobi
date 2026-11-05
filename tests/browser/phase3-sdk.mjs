@@ -80,6 +80,7 @@ try {
           activeOrganizationId: orgId,
           organizations: [org],
         };
+      else if (endpoint === 'business') body = { definitions: [] };
       else if (endpoint === 'modules')
         body = {
           modules: [
@@ -201,9 +202,9 @@ try {
   await page.waitForSelector('input[name="scopes"]');
   await page.screenshot({ path: `output/playwright/${prefix}-integrations.png`, fullPage: true });
   await page.goto(`${base}/modules`);
-  await page.waitForSelector('.module-icon svg');
+  await page.waitForSelector('.module-directory-icon svg');
   assert.equal(
-    await page.$$eval('.module-icon svg', (icons) =>
+    await page.$$eval('.module-directory-icon svg', (icons) =>
       icons.every((icon) => icon.getAttribute('fill') === 'currentColor'),
     ),
     true,

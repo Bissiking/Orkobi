@@ -309,6 +309,7 @@ export class BusinessService {
         const page = await store.list(organizationId, module, entity, cursor);
         const visible = new Set([
           ...declaration.columns,
+          ...(module === 'products' ? ['unit', 'exemption'] : []),
           ...declaration.fields
             .filter((field) => field.type === 'reference')
             .map((field) => field.key),

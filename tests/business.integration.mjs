@@ -268,6 +268,11 @@ test(
           b = await owner.call('business/products/products', body);
         assert.deepEqual(a, b);
         product = a.record;
+        const listedProduct = (await owner.call('business/products/products')).records.find(
+          (item) => item.id === product.id,
+        );
+        assert.equal(listedProduct.data.unit, 'unité');
+        assert.equal(listedProduct.data.exemption, '');
         const conflict = await owner.call(
           'business/products/products',
           { ...body, values: { ...productValues, name: 'different' } },

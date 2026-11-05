@@ -9,7 +9,8 @@ import type {
   PlatformOrganization,
 } from '@orkobi/contracts';
 import { usePlatform } from './context';
-import { Field, PlatformHeading, ResourceNotice, TaskForm } from './components';
+import { Field, PageHeading, ResourceNotice, TaskForm } from './components';
+import { useConfirm } from './confirm-context';
 import { usePlatformCopy, usePlatformResource } from './hooks';
 import { useAdvancedCopy } from './advanced-copy';
 import { Button } from '@orkobi/sdk-ui';
@@ -200,7 +201,7 @@ export function OidcCallbackPage() {
   }, [post, refresh, navigate]);
   return (
     <section className="platform-panel">
-      <PlatformHeading title={a.oidcCallback} />
+      <PageHeading title={a.oidcCallback} />
       <p role={failed ? 'alert' : 'status'}>{failed ? a.callbackFailed : a.callbackHelp}</p>
       {failed && (
         <Button variant="text" to="/login">
@@ -214,6 +215,7 @@ export function AccountSecurity({ onUpdate }: { onUpdate: () => void }) {
   const a = useAdvancedCopy(),
     t = usePlatformCopy(),
     { post } = usePlatform(),
+    confirm = useConfirm(),
     [revision, setRevision] = useState(0);
   const mfa = usePlatformResource<MfaStatus>('mfa/status', revision),
     identities = usePlatformResource<LinkedIdentity[]>('oidc', revision),
@@ -325,7 +327,7 @@ export function AccountSecurity({ onUpdate }: { onUpdate: () => void }) {
             <TaskForm
               submit={a.unlink}
               onSave={async () => {
-                if (!window.confirm(a.unlinkConfirm)) return false;
+                if (!(await confirm(a.unlinkConfirm, { danger: true }))) return false;
                 await post('oidc/unlink', identity);
                 update();
               }}
@@ -341,14 +343,15 @@ export function AccountSecurity({ onUpdate }: { onUpdate: () => void }) {
 }
 export function PasswordResetForm({ userId }: { userId: string }) {
   const a = useAdvancedCopy(),
-    { post, refresh } = usePlatform();
+    { post, refresh } = usePlatform(),
+    confirm = useConfirm();
   return (
     <TaskForm
       title={a.resetPassword}
       submit={a.resetPassword}
       reset
       onSave={async (data) => {
-        if (!window.confirm(a.resetConfirm)) return false;
+        if (!(await confirm(a.resetConfirm))) return false;
         await post(`admin/users/${userId}/password`, Object.fromEntries(data));
         await refresh();
       }}
@@ -405,6 +408,7 @@ export function IntegrationsAdmin() {
   const a = useAdvancedCopy(),
     t = usePlatformCopy(),
     { post } = usePlatform(),
+    confirm = useConfirm(),
     [revision, setRevision] = useState(0),
     [token, setToken] = useState('');
   const settings = usePlatformResource<{ enabled: boolean }>('admin/integrations', revision),
@@ -504,7 +508,7 @@ export function IntegrationsAdmin() {
             <TaskForm
               submit={a.revoke}
               onSave={async () => {
-                if (!window.confirm(a.revokeConfirm)) return false;
+                if (!(await confirm(a.revokeConfirm, { danger: true }))) return false;
                 await post(`admin/integration-tokens/${item.id}/revoke`, {});
                 update();
               }}

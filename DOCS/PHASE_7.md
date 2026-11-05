@@ -157,3 +157,30 @@ Les reçus d'idempotence et audits n'ont pas de purge automatique.
    et droits dédiés. Ne pas annoncer paie, conformité fiscale ou stabilité.
 8. Vérifier les trois moteurs et le navigateur ; consigner les preuves et leurs
    limites. Aucun déploiement, effacement ou publication implicite.
+
+## Reprise UX — 5 novembre 2026
+
+Le frontend métier est découpé en espace partagé, navigation, listes, fiches,
+formulaires, actions et rapports dans `apps/web/src/platform/business/`. Le catalogue
+est chargé par un fournisseur partagé, réinitialisé lors d’un changement
+utilisateur/organisation ; il contient des déclarations, jamais des décisions de
+permission ni des sessions. Les contrôles Core sont conservés à chaque opération.
+
+Les listes conservent leurs données pendant une actualisation et signalent
+`aria-busy`. Le changement d’URL retire immédiatement les données de l’ancien
+chemin. La recherche reste limitée à la page SQL courante ; les filtres sont
+inscrits dans l’URL, la pagination ne montre ses boutons que lorsqu’elle est utile.
+Une URL de curseur ouverte directement permet le retour à la première page ; le
+bouton Précédent exige une page précédente connue pendant cette navigation.
+
+La fiche sépare lecture et édition (`?edit=1`). Les modifications non enregistrées
+sont visibles ; navigation, annulation et changement d’organisation passent par
+une confirmation asynchrone. Le rechargement/fermeture du navigateur conserve la
+garde native `beforeunload`. Les messages de réussite disparaissent après six
+secondes et restent fermables ; les erreurs du formulaire sont placées avant les
+champs et reçoivent le focus. Les libellés des modules viennent de `definition.label`.
+
+Les primitives publiques et leurs contrats sont dans [UI_SDK.md](UI_SDK.md).
+La [roadmap UX](../ROADMAP_UX.md) et la [revue](REVIEW_UX.md) consignent les preuves,
+les données synthétiques de recette et les limites ; aucune qualification de
+production ou conformité fiscale ne découle du refresh visuel.
